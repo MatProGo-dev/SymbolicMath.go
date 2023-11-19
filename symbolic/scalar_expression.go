@@ -12,9 +12,6 @@ type ScalarExpression interface {
 	// Variables returns the variables included in the scalar expression
 	Variables() []Variable
 
-	// NumVars returns the number of variables in the expression
-	NumVars() int
-
 	// Vars returns a slice of the Var ids in the expression
 	IDs() []uint64
 
@@ -83,10 +80,6 @@ func IsScalarExpression(e interface{}) bool {
 	case K:
 		return true
 	case Variable:
-		return true
-	case ScalarLinearExpr:
-		return true
-	case ScalarQuadraticExpression:
 		return true
 	default:
 		return false

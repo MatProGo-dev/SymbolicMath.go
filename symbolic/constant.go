@@ -70,10 +70,6 @@ func (c K) Plus(rightIn interface{}, errors ...error) (Expression, error) {
 		return K(c.Constant() + right.Constant()), nil
 	case Variable:
 		return right.Plus(c)
-	case ScalarLinearExpr:
-		return right.Plus(c)
-	case ScalarQuadraticExpression:
-		return right.Plus(c) // Very compact, but potentially confusing to read?
 	default:
 		return c, fmt.Errorf("Unexpected type in K.Plus() for constant %v: %T", right, right)
 	}
@@ -156,19 +152,6 @@ func (c K) Multiply(term1 interface{}, errors ...error) (Expression, error) {
 		term1AsSLE := right.ToScalarLinearExpression()
 
 		return c.Multiply(term1AsSLE)
-	case ScalarLinearExpr:
-		// Scale all vectors and constants
-		sleOut := right.Copy()
-		sleOut.L.ScaleVec(float64(c), &sleOut.L)
-		sleOut.C = right.C * float64(c)
-
-		return sleOut, nil
-	case ScalarQuadraticExpression:
-		// Scale all matrices and constants
-		var sqeOut ScalarQuadraticExpression
-		sqeOut.Q.Scale(float64(c), &right.Q)
-		sqeOut.L.ScaleVec(float64(c), &right.L)
-		sqeOut.C = float64(c) * right.C
 
 		return sqeOut, nil
 	case KVector:
@@ -242,4 +225,18 @@ func (c K) Check() error {
 
 func (c K) Transpose() Expression {
 	return c
+}
+
+/*
+ToMonomial
+Description:
+
+	Converts the constant into a monomial.
+*/
+func (c K) ToMonomial() Monomial {
+	return Monomial{
+		Coefficient:     float64(c),
+		VariableFactors: []Variable{},
+		Degrees:         []int{},
+	}
 }

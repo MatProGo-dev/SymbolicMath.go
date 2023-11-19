@@ -2,7 +2,7 @@ package symbolic_test
 
 import (
 	"fmt"
-	"github.com/MatProGo-dev/Symbolithic-Math.go/symbolic"
+	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
 	"testing"
 )
@@ -21,10 +21,10 @@ Description:
 */
 func TestVariable_NumVars1(t *testing.T) {
 	// Constants
-	x := symbolic.AddVariable()
+	x := symbolic.NewVariable()
 
 	// Test
-	if x.NumVars() != 1 {
+	if symbolic.NumVars(x) != 1 {
 		t.Errorf(
 			"The number of variables in a %T should be 1; received %v",
 			x,

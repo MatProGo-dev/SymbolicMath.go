@@ -28,8 +28,8 @@ type VectorExpression interface {
 	// IDs returns a slice of the Var ids in the expression
 	IDs() []uint64
 
-	// Coeffs returns a slice of the coefficients in the expression
-	LinearCoeff() mat.Dense
+	//// Coeffs returns a slice of the coefficients in the expression
+	//LinearCoeff() mat.Dense
 
 	// Constant returns the constant additive value in the expression
 	Constant() mat.VecDense
@@ -72,17 +72,17 @@ type VectorExpression interface {
 	Dims() []int
 }
 
-/*
-NewVectorExpression
-Description:
-
-	NewExpr returns a new expression with a single additive constant value, c,
-	and no variables. Creating an expression like sum := NewVectorExpr(0) is useful
-	for creating new empty expressions that you can perform operatotions on later
-*/
-func NewVectorExpression(c mat.VecDense) VectorLinearExpr {
-	return VectorLinearExpr{C: c}
-}
+///*
+//NewVectorExpression
+//Description:
+//
+//	NewExpr returns a new expression with a single additive constant value, c,
+//	and no variables. Creating an expression like sum := NewVectorExpr(0) is useful
+//	for creating new empty expressions that you can perform operatotions on later
+//*/
+//func NewVectorExpression(c mat.VecDense) VectorLinearExpr {
+//	return VectorLinearExpr{C: c}
+//}
 
 //func (e VectorExpression) getVarsPtr() *uint64 {
 //
@@ -111,18 +111,6 @@ func IsVectorExpression(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
 	case mat.VecDense:
-		return true
-	case KVector:
-		return true
-	case KVectorTranspose:
-		return true
-	case VarVector:
-		return true
-	case VarVectorTranspose:
-		return true
-	case VectorLinearExpr:
-		return true
-	case VectorLinearExpressionTranspose:
 		return true
 	default:
 		return false

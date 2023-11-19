@@ -11,7 +11,7 @@ type Variable struct {
 	ID    uint64
 	Lower float64
 	Upper float64
-	Vtype VarType
+	Type  VarType
 }
 
 /*
@@ -214,7 +214,7 @@ func (v *Variable) Upper() float64 {
 
 // Type returns the type of variable (continuous, binary, integer, etc)
 func (v *Variable) Type() VarType {
-	return v.Vtype
+	return v.Type
 }
 */
 
@@ -302,74 +302,8 @@ func (v Variable) Multiply(val interface{}, errors ...error) (Expression, error)
 		}
 		return sqeOut, nil
 
-	case ScalarLinearExpr:
-		// Algorithm
-		sqeOut := ScalarQuadraticExpression{
-			X: VarVector{
-				UniqueVars(append(e.X.Elements, v)),
-			},
-			C: 0.0,
-		}
-		sqeOut.Q = ZerosMatrix(sqeOut.X.Len(), sqeOut.X.Len())
-		sqeOut.L = ZerosVector(sqeOut.X.Len())
-
-		// Update Q
-		vIndex, _ := FindInSlice(v, e.X.Elements)           // err should be nil
-		vIndexInSQE, _ := FindInSlice(v, sqeOut.X.Elements) // err should be nil
-		for xIndex := 0; xIndex < e.L.Len(); xIndex++ {
-			// Check to make sure index is not the vIndex
-			if vIndex == xIndex {
-				// If v is in the original slice (i.e., we now need to represent v^2)
-
-				sqeOut.Q.Set(vIndexInSQE, vIndexInSQE, e.L.AtVec(vIndex))
-			} else {
-				// If xIndex is not for v, then create off-diagonal elements
-				xIndexInSQE, _ := FindInSlice(e.X.AtVec(xIndex), sqeOut.X.Elements)
-
-				// Create a pair of off-diagonal elements
-				sqeOut.Q.Set(vIndexInSQE, xIndexInSQE, e.L.AtVec(xIndex)*0.5)
-				sqeOut.Q.Set(xIndexInSQE, vIndexInSQE, e.L.AtVec(xIndex)*0.5)
-
-			}
-		}
-
-		// Update L
-		sqeOut.L.SetVec(vIndexInSQE, e.C)
-
-		return sqeOut, nil
-
-	case ScalarQuadraticExpression:
-		// Return error
-		return ScalarQuadraticExpression{}, fmt.Errorf("Can not multiply Variable with ScalarQuadraticExpression. MatProInterface can not represent polynomials higher than degree 2.")
-
-	case VectorLinearExpressionTranspose:
-		return ScalarQuadraticExpression{}, fmt.Errorf(
-			"cannot currently multiply a variable with a vector to create a quadratic expression; file an issue if you are interested in seeing a feature like this.",
-		)
-
 	default:
 		return v, fmt.Errorf("Unexpected input to v.Multiply(): %T", val)
-	}
-}
-
-/*
-ToScalarLinearExpression
-Description:
-
-	Converting the variable into a scalar linear Expression.
-*/
-func (v Variable) ToScalarLinearExpression() ScalarLinearExpr {
-	// Constants
-
-	// Create components
-	vars := []Variable{v}
-	coeffs := []float64{v.Coeffs()[0]}
-
-	// Create sle
-	return ScalarLinearExpr{
-		X: VarVector{vars},
-		L: *mat.NewVecDense(1, coeffs),
-		C: 0,
 	}
 }
 
@@ -439,7 +373,7 @@ func NewContinuousVariable(envs ...Environment) Variable {
 		ID:    uint64(nextIdx),
 		Lower: float64(-Infinity),
 		Upper: float64(+Infinity),
-		Vtype: Continuous,
+		Type:  Continuous,
 	}
 
 }
@@ -469,7 +403,7 @@ func NewBinaryVariable(envs ...Environment) Variable {
 		ID:    uint64(nextIdx),
 		Lower: 0.0,
 		Upper: 1.0,
-		Vtype: Binary,
+		Type:  Binary,
 	}
 
 }

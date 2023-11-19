@@ -1,5 +1,7 @@
 package symbolic
 
+import "fmt"
+
 /*
 Expression
 Description:
@@ -43,6 +45,33 @@ type Expression interface {
 	Comparison(rightIn interface{}, sense ConstrSense, errors ...error) (Constraint, error)
 }
 
+/*
+NumVariables
+Description:
+
+	The number of distinct variables.
+*/
 func NumVariables(e Expression) int {
 	return len(e.Variables())
+}
+
+/*
+IsExpression
+Description:
+
+	Tests whether or not the input variable is one of the expression types.
+*/
+func IsExpression(e interface{}) bool {
+	return IsScalarExpression(e) || IsVectorExpression(e)
+}
+
+func ToExpression(e interface{}) (Expression, error) {
+	switch {
+	case IsScalarExpression(e):
+		return ToScalarExpression(e)
+	case IsVectorExpression(e):
+		return ToVectorExpression(e)
+	default:
+		return K(Infinity), fmt.Errorf("the input expression is not recognized as a scalar or vector expression.")
+	}
 }
