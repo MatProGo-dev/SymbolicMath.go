@@ -2,7 +2,6 @@ package symbolic
 
 import (
 	"fmt"
-	"gonum.org/v1/gonum/mat"
 )
 
 /*
@@ -12,7 +11,7 @@ readability
 const (
 	Zero     = K(0)
 	One      = K(1)
-	Infinity = K(1e18)
+	Infinity = K(1e100)
 )
 
 // K is a constant expression type for an MIP. K for short ¯\_(ツ)_/¯
@@ -147,68 +146,6 @@ func (c K) Multiply(term1 interface{}, errors ...error) (Expression, error) {
 		return c.Multiply(K(right))
 	case K:
 		return c * right, nil
-	case Variable:
-		// Algorithm
-		term1AsSLE := right.ToScalarLinearExpression()
-
-		return c.Multiply(term1AsSLE)
-
-		return sqeOut, nil
-	case KVector:
-		var prod mat.VecDense = ZerosVector(right.Len())
-		term1AsVecDense := mat.VecDense(right)
-
-		prod.ScaleVec(float64(c), &term1AsVecDense)
-
-		return KVector(prod), nil
-	case KVectorTranspose:
-		var prod mat.VecDense = ZerosVector(right.Len())
-		term1AsVecDense := mat.VecDense(right)
-
-		prod.ScaleVec(float64(c), &term1AsVecDense)
-
-		return KVectorTranspose(prod), nil
-	case VarVector:
-		// VarVector is of unit length.
-		return ScalarLinearExpr{
-			L: OnesVector(1),
-			X: right.Copy(),
-			C: 0.0,
-		}, nil
-	case VarVectorTranspose:
-		if right.Len() == 1 {
-			rightTransposed := right.Transpose().(VarVector)
-			prod := ScalarLinearExpr{
-				L: OnesVector(1),
-				X: rightTransposed.Copy(),
-				C: 0.0,
-			}
-			prod.L.ScaleVec(float64(c), &prod.L)
-
-			return prod, nil
-		} else {
-			var vleOut VectorLinearExpressionTranspose
-			vleOut.X = right.Copy().Transpose().(VarVector)
-			tempIdentity := Identity(right.Len()) // Is this needed?
-			vleOut.L.Scale(float64(c), &tempIdentity)
-			vleOut.C = ZerosVector(right.Len())
-
-			return vleOut, nil
-		}
-	case VectorLinearExpr:
-		var vleOut VectorLinearExpr
-		vleOut.L.Scale(float64(c), &right.L)
-		vleOut.C.ScaleVec(float64(c), &right.C)
-		vleOut.X = right.X.Copy()
-
-		return vleOut, nil
-	case VectorLinearExpressionTranspose:
-		var vletOut VectorLinearExpressionTranspose
-		vletOut.L.Scale(float64(c), &right.L)
-		vletOut.C.ScaleVec(float64(c), &right.C)
-		vletOut.X = right.X.Copy()
-
-		return vletOut, nil
 	default:
 		return K(0), fmt.Errorf("Unexpected type of term1 in the Multiply() method: %T (%v)", term1, term1)
 

@@ -57,75 +57,32 @@ func (v Variable) Plus(e interface{}, errors ...error) (Expression, error) {
 	}
 
 	// Algorithm
-	switch e.(type) {
-	case K:
-		eAsK := e.(K)
-
-		// Organize vector variables
-		vv := VarVector{
-			UniqueVars(append([]Variable{v}, eAsK.Variables()...)),
-		}
-
-		// Return
-		return ScalarLinearExpr{
-			L: OnesVector(1),
-			X: vv,
-			C: float64(eAsK),
-		}, nil
-	case Variable:
-		// Convert
-		eAsV := e.(Variable)
-
-		vv := VarVector{
-			UniqueVars(append([]Variable{v}, eAsV.Variables()...)),
-		}
-
-		// Check to see if this is the same Variable or a different one
-		if eAsV.ID == v.ID {
-			return ScalarLinearExpr{
-				X: vv,
-				L: *mat.NewVecDense(1, []float64{2.0}),
-				C: 0.0,
-			}, nil
-		} else {
-			return ScalarLinearExpr{
-				X: vv,
-				L: OnesVector(2),
-				C: 0.0,
-			}, nil
-		}
-	case ScalarLinearExpr:
-		// Convert
-		eAsSLE := e.(ScalarLinearExpr)
-
-		vv := VarVector{
-			UniqueVars(append([]Variable{v}, eAsSLE.Variables()...)),
-		}
-
-		// Convert SLE to new form
-		e2, _ := eAsSLE.RewriteInTermsOf(vv)
-		vIndex, _ := FindInSlice(v, vv.Elements)
-		e2.L.SetVec(vIndex, e2.L.AtVec(vIndex)+1.0)
-
-		return e2, nil
-
-	case ScalarQuadraticExpression:
-		// Convert
-		eAsQE := e.(ScalarQuadraticExpression)
-
-		vv := VarVector{
-			UniqueVars(append([]Variable{v}, eAsQE.Variables()...)),
-		}
-
-		// Convert QE to new form
-		e2, _ := eAsQE.RewriteInTermsOf(vv)
-		vIndex, _ := FindInSlice(v, vv.Elements)
-		e2.L.SetVec(vIndex, e2.L.AtVec(vIndex)+1.0)
-
-		return e2, nil
+	switch right := e.(type) {
+	//case Variable:
+	//	// Convert
+	//	eAsV := e.(Variable)
+	//
+	//	vv := VariableVector{
+	//		UniqueVars(append([]Variable{v}, right.Variables()...)),
+	//	}
+	//
+	//	// Check to see if this is the same Variable or a different one
+	//	if eAsV.ID == v.ID {
+	//		return ScalarLinearExpr{
+	//			X: vv,
+	//			L: *mat.NewVecDense(1, []float64{2.0}),
+	//			C: 0.0,
+	//		}, nil
+	//	} else {
+	//		return ScalarLinearExpr{
+	//			X: vv,
+	//			L: OnesVector(2),
+	//			C: 0.0,
+	//		}, nil
+	//	}
 
 	default:
-		return v, fmt.Errorf("There was an unexpected type (%T) given to Variable.Plus()!", e)
+		return v, fmt.Errorf("there input %v has unexpected type %T given to Variable.Plus()!", right, e)
 	}
 }
 
@@ -141,7 +98,7 @@ func (v Variable) Plus(e interface{}, errors ...error) (Expression, error) {
 //
 //	// Algorithm
 //	newExpr := ScalarLinearExpr{
-//		X: VarVector{vars},
+//		X: VariableVector{vars},
 //		L: *mat.NewVecDense(1, coeffs),
 //		C: 0,
 //	}
@@ -287,7 +244,7 @@ func (v Variable) Multiply(val interface{}, errors ...error) (Expression, error)
 		return e.Multiply(v)
 	case Variable:
 		sqeOut := ScalarQuadraticExpression{
-			X: VarVector{
+			X: VariableVector{
 				UniqueVars([]Variable{e, v}),
 			},
 			C: 0.0,
