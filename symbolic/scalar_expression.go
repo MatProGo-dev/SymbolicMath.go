@@ -61,9 +61,9 @@ type ScalarExpression interface {
 // and no variables. Creating an expression like sum := NewExpr(0) is useful
 // for creating new empty expressions that you can perform operatotions on
 // later
-func NewScalarExpression(c float64) ScalarExpression {
-	return ScalarLinearExpr{C: c}
-}
+//func NewScalarExpression(c float64) ScalarExpression {
+//	return ScalarLinearExpr{C: c}
+//}
 
 /*
 IsScalarExpression
@@ -110,10 +110,6 @@ func ToScalarExpression(e interface{}) (ScalarExpression, error) {
 	case K:
 		return e2, nil
 	case Variable:
-		return e2, nil
-	case ScalarLinearExpr:
-		return e2, nil
-	case ScalarQuadraticExpression:
 		return e2, nil
 	default:
 		return K(1.0), fmt.Errorf(

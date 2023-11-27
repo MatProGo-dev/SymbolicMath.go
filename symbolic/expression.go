@@ -12,9 +12,6 @@ type Expression interface {
 	// NumVars returns the number of variables in the expression
 	Variables() []Variable
 
-	// Vars returns a slice of the Var ids in the expression
-	IDs() []uint64
-
 	// Dims returns a slice describing the true dimensions of a given expression (scalar, vector, or matrix)
 	Dims() []int
 
@@ -53,6 +50,23 @@ Description:
 */
 func NumVariables(e Expression) int {
 	return len(e.Variables())
+}
+
+/*
+VariableIDs
+Description:
+
+	Returns a list of ids associated with each variable.
+*/
+func VariableIDs(e Expression) []uint64 {
+	vSlice := e.Variables()
+
+	var idSlice []uint64
+	for _, v := range vSlice {
+		idSlice = append(idSlice, v.ID)
+	}
+
+	return idSlice
 }
 
 /*

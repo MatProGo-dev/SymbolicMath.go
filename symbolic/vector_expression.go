@@ -22,8 +22,10 @@ Description:
 	by single variables, constants, and general linear expressions.
 */
 type VectorExpression interface {
-	// NumVars returns the number of variables in the expression
-	NumVars() int
+	//// NumVars returns the number of variables in the expression
+	//NumVars() int
+	// Variables returns the number of variables in the expression.
+	Variables() []Variable
 
 	// IDs returns a slice of the Var ids in the expression
 	IDs() []uint64
@@ -139,7 +141,7 @@ func ToVectorExpression(e interface{}) (VectorExpression, error) {
 		return e2, nil
 	case KVectorTranspose:
 		return e2, nil
-	case VarVector:
+	case VariableVector:
 		return e2, nil
 	case VarVectorTranspose:
 		return e2, nil
