@@ -44,6 +44,7 @@ Description:
 	Addition of the constant matrix with another expression.
 */
 func (km KMatrix) Plus(e interface{}, errors ...error) (Expression, error) {
+	// Input Processing
 	err := CheckErrors(errors)
 	if err != nil {
 		return km, err

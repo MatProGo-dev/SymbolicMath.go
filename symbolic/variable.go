@@ -2,7 +2,6 @@ package symbolic
 
 import (
 	"fmt"
-	"gonum.org/v1/gonum/mat"
 )
 
 // Var represnts a variable in a optimization problem. The variable is
@@ -236,28 +235,28 @@ func (v Variable) Multiply(val interface{}, errors ...error) (Expression, error)
 	}
 
 	// Constants
-	switch e := val.(type) {
+	switch right := val.(type) {
 	case float64:
-		return v.Multiply(K(e))
+		return v.Multiply(K(right))
 	case K:
 		// Algorithm
-		return e.Multiply(v)
+		return right.Multiply(v)
 	case Variable:
-		sqeOut := ScalarQuadraticExpression{
-			X: VariableVector{
-				UniqueVars([]Variable{e, v}),
-			},
-			C: 0.0,
-		}
-		sqeOut.L = ZerosVector(sqeOut.X.Len())
-		if e.ID == v.ID {
-			sqeOut.Q = *mat.NewDense(1, 1, []float64{1.0})
+		var monomialOut Monomial
+		if right.ID == v.ID {
+			monomialOut = Monomial{
+				Coefficient:     1.0,
+				VariableFactors: []Variable{v, v},
+				Degrees:         []int{2},
+			}
 		} else {
-			sqeOut.Q = ZerosMatrix(2, 2)
-			sqeOut.Q.Set(0, 1, 0.5)
-			sqeOut.Q.Set(1, 0, 0.5)
+			monomialOut = Monomial{
+				Coefficient:     1.0,
+				VariableFactors: []Variable{v, right},
+				Degrees:         []int{1, 1},
+			}
 		}
-		return sqeOut, nil
+		return monomialOut, nil
 
 	default:
 		return v, fmt.Errorf("Unexpected input to v.Multiply(): %T", val)

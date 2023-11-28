@@ -17,11 +17,11 @@ type Expression interface {
 
 	// Plus adds the current expression to another and returns the resulting
 	// expression
-	Plus(e interface{}, errors ...error) (Expression, error)
+	Plus(rightIn interface{}, errors ...error) (Expression, error)
 
 	// Multiply multiplies the current expression to another and returns the
 	// resulting expression
-	Multiply(c interface{}, errors ...error) (Expression, error)
+	Multiply(rightIn interface{}, errors ...error) (Expression, error)
 
 	// Transpose transposes the given expression
 	Transpose() Expression

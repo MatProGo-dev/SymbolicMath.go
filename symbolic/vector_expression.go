@@ -27,9 +27,6 @@ type VectorExpression interface {
 	// Variables returns the number of variables in the expression.
 	Variables() []Variable
 
-	// IDs returns a slice of the Var ids in the expression
-	IDs() []uint64
-
 	//// Coeffs returns a slice of the coefficients in the expression
 	//LinearCoeff() mat.Dense
 
@@ -138,16 +135,6 @@ func ToVectorExpression(e interface{}) (VectorExpression, error) {
 	// Convert
 	switch e2 := e.(type) {
 	case KVector:
-		return e2, nil
-	case KVectorTranspose:
-		return e2, nil
-	case VariableVector:
-		return e2, nil
-	case VarVectorTranspose:
-		return e2, nil
-	case VectorLinearExpr:
-		return e2, nil
-	case VectorLinearExpressionTranspose:
 		return e2, nil
 	case mat.VecDense:
 		return KVector(e2), nil
