@@ -28,18 +28,18 @@ Description:
 */
 func (sc ScalarConstraint) IsLinear() (bool, error) {
 	// Check left and right side.
-	if _, tf := sc.LeftHandSide.(ScalarQuadraticExpression); tf {
-		return false, nil
-	}
-
-	// If left side has degree less than two, then this only depends
-	// on the right side.
-	if _, tf := sc.RightHandSide.(ScalarQuadraticExpression); tf {
-		return false, nil
-	}
+	//if _, tf := sc.LeftHandSide.(ScalarQuadraticExpression); tf {
+	//	return false, nil
+	//}
+	//
+	//// If left side has degree less than two, then this only depends
+	//// on the right side.
+	//if _, tf := sc.RightHandSide.(ScalarQuadraticExpression); tf {
+	//	return false, nil
+	//}
 
 	// Otherwise return true
-	return true, nil
+	return false, nil
 }
 
 /*
@@ -69,37 +69,6 @@ func (sc ScalarConstraint) Simplify() (ScalarConstraint, error) {
 			RightHandSide: K(0),
 			Sense:         sc.Sense,
 		}, nil
-	case ScalarLinearExpr:
-		rightWithoutConstant := right
-		rightWithoutConstant.C = 0.0
-
-		newLHS, err := newLHS.Plus(rightWithoutConstant.Multiply(-1.0))
-		if err != nil {
-			return sc, err
-		}
-		newLHSAsSE, _ := ToScalarExpression(newLHS)
-
-		return ScalarConstraint{
-			LeftHandSide:  newLHSAsSE,
-			RightHandSide: K(right.C),
-			Sense:         sc.Sense,
-		}, nil
-	case ScalarQuadraticExpression:
-		rightWithoutConstant := right
-		rightWithoutConstant.C = 0.0
-
-		newLHS, err := newLHS.Plus(rightWithoutConstant.Multiply(-1.0))
-		if err != nil {
-			return sc, err
-		}
-		newLHSAsSE, _ := ToScalarExpression(newLHS)
-
-		return ScalarConstraint{
-			LeftHandSide:  newLHSAsSE,
-			RightHandSide: K(right.C),
-			Sense:         sc.Sense,
-		}, nil
-
 	default:
 		return sc, fmt.Errorf("unexpected type of right hand side: %T", right)
 	}

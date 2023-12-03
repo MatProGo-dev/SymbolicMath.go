@@ -1,29 +1,17 @@
 package symbolic
 
-/*
-vector_expression.go
-Description:
-	An improvement/successor to the scalar expr interface.
-*/
-
 import (
 	"fmt"
 	"gonum.org/v1/gonum/mat"
 )
 
 /*
-VectorExpression
-Description:
+   matrix_expression.go
+   Description:
 
-	This interface represents any expression written in terms of a
-	vector of represents a linear general expression of the form
-		c0 * x0 + c1 * x1 + ... + cn * xn + k where ci are coefficients and xi are
-	variables and k is a constant. This is a base interface that is implemented
-	by single variables, constants, and general linear expressions.
 */
-type VectorExpression interface {
-	//// NumVars returns the number of variables in the expression
-	//NumVars() int
+
+type MatrixExpression interface {
 	// Variables returns the number of variables in the expression.
 	Variables() []Variable
 
@@ -31,7 +19,7 @@ type VectorExpression interface {
 	//LinearCoeff() mat.Dense
 
 	// Constant returns the constant additive value in the expression
-	Constant() mat.VecDense
+	Constant() mat.Dense
 
 	// Plus adds the current expression to another and returns the resulting
 	// expression
@@ -58,11 +46,8 @@ type VectorExpression interface {
 	// and another
 	Eq(rhs interface{}, errors ...error) (Constraint, error)
 
-	// Len returns the length of the vector expression.
-	Len() int
-
 	//AtVec returns the expression at a given index
-	AtVec(idx int) ScalarExpression
+	At(i int, j int) ScalarExpression
 
 	//Transpose returns the transpose of the given vector expression
 	Transpose() Expression
@@ -71,45 +56,18 @@ type VectorExpression interface {
 	Dims() []int
 }
 
-///*
-//NewVectorExpression
-//Description:
-//
-//	NewExpr returns a new expression with a single additive constant value, c,
-//	and no variables. Creating an expression like sum := NewVectorExpr(0) is useful
-//	for creating new empty expressions that you can perform operatotions on later
-//*/
-//func NewVectorExpression(c mat.VecDense) VectorLinearExpr {
-//	return VectorLinearExpr{C: c}
-//}
-
-//func (e VectorExpression) getVarsPtr() *uint64 {
-//
-//	if e.NumVars() > 0 {
-//		return &e.IDs()[0]
-//	}
-//
-//	return nil
-//}
-//
-//func (e VectorExpression) getCoeffsPtr() *float64 {
-//	if e.NumVars() > 0 {
-//		return &e.Coeffs()[0]
-//	}
-//
-//	return nil
-//}
-
 /*
-IsVectorExpression
+IsMatrixExpression
 Description:
 
 	Determines whether or not an input object is a valid "VectorExpression" according to MatProInterface.
 */
-func IsVectorExpression(e interface{}) bool {
+func IsMatrixExpression(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
 	case mat.VecDense:
+		return true
+	case KMatrix:
 		return true
 	default:
 		return false
@@ -118,28 +76,26 @@ func IsVectorExpression(e interface{}) bool {
 }
 
 /*
-ToVectorExpression
+ToMatrixExpression
 Description:
 
 	Converts the input expression to a valid type that implements "VectorExpression".
 */
-func ToVectorExpression(e interface{}) (VectorExpression, error) {
+func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 	// Input Processing
 	if !IsVectorExpression(e) {
-		return KVector(OnesVector(1)), fmt.Errorf(
-			"the input interface is of type %T, which is not recognized as a VectorExpression.",
+		return KMatrix(ZerosMatrix(1, 1)), fmt.Errorf(
+			"the input interface is of type %T, which is not recognized as a MatrixExpression.",
 			e,
 		)
 	}
 
 	// Convert
 	switch e2 := e.(type) {
-	case KVector:
-		return e2, nil
-	case mat.VecDense:
-		return KVector(e2), nil
+	case mat.Dense:
+		return KMatrix(e2), nil
 	default:
-		return KVector(OnesVector(1)), fmt.Errorf(
+		return KMatrix(ZerosMatrix(1, 1)), fmt.Errorf(
 			"unexpected vector expression conversion requested for type %T!",
 			e,
 		)

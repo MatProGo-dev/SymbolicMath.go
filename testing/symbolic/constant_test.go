@@ -23,7 +23,7 @@ func TestConstant_ToMonomial1(t *testing.T) {
 
 	// Test
 	m1 := k1.ToMonomial()
-	if float64(k1) == m1.Coefficient {
+	if float64(k1) != m1.Coefficient {
 		t.Errorf(
 			"expected monomial coefficient to be %v; received %v",
 			k1,
