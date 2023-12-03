@@ -14,6 +14,18 @@ Description:
 type KMatrix mat.Dense
 
 /*
+Check
+Description:
+
+	Checks to make sure that the constant is initialized properly.
+	ConstantMatrix objects are always initialized properly, so this should always return
+	no error.
+*/
+func (km KMatrix) Check() error {
+	return nil
+}
+
+/*
 Variables
 Description:
 
@@ -43,11 +55,11 @@ Description:
 
 	Addition of the constant matrix with another expression.
 */
-func (km KMatrix) Plus(e interface{}, errors ...error) (Expression, error) {
+func (km KMatrix) Plus(e interface{}) Expression {
 	// Input Processing
-	err := CheckErrors(errors)
+	err := km.Check()
 	if err != nil {
-		return km, err
+		panic(err)
 	}
 
 	if IsExpression(e) {
@@ -61,9 +73,11 @@ func (km KMatrix) Plus(e interface{}, errors ...error) (Expression, error) {
 
 	switch right := e.(type) {
 	default:
-		return km, fmt.Errorf(
-			"The input to KMatrix's Plus() method (%v) has unexpected type: %T",
-			right, right,
+		panic(
+			fmt.Errorf(
+				"The input to KMatrix's Plus() method (%v) has unexpected type: %T",
+				right, right,
+			),
 		)
 	}
 }
@@ -74,10 +88,11 @@ Description:
 
 	Multiplication of the constant matrix with another expression.
 */
-func (km KMatrix) Multiply(e interface{}, errors ...error) (Expression, error) {
-	err := CheckErrors(errors)
+func (km KMatrix) Multiply(e interface{}) Expression {
+	// Input Processing
+	err := km.Check()
 	if err != nil {
-		return km, err
+		panic(err)
 	}
 
 	if IsExpression(e) {
@@ -85,15 +100,17 @@ func (km KMatrix) Multiply(e interface{}, errors ...error) (Expression, error) {
 		rightAsE, _ := ToExpression(e)
 		err = CheckDimensionsInMultiplication(km, rightAsE)
 		if err != nil {
-			return km, err
+			panic(err)
 		}
 	}
 
 	switch right := e.(type) {
 	default:
-		return km, fmt.Errorf(
-			"The input to KMatrix's Multiply method (%v) has unexpected type: %T",
-			right, right,
+		panic(
+			fmt.Errorf(
+				"The input to KMatrix's Multiply method (%v) has unexpected type: %T",
+				right, right,
+			),
 		)
 	}
 }

@@ -68,10 +68,7 @@ func TestConstantMatrix_Plus1(t *testing.T) {
 	}()
 
 	// Test
-	_, err := km1.Plus(eye2)
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
-	}
+	km1.Plus(eye2)
 
 	t.Errorf("TestConstantMatrix_Plus1 did not panic as expected")
 

@@ -43,46 +43,42 @@ func (v Variable) Constant() float64 {
 
 // Plus adds the current expression to another and returns the resulting
 // expression.
-func (v Variable) Plus(e interface{}, errors ...error) (Expression, error) {
+func (v Variable) Plus(rightIn interface{}) Expression {
 	// Input Processing
 	err := v.Check()
 	if err != nil {
-		return v, err
-	}
-
-	err = CheckErrors(errors)
-	if err != nil {
-		return v, err
+		panic(err)
 	}
 
 	// Algorithm
-	switch right := e.(type) {
-	//case Variable:
-	//	// Convert
-	//	eAsV := e.(Variable)
-	//
-	//	vv := VariableVector{
-	//		UniqueVars(append([]Variable{v}, right.Variables()...)),
-	//	}
-	//
-	//	// Check to see if this is the same Variable or a different one
-	//	if eAsV.ID == v.ID {
-	//		return ScalarLinearExpr{
-	//			X: vv,
-	//			L: *mat.NewVecDense(1, []float64{2.0}),
-	//			C: 0.0,
-	//		}, nil
-	//	} else {
-	//		return ScalarLinearExpr{
-	//			X: vv,
-	//			L: OnesVector(2),
-	//			C: 0.0,
-	//		}, nil
-	//	}
+	//switch right := rightIn.(type) {
+	////case Variable:
+	////	// Convert
+	////	eAsV := e.(Variable)
+	////
+	////	vv := VariableVector{
+	////		UniqueVars(append([]Variable{v}, right.Variables()...)),
+	////	}
+	////
+	////	// Check to see if this is the same Variable or a different one
+	////	if eAsV.ID == v.ID {
+	////		return ScalarLinearExpr{
+	////			X: vv,
+	////			L: *mat.NewVecDense(1, []float64{2.0}),
+	////			C: 0.0,
+	////		}, nil
+	////	} else {
+	////		return ScalarLinearExpr{
+	////			X: vv,
+	////			L: OnesVector(2),
+	////			C: 0.0,
+	////		}, nil
+	////	}
+	//}
 
-	default:
-		return v, fmt.Errorf("there input %v has unexpected type %T given to Variable.Plus()!", right, e)
-	}
+	panic(
+		fmt.Errorf("there input %v has unexpected type %T given to Variable.Plus()!", rightIn, rightIn),
+	)
 }
 
 //// Mult multiplies the current expression to another and returns the
@@ -214,28 +210,23 @@ Description:
 
 	multiplies the current expression to another and returns the resulting expression
 */
-func (v Variable) Multiply(val interface{}, errors ...error) (Expression, error) {
+func (v Variable) Multiply(rightIn interface{}) Expression {
 	// Input Processing
 	err := v.Check()
 	if err != nil {
-		return v, err
+		panic(err)
 	}
 
-	err = CheckErrors(errors)
-	if err != nil {
-		return v, err
-	}
-
-	if IsExpression(val) {
-		rightAsE, _ := ToExpression(val)
-		err = CheckDimensionsInMultiplication(v, rightAsE)
+	if IsExpression(rightIn) {
+		rightAsE, _ := ToExpression(rightIn)
+		err := CheckDimensionsInMultiplication(v, rightAsE)
 		if err != nil {
-			return v, err
+			panic(err)
 		}
 	}
 
 	// Constants
-	switch right := val.(type) {
+	switch right := rightIn.(type) {
 	case float64:
 		return v.Multiply(K(right))
 	case K:
@@ -256,11 +247,13 @@ func (v Variable) Multiply(val interface{}, errors ...error) (Expression, error)
 				Degrees:         []int{1, 1},
 			}
 		}
-		return monomialOut, nil
-
-	default:
-		return v, fmt.Errorf("Unexpected input to v.Multiply(): %T", val)
+		return monomialOut
 	}
+
+	// Unrecornized response is a panic
+	panic(
+		fmt.Errorf("Unexpected input to v.Multiply(): %T", rightIn),
+	)
 }
 
 /*

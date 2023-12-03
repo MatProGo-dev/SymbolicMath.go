@@ -22,8 +22,9 @@ Description:
 	by single variables, constants, and general linear expressions.
 */
 type VectorExpression interface {
-	//// NumVars returns the number of variables in the expression
-	//NumVars() int
+	// Check returns an error if the expression is not valid
+	Check() error
+
 	// Variables returns the number of variables in the expression.
 	Variables() []Variable
 

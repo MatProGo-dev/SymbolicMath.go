@@ -18,6 +18,18 @@ const (
 type K float64
 
 /*
+Check
+Description:
+
+	Checks to make sure that the constant is initialized properly.
+	Constants are always initialized properly, so this should always return
+	no error.
+*/
+func (c K) Check() error {
+	return nil
+}
+
+/*
 Variables
 Description:
 
@@ -46,32 +58,34 @@ func (c K) Constant() float64 {
 	return float64(c)
 }
 
-// Plus adds the current expression to another and returns the resulting
-// expression
-func (c K) Plus(rightIn interface{}, errors ...error) (Expression, error) {
-	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return c, err
-	}
+/*
+Plus
+Description:
 
+	adds the current expression to another and returns the resulting expression
+*/
+func (c K) Plus(rightIn interface{}) Expression {
+	// Input Processing
 	if IsExpression(rightIn) {
 		rightAsE, _ := ToExpression(rightIn)
-		err = CheckDimensionsInAddition(c, rightAsE)
+		err := CheckDimensionsInAddition(c, rightAsE)
 		if err != nil {
-			return c, err
+			panic(err)
 		}
 	}
 
 	// Switching based on input type
 	switch right := rightIn.(type) {
 	case K:
-		return K(c.Constant() + right.Constant()), nil
+		return K(c.Constant() + right.Constant())
 	case Variable:
 		return right.Plus(c)
-	default:
-		return c, fmt.Errorf("Unexpected type in K.Plus() for constant %v: %T", right, right)
 	}
+
+	// Default response is a panic
+	panic(
+		fmt.Errorf("Unexpected type in K.Plus() for constant %v: %T", rightIn, rightIn),
+	)
 }
 
 // LessEq returns a less than or equal to (<=) constraint between the
@@ -122,21 +136,16 @@ Description:
 
 	This method multiplies the input constant by another expression.
 */
-func (c K) Multiply(term1 interface{}, errors ...error) (Expression, error) {
+func (c K) Multiply(term1 interface{}) Expression {
 	// Constants
 
 	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return c, err
-	}
-
 	if IsExpression(term1) {
 		// Check dimensions
 		term1AsE, _ := ToExpression(term1)
-		err = CheckDimensionsInMultiplication(c, term1AsE)
+		err := CheckDimensionsInMultiplication(c, term1AsE)
 		if err != nil {
-			return c, err
+			panic(err)
 		}
 	}
 
@@ -145,19 +154,17 @@ func (c K) Multiply(term1 interface{}, errors ...error) (Expression, error) {
 	case float64:
 		return c.Multiply(K(right))
 	case K:
-		return c * right, nil
-	default:
-		return K(0), fmt.Errorf("Unexpected type of term1 in the Multiply() method: %T (%v)", term1, term1)
-
+		return c * right
 	}
+
+	// Unrecornized response is a panic
+	panic(
+		fmt.Errorf("Unexpected type of term1 in the Multiply() method: %T (%v)", term1, term1),
+	)
 }
 
 func (c K) Dims() []int {
 	return []int{1, 1} // Signifies scalar
-}
-
-func (c K) Check() error {
-	return nil
 }
 
 func (c K) Transpose() Expression {

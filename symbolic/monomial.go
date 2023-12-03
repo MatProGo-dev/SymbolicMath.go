@@ -18,6 +18,25 @@ type Monomial struct {
 }
 
 /*
+Check
+Description:
+
+	This function checks that the monomial is valid.
+*/
+func (m Monomial) Check() error {
+	// Check that the number of degrees matches the number of variables
+	if len(m.Degrees) != len(m.VariableFactors) {
+		return fmt.Errorf(
+			"the number of degrees (%v) does not match the number of variables (%v)",
+			len(m.Degrees),
+			len(m.VariableFactors),
+		)
+	}
+	// All Checks passed
+	return nil
+}
+
+/*
 Variables
 Description:
 
@@ -43,19 +62,14 @@ Description:
 
 	Multiplication of the monomial with another expression.
 */
-func (m Monomial) Plus(e interface{}, errors ...error) (Expression, error) {
+func (m Monomial) Plus(e interface{}) Expression {
 	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return m, err
-	}
-
 	if IsExpression(e) {
 		// Check dimensions
 		rightAsE, _ := ToExpression(e)
-		err = CheckDimensionsInAddition(m, rightAsE)
+		err := CheckDimensionsInAddition(m, rightAsE)
 		if err != nil {
-			return m, err
+			panic(err)
 		}
 	}
 
@@ -63,9 +77,12 @@ func (m Monomial) Plus(e interface{}, errors ...error) (Expression, error) {
 	switch right := e.(type) {
 	case float64:
 		return m.Plus(K(right))
-	default:
-		return m, fmt.Errorf("Unexpected type of right in the Plus() method: %T (%v)", right, right)
 	}
+
+	// Unrecornized response is a panic
+	panic(
+		fmt.Errorf("Unexpected type of right in the Plus() method: %T (%v)", e, e),
+	)
 }
 
 /*
@@ -74,19 +91,14 @@ Description:
 
 	Defines the multiplication operation between a monomial and another expression.
 */
-func (m Monomial) Multiply(e interface{}, errors ...error) (Expression, error) {
+func (m Monomial) Multiply(e interface{}) Expression {
 	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return m, err
-	}
-
 	if IsExpression(e) {
 		// Check dimensions
 		rightAsE, _ := ToExpression(e)
-		err = CheckDimensionsInMultiplication(m, rightAsE)
+		err := CheckDimensionsInMultiplication(m, rightAsE)
 		if err != nil {
-			return m, err
+			panic(err)
 		}
 	}
 
@@ -105,10 +117,13 @@ func (m Monomial) Multiply(e interface{}, errors ...error) (Expression, error) {
 		} else {
 			monomialOut.Degrees[foundIndex] += 1
 		}
-		return monomialOut, nil
-	default:
-		return m, fmt.Errorf("Unexpected type of right in the Multiply() method: %T (%v)", right, right)
+		return monomialOut
 	}
+
+	// Unrecornized response is a panic
+	panic(
+		fmt.Errorf("Unexpected type of right in the Multiply() method: %T (%v)", e, e),
+	)
 }
 
 /*

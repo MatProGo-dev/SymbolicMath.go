@@ -58,10 +58,7 @@ func (sc ScalarConstraint) Simplify() (ScalarConstraint, error) {
 	case K:
 		return sc, nil
 	case Variable:
-		newLHS, err := newLHS.Plus(right.Multiply(-1.0))
-		if err != nil {
-			return sc, err
-		}
+		newLHS := newLHS.Plus(right.Multiply(-1.0))
 		newLHSAsSE, _ := ToScalarExpression(newLHS)
 
 		return ScalarConstraint{
