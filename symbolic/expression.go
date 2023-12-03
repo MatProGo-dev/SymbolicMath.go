@@ -76,7 +76,7 @@ Description:
 	Tests whether or not the input variable is one of the expression types.
 */
 func IsExpression(e interface{}) bool {
-	return IsScalarExpression(e) || IsVectorExpression(e)
+	return IsScalarExpression(e) || IsVectorExpression(e) || IsMatrixExpression(e)
 }
 
 func ToExpression(e interface{}) (Expression, error) {
@@ -85,6 +85,8 @@ func ToExpression(e interface{}) (Expression, error) {
 		return ToScalarExpression(e)
 	case IsVectorExpression(e):
 		return ToVectorExpression(e)
+	case IsMatrixExpression(e):
+		return ToMatrixExpression(e)
 	default:
 		return K(Infinity), fmt.Errorf("the input expression is not recognized as a scalar or vector expression.")
 	}

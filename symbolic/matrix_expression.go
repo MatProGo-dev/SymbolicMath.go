@@ -65,7 +65,7 @@ Description:
 func IsMatrixExpression(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
-	case mat.VecDense:
+	case mat.Dense:
 		return true
 	case KMatrix:
 		return true
@@ -83,7 +83,7 @@ Description:
 */
 func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 	// Input Processing
-	if !IsVectorExpression(e) {
+	if !IsMatrixExpression(e) {
 		return KMatrix(ZerosMatrix(1, 1)), fmt.Errorf(
 			"the input interface is of type %T, which is not recognized as a MatrixExpression.",
 			e,
@@ -94,6 +94,8 @@ func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 	switch e2 := e.(type) {
 	case mat.Dense:
 		return KMatrix(e2), nil
+	case KMatrix:
+		return e2, nil
 	default:
 		return KMatrix(ZerosMatrix(1, 1)), fmt.Errorf(
 			"unexpected vector expression conversion requested for type %T!",

@@ -55,14 +55,14 @@ func (km KMatrix) Plus(e interface{}, errors ...error) (Expression, error) {
 		rightAsE, _ := ToExpression(e)
 		err = CheckDimensionsInAddition(km, rightAsE)
 		if err != nil {
-			return km, err
+			panic(err)
 		}
 	}
 
 	switch right := e.(type) {
 	default:
 		return km, fmt.Errorf(
-			"The input to KMatrix's Multiply method (%v) has unexpected type: %T",
+			"The input to KMatrix's Plus() method (%v) has unexpected type: %T",
 			right, right,
 		)
 	}
