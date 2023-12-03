@@ -23,11 +23,11 @@ type MatrixExpression interface {
 
 	// Plus adds the current expression to another and returns the resulting
 	// expression
-	Plus(e interface{}, errors ...error) (Expression, error)
+	Plus(e interface{}) Expression
 
 	// Mult multiplies the current expression with another and returns the
 	// resulting expression
-	Multiply(e interface{}, errors ...error) (Expression, error)
+	Multiply(e interface{}) Expression
 
 	// LessEq returns a less than or equal to (<=) constraint between the
 	// current expression and another

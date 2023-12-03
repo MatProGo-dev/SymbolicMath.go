@@ -17,7 +17,7 @@ type ScalarExpression interface {
 
 	// Plus adds the current expression to another and returns the resulting
 	// expression
-	Plus(rightIn interface{}, errors ...error) (Expression, error)
+	Plus(rightIn interface{}) Expression
 
 	// LessEq returns a less than or equal to (<=) constraint between the
 	// current expression and another
@@ -37,7 +37,7 @@ type ScalarExpression interface {
 
 	//Multiply
 	// Multiplies the given scalar expression with another expression
-	Multiply(rightIn interface{}, errors ...error) (Expression, error)
+	Multiply(rightIn interface{}) Expression
 
 	//Dims
 	// Returns the dimensions of the scalar expression (should always be 1,1)
