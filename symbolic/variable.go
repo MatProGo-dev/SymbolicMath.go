@@ -352,3 +352,17 @@ func NewBinaryVariable(envs ...Environment) Variable {
 	}
 
 }
+
+/*
+ToMonomial
+Description:
+
+	Converts the variable into a monomial.
+*/
+func (v Variable) ToMonomial() Monomial {
+	return Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []Variable{v},
+		Degrees:         []int{1},
+	}
+}

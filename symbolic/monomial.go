@@ -201,3 +201,47 @@ func (m Monomial) Constant() float64 {
 		return 0
 	}
 }
+
+/*
+IsConstant
+Description:
+
+	Returns true if the monomial defines a constant.
+*/
+func (m Monomial) IsConstant() bool {
+	// Input Checking
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	return len(m.VariableFactors) == 0
+}
+
+/*
+IsVariable
+Description:
+
+	Returns true if the monomial defines an expression containing only the
+	variable v.
+*/
+func (m Monomial) IsVariable(v Variable) bool {
+	// Input Checking
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = v.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	if (len(m.VariableFactors) == 1) && (m.VariableFactors[0].ID == v.ID) {
+		return true
+	} else {
+		return false
+	}
+}
