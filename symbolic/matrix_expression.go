@@ -12,6 +12,9 @@ import (
 */
 
 type MatrixExpression interface {
+	// Check returns an error if the expression is not initialized properly
+	Check() error
+
 	// Variables returns the number of variables in the expression.
 	Variables() []Variable
 
@@ -31,20 +34,20 @@ type MatrixExpression interface {
 
 	// LessEq returns a less than or equal to (<=) constraint between the
 	// current expression and another
-	LessEq(rhs interface{}, errors ...error) (Constraint, error)
+	LessEq(rhs interface{}) Constraint
 
 	// GreaterEq returns a greater than or equal to (>=) constraint between the
 	// current expression and another
-	GreaterEq(rhs interface{}, errors ...error) (Constraint, error)
+	GreaterEq(rhs interface{}) Constraint
 
 	// Comparison
 	// Returns a constraint with respect to the sense (senseIn) between the
 	// current expression and another.
-	Comparison(rhs interface{}, sense ConstrSense, errors ...error) (Constraint, error)
+	Comparison(rhs interface{}, sense ConstrSense) Constraint
 
 	// Eq returns an equality (==) constraint between the current expression
 	// and another
-	Eq(rhs interface{}, errors ...error) (Constraint, error)
+	Eq(rhs interface{}) Constraint
 
 	//AtVec returns the expression at a given index
 	At(i int, j int) ScalarExpression

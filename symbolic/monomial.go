@@ -143,8 +143,8 @@ Description:
 	Returns a constraint between a monomial being less than an
 	expression.
 */
-func (m Monomial) LessEq(rightIn interface{}, errors ...error) (Constraint, error) {
-	return m.Comparison(rightIn, SenseLessThanEqual, errors...)
+func (m Monomial) LessEq(rightIn interface{}) Constraint {
+	return m.Comparison(rightIn, SenseLessThanEqual)
 }
 
 /*
@@ -154,8 +154,8 @@ Description:
 	Returns a constraint between a monomial being greater than an
 	expression.
 */
-func (m Monomial) GreaterEq(rightIn interface{}, errors ...error) (Constraint, error) {
-	return m.Comparison(rightIn, SenseGreaterThanEqual, errors...)
+func (m Monomial) GreaterEq(rightIn interface{}) Constraint {
+	return m.Comparison(rightIn, SenseGreaterThanEqual)
 }
 
 /*
@@ -165,8 +165,8 @@ Description:
 	Returns a constraint between a monomial being equal to an
 	expression.
 */
-func (m Monomial) Eq(rightIn interface{}, errors ...error) (Constraint, error) {
-	return m.Comparison(rightIn, SenseEqual, errors...)
+func (m Monomial) Eq(rightIn interface{}) Constraint {
+	return m.Comparison(rightIn, SenseEqual)
 }
 
 /*
@@ -176,20 +176,15 @@ Description:
 	Base method for creating constraints as comparisons between
 	two different expressions according to a sense.
 */
-func (m Monomial) Comparison(rhsIn interface{}, sense ConstrSense, errors ...error) (Constraint, error) {
+func (m Monomial) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return ScalarConstraint{}, err
-	}
-
 	rhs, err := ToScalarExpression(rhsIn)
 	if err != nil {
-		return ScalarConstraint{}, err
+		panic(err)
 	}
 
 	// Algorithm
-	return ScalarConstraint{m, rhs, sense}, nil
+	return ScalarConstraint{m, rhs, sense}
 }
 
 /*

@@ -28,18 +28,18 @@ type Expression interface {
 
 	// LessEq returns a less than or equal to (<=) constraint between the
 	// current expression and another
-	LessEq(rightIn interface{}, errors ...error) (Constraint, error)
+	LessEq(rightIn interface{}) Constraint
 
 	// GreaterEq returns a greater than or equal to (>=) constraint between the
 	// current expression and another
-	GreaterEq(rightIn interface{}, errors ...error) (Constraint, error)
+	GreaterEq(rightIn interface{}) Constraint
 
 	// Eq returns an equality (==) constraint between the current expression
 	// and another
-	Eq(rightIn interface{}, errors ...error) (Constraint, error)
+	Eq(rightIn interface{}) Constraint
 
 	// Comparison
-	Comparison(rightIn interface{}, sense ConstrSense, errors ...error) (Constraint, error)
+	Comparison(rightIn interface{}, sense ConstrSense) Constraint
 }
 
 /*

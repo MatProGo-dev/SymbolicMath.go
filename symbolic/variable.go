@@ -105,20 +105,20 @@ func (v Variable) Plus(rightIn interface{}) Expression {
 
 // LessEq returns a less than or equal to (<=) constraint between the
 // current expression and another
-func (v Variable) LessEq(rhsIn interface{}, errors ...error) (Constraint, error) {
-	return v.Comparison(rhsIn, SenseLessThanEqual, errors...)
+func (v Variable) LessEq(rhsIn interface{}) Constraint {
+	return v.Comparison(rhsIn, SenseLessThanEqual)
 }
 
 // GreaterEq returns a greater than or equal to (>=) constraint between the
 // current expression and another
-func (v Variable) GreaterEq(rhsIn interface{}, errors ...error) (Constraint, error) {
-	return v.Comparison(rhsIn, SenseGreaterThanEqual, errors...)
+func (v Variable) GreaterEq(rhsIn interface{}) Constraint {
+	return v.Comparison(rhsIn, SenseGreaterThanEqual)
 }
 
 // Eq returns an equality (==) constraint between the current expression
 // and another
-func (v Variable) Eq(rhsIn interface{}, errors ...error) (Constraint, error) {
-	return v.Comparison(rhsIn, SenseEqual, errors...)
+func (v Variable) Eq(rhsIn interface{}) Constraint {
+	return v.Comparison(rhsIn, SenseEqual)
 }
 
 /*
@@ -131,21 +131,17 @@ Usage:
 
 	constr, err := v.Comparison(expr1,SenseGreaterThanEqual)
 */
-func (v Variable) Comparison(rhsIn interface{}, sense ConstrSense, errors ...error) (Constraint, error) {
+func (v Variable) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return ScalarConstraint{}, err
-	}
-
 	rhs, err := ToScalarExpression(rhsIn)
 	if err != nil {
-		return ScalarConstraint{}, err
+		panic(err)
 	}
+
 	// Constants
 
 	// Algorithm
-	return ScalarConstraint{v, rhs, sense}, nil
+	return ScalarConstraint{v, rhs, sense}
 }
 
 /*

@@ -151,14 +151,8 @@ Description:
 	Returns a constraint between the KMatrix and the
 	expression on the right hand side.
 */
-func (km KMatrix) LessEq(rightIn interface{}, errors ...error) (Constraint, error) {
-	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return MatrixConstraint{}, err
-	}
-
-	return MatrixConstraint{}, fmt.Errorf("not implemented")
+func (km KMatrix) LessEq(rightIn interface{}) Constraint {
+	return km.Comparison(rightIn, SenseLessThanEqual)
 
 }
 
@@ -169,14 +163,8 @@ Description:
 	Returns a greater equal constraint between the KMatrix and the
 	expression on the right hand side.
 */
-func (km KMatrix) GreaterEq(rightIn interface{}, errors ...error) (Constraint, error) {
-	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return MatrixConstraint{}, err
-	}
-
-	return MatrixConstraint{}, fmt.Errorf("not implemented")
+func (km KMatrix) GreaterEq(rightIn interface{}) Constraint {
+	return km.Comparison(rightIn, SenseGreaterThanEqual)
 
 }
 
@@ -187,14 +175,8 @@ Description:
 	Returns an equal constraint between the KMatrix and the
 	expression on the right hand side.
 */
-func (km KMatrix) Eq(rightIn interface{}, errors ...error) (Constraint, error) {
-	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return MatrixConstraint{}, err
-	}
-
-	return MatrixConstraint{}, fmt.Errorf("not implemented")
+func (km KMatrix) Eq(rightIn interface{}) Constraint {
+	return km.Comparison(rightIn, SenseEqual)
 
 }
 
@@ -205,14 +187,11 @@ Description:
 	Returns a constraint between the KMatrix and the
 	expression on the right hand side.
 */
-func (km KMatrix) Comparison(rightIn interface{}, sense ConstrSense, errors ...error) (Constraint, error) {
+func (km KMatrix) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return MatrixConstraint{}, err
-	}
 
-	return MatrixConstraint{}, fmt.Errorf("not implemented")
+	// Algorithm
+	return MatrixConstraint{}
 
 }
 

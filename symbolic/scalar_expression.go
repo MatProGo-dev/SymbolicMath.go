@@ -9,6 +9,9 @@ import (
 // variables and k is a constant. This is a base interface that is implemented
 // by single variables, constants, and general linear expressions.
 type ScalarExpression interface {
+	// Check returns an error if the expression is not valid
+	Check() error
+
 	// Variables returns the variables included in the scalar expression
 	Variables() []Variable
 
@@ -21,19 +24,19 @@ type ScalarExpression interface {
 
 	// LessEq returns a less than or equal to (<=) constraint between the
 	// current expression and another
-	LessEq(rhsIn interface{}, errors ...error) (Constraint, error)
+	LessEq(rhsIn interface{}) Constraint
 
 	// GreaterEq returns a greater than or equal to (>=) constraint between the
 	// current expression and another
-	GreaterEq(rhsIn interface{}, errors ...error) (Constraint, error)
+	GreaterEq(rhsIn interface{}) Constraint
 
 	// Eq returns an equality (==) constraint between the current expression
 	// and another
-	Eq(rhsIn interface{}, errors ...error) (Constraint, error)
+	Eq(rhsIn interface{}) Constraint
 
 	//Comparison
 	// Compares the receiver expression rhs with the expression rhs in the sense of sense.
-	Comparison(rhsIn interface{}, sense ConstrSense, errors ...error) (Constraint, error)
+	Comparison(rhsIn interface{}, sense ConstrSense) Constraint
 
 	//Multiply
 	// Multiplies the given scalar expression with another expression
