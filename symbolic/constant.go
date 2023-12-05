@@ -40,18 +40,6 @@ func (c K) Variables() []Variable {
 	return []Variable{}
 }
 
-// Vars returns a slice of the Var ids in the expression. For constants,
-// this is always nil
-func (c K) IDs() []uint64 {
-	return nil
-}
-
-// Coeffs returns a slice of the coefficients in the expression. For constants,
-// this is always nil
-func (c K) Coeffs() []float64 {
-	return nil
-}
-
 // Constant returns the constant additive value in the expression. For
 // constants, this is just the constants value
 func (c K) Constant() float64 {
@@ -76,6 +64,8 @@ func (c K) Plus(rightIn interface{}) Expression {
 
 	// Switching based on input type
 	switch right := rightIn.(type) {
+	case float64:
+		return c.Plus(K(right))
 	case K:
 		return K(c.Constant() + right.Constant())
 	case Variable:
@@ -150,6 +140,8 @@ func (c K) Multiply(term1 interface{}) Expression {
 		return c.Multiply(K(right))
 	case K:
 		return c * right
+	case Variable:
+		return right.Multiply(c)
 	}
 
 	// Unrecornized response is a panic
