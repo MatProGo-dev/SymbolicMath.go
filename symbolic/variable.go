@@ -51,30 +51,38 @@ func (v Variable) Plus(rightIn interface{}) Expression {
 	}
 
 	// Algorithm
-	//switch right := rightIn.(type) {
-	////case Variable:
-	////	// Convert
-	////	eAsV := e.(Variable)
-	////
-	////	vv := VariableVector{
-	////		UniqueVars(append([]Variable{v}, right.Variables()...)),
-	////	}
-	////
-	////	// Check to see if this is the same Variable or a different one
-	////	if eAsV.ID == v.ID {
-	////		return ScalarLinearExpr{
-	////			X: vv,
-	////			L: *mat.NewVecDense(1, []float64{2.0}),
-	////			C: 0.0,
-	////		}, nil
-	////	} else {
-	////		return ScalarLinearExpr{
-	////			X: vv,
-	////			L: OnesVector(2),
-	////			C: 0.0,
-	////		}, nil
-	////	}
-	//}
+	switch right := rightIn.(type) {
+	case float64:
+		return v.Plus(K(right))
+	case K:
+		return Polynomial{
+			Monomials: []Monomial{
+				v.ToMonomial(),
+				right.ToMonomial(),
+			},
+		}
+	case Variable:
+		if v.ID == right.ID {
+			return Polynomial{
+				Monomials: []Monomial{
+					Monomial{
+						Coefficient:     2.0,
+						VariableFactors: []Variable{v},
+						Degrees:         []int{1},
+					},
+				},
+			}
+		} else {
+			return Polynomial{
+				Monomials: []Monomial{
+					v.ToMonomial(),
+					right.ToMonomial(),
+				},
+			}
+		}
+	case Monomial:
+		return right.Plus(v)
+	}
 
 	panic(
 		fmt.Errorf("there input %v has unexpected type %T given to Variable.Plus()!", rightIn, rightIn),
@@ -303,23 +311,27 @@ func NewContinuousVariable(envs ...Environment) Variable {
 	// Constants
 
 	// Input Processing
-	var currentEnv Environment
+	var currentEnv = &BackgroundEnvironment
 	switch len(envs) {
 	case 1:
-		currentEnv = envs[0]
-	default:
-		currentEnv = BackgroundEnvironment
+		currentEnv = &(envs[0])
 	}
 
 	// Get New Index
 	nextIdx := len(currentEnv.Variables)
 
-	return Variable{
+	// Create variable
+	variableOut := Variable{
 		ID:    uint64(nextIdx),
 		Lower: float64(-Infinity),
 		Upper: float64(+Infinity),
 		Type:  Continuous,
 	}
+
+	// Update environment
+	currentEnv.Variables = append(currentEnv.Variables, variableOut)
+
+	return variableOut
 
 }
 
@@ -344,12 +356,18 @@ func NewBinaryVariable(envs ...Environment) Variable {
 	// Get New Index
 	nextIdx := len(currentEnv.Variables)
 
-	return Variable{
+	// Get New Variable Object and add it to environment
+	variableOut := Variable{
 		ID:    uint64(nextIdx),
 		Lower: 0.0,
 		Upper: 1.0,
 		Type:  Binary,
 	}
+
+	// Update env
+	currentEnv.Variables = append(currentEnv.Variables, variableOut)
+
+	return variableOut
 
 }
 

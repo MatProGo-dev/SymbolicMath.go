@@ -70,6 +70,8 @@ func (c K) Plus(rightIn interface{}) Expression {
 		return K(c.Constant() + right.Constant())
 	case Variable:
 		return right.Plus(c)
+	case Monomial:
+		return right.Plus(c)
 	}
 
 	// Default response is a panic

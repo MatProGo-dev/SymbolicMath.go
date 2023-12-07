@@ -31,3 +31,169 @@ func TestVariable_Constant1(t *testing.T) {
 	}
 
 }
+
+/*
+TestVariable_Plus1
+Description:
+
+	Tests that the Plus() method works properly when adding a float64 to a variable.
+*/
+func TestVariable_Plus1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	sum := x.Plus(3.14)
+	if sum.(symbolic.ScalarExpression).Constant() != 3.14 {
+		t.Errorf(
+			"expected %v + 3.14 to have constant component 3.14; received %v",
+			x,
+			x.Plus(3.14),
+		)
+	}
+
+	// Test that sum is a polynomial with 2 terms
+	sumAsPoly, tf := sum.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected %v + 3.14 to be a polynomial; received %T",
+			x,
+			sum,
+		)
+	}
+
+	if len(sumAsPoly.Monomials) != 2 {
+		t.Errorf(
+			"expected %v + 3.14 to have 2 terms; received %v",
+			x,
+			len(sumAsPoly.Monomials),
+		)
+	}
+
+}
+
+/*
+TestVariable_Plus2
+Description:
+
+	Tests that the Plus() method works properly when adding a constant to a variable.
+*/
+func TestVariable_Plus2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	sum := x.Plus(symbolic.K(3.14))
+	if sum.(symbolic.ScalarExpression).Constant() != 3.14 {
+		t.Errorf(
+			"expected %v + 3.14 to have constant component 3.14; received %v",
+			x,
+			x.Plus(3.14),
+		)
+	}
+
+	// Test that sum is a polynomial with 2 terms
+	sumAsPoly, tf := sum.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected %v + 3.14 to be a polynomial; received %T",
+			x,
+			sum,
+		)
+	}
+
+	if len(sumAsPoly.Monomials) != 2 {
+		t.Errorf(
+			"expected %v + 3.14 to have 2 terms; received %v",
+			x,
+			len(sumAsPoly.Monomials),
+		)
+	}
+}
+
+/*
+TestVariable_Plus3
+Description:
+
+	Tests that the Plus() method works properly when adding a variable to
+	a DIFFERENT variable.
+*/
+func TestVariable_Plus3(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+
+	// Test
+	sum := x.Plus(y)
+	if sum.(symbolic.ScalarExpression).Constant() != 0.0 {
+		t.Errorf(
+			"expected %v + %v to have constant component 0.0; received %v",
+			x,
+			y,
+			sum.(symbolic.ScalarExpression).Constant(),
+		)
+	}
+
+	// Test that sum is a polynomial with 2 terms
+	sumAsPoly, tf := sum.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected %v + %v to be a polynomial; received %T",
+			x,
+			y,
+			sum,
+		)
+	}
+
+	if len(sumAsPoly.Monomials) != 2 {
+		t.Errorf(
+			"expected %v + %v to have 2 terms; received %v",
+			x,
+			y,
+			len(sumAsPoly.Monomials),
+		)
+	}
+}
+
+/*
+TestVariable_Plus4
+Description:
+
+	Tests that the Plus() method works properly when adding a variable to
+	the same variable.
+*/
+func TestVariable_Plus4(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	sum := x.Plus(x)
+	if sum.(symbolic.ScalarExpression).Constant() != 0.0 {
+		t.Errorf(
+			"expected %v + %v to have constant component 0.0; received %v",
+			x,
+			x,
+			sum.(symbolic.ScalarExpression).Constant(),
+		)
+	}
+
+	// Test that sum is a polynomial with 2 terms
+	sumAsPoly, tf := sum.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected %v + %v to be a polynomial; received %T",
+			x,
+			x,
+			sum,
+		)
+	}
+
+	if len(sumAsPoly.Monomials) != 1 {
+		t.Errorf(
+			"expected %v + %v to have 1 term; received %v",
+			x,
+			x,
+			len(sumAsPoly.Monomials),
+		)
+	}
+}
