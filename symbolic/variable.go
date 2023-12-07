@@ -82,6 +82,8 @@ func (v Variable) Plus(rightIn interface{}) Expression {
 		}
 	case Monomial:
 		return right.Plus(v)
+	case Polynomial:
+		return right.Plus(v)
 	}
 
 	panic(

@@ -77,6 +77,28 @@ func (m Monomial) Plus(e interface{}) Expression {
 	switch right := e.(type) {
 	case float64:
 		return m.Plus(K(right))
+	case K:
+		if m.IsConstant() {
+			mCopy := m
+			mCopy.Coefficient += float64(right)
+			return mCopy
+		} else {
+			return Polynomial{
+				Monomials: []Monomial{m, right.ToMonomial()},
+			}
+		}
+	case Variable:
+		if m.IsVariable(right) {
+			mCopy := m
+			mCopy.Coefficient += 1.0
+			return mCopy
+		} else {
+			return Polynomial{
+				Monomials: []Monomial{m, right.ToMonomial()},
+			}
+		}
+	case Polynomial:
+		return right.Plus(m)
 	}
 
 	// Unrecornized response is a panic
