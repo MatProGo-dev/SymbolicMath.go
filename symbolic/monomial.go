@@ -267,3 +267,45 @@ func (m Monomial) IsVariable(v Variable) bool {
 		return false
 	}
 }
+
+/*
+MatchesFormOf
+Description:
+
+	Returns true if the monomial matches the form of the input monomial.
+	(in other words if the input monomial has the same variables and degrees as the input monomial.)
+*/
+func (m Monomial) MatchesFormOf(mIn Monomial) bool {
+	// Input Checking
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = mIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	if len(m.VariableFactors) != len(mIn.VariableFactors) {
+		return false
+	}
+
+	for ii, v := range m.VariableFactors {
+		foundIndex, _ := FindInSlice(v, mIn.VariableFactors)
+		if foundIndex == -1 {
+			// If v was not in mIn, then these two monomials are not the same
+			return false
+		} else {
+			// If v was in mIn, but not of the right degree, then these two are not the same
+			if m.Degrees[ii] != mIn.Degrees[ii] {
+				return false
+			}
+		}
+
+	}
+
+	// If all checks pass, then return true!
+	return true
+}

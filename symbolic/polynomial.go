@@ -126,6 +126,7 @@ func (p Polynomial) Plus(e interface{}) Expression {
 			newMonomial.Coefficient += 1.0
 			pCopy.Monomials[variableIndex] = newMonomial
 		}
+
 	}
 
 	// Unrecognized response is a panic
@@ -185,6 +186,36 @@ func (p Polynomial) VariableMonomialIndex(vIn Variable) int {
 	}
 
 	// No variable monomial found
+	return -1
+}
+
+/*
+MonomialIndex
+Description:
+
+	Returns the index of the monomial which has the same
+	degrees and variables as the input monomial mIn.
+*/
+func (p Polynomial) MonomialIndex(mIn Monomial) int {
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = mIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	for ii, monomial := range p.Monomials {
+		if monomial.MatchesFormOf(mIn) {
+			return ii
+		}
+	}
+
+	// No monomial found
 	return -1
 }
 
@@ -325,4 +356,48 @@ func (p Polynomial) Constant() float64 {
 	} else {
 		return p.Monomials[constantIndex].Coefficient
 	}
+}
+
+/*
+Simplify
+Description:
+
+	This function simplifies the number of monomials in the polynomial,
+	by finding the matching terms (i.e., monomials with matching Variables and Degrees)
+	and combining them.
+*/
+func (p Polynomial) Simplify() Polynomial {
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+
+	// Copy the first element of the polynomial into the new polynomial
+	pCopy := Polynomial{
+		Monomials: []Monomial{p.Monomials[0]},
+	}
+
+	// Loop through the rest of the monomials
+	for ii := 1; ii < len(p.Monomials); ii++ {
+		// Check to see if the monomial is already in the polynomial
+		monomialIndex := pCopy.MonomialIndex(p.Monomials[ii])
+		if monomialIndex != -1 {
+			// Polynomial does not contain the monomial,
+			// so add a new monomial.
+			pCopy.Monomials = append(pCopy.Monomials, p.Monomials[ii])
+		} else {
+			// Monomial does contain the variable, so
+			// modify the monomial which represents that variable.
+			newMonomial := pCopy.Monomials[monomialIndex]
+			newMonomial.Coefficient += p.Monomials[ii].Coefficient
+			pCopy.Monomials[monomialIndex] = newMonomial
+		}
+	}
+
+	// Return the simplified polynomial
+	return pCopy
+
 }
