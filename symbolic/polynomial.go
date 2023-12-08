@@ -24,10 +24,16 @@ Description:
 	Verifies that all elements of the polynomial are defined correctly.
 */
 func (p Polynomial) Check() error {
-	for _, monomial := range p.Monomials {
+	// Check that the polynomial has at least one monomial
+	if len(p.Monomials) == 0 {
+		return fmt.Errorf("polynomial has no monomials")
+	}
+
+	// Check that each of the monomials are well formed
+	for ii, monomial := range p.Monomials {
 		err := monomial.Check()
 		if err != nil {
-			return err
+			return fmt.Errorf("error in monomial %v: %v", ii, err)
 		}
 	}
 
@@ -89,7 +95,7 @@ func (p Polynomial) Plus(e interface{}) Expression {
 
 		// Algorithm
 		constantIndex := pCopy.ConstantMonomialIndex()
-		if constantIndex != -1 {
+		if constantIndex == -1 {
 			// Monomial does not contain a constant,
 			// so add a new monomial.
 			rightAsMonom := right.ToMonomial()
