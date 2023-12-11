@@ -337,3 +337,29 @@ func (vv VariableVector) DerivativeWrt(vIn Variable) Expression {
 
 	return KVector(vecOut)
 }
+
+/*
+NewVariableVector
+Description:
+
+	Returns a new VariableVector object.
+*/
+func NewVariableVector(N int, envs ...Environment) VariableVector {
+	// Constants
+
+	// Input Processing
+	var currentEnv = &BackgroundEnvironment
+	switch len(envs) {
+	case 1:
+		currentEnv = &(envs[0])
+	}
+
+	// Algorithm
+	var varVectorOut VariableVector
+	for ii := 0; ii < N; ii++ {
+		varVectorOut.Elements = append(varVectorOut.Elements, NewVariable(*currentEnv))
+	}
+
+	return varVectorOut
+
+}
