@@ -303,3 +303,37 @@ func (vv VariableVector) Check() error {
 	// If nothing was thrown, then return nil!
 	return nil
 }
+
+/*
+DerivativeWrt
+Description:
+
+	This function returns the derivative of the VariableVector with respect to the input variable
+	vIn, which is a vector where each element:
+		- is 0 if the variable is not the same as vIn
+		- is 1 if the variable is the same as vIn
+*/
+func (vv VariableVector) DerivativeWrt(vIn Variable) Expression {
+	// Input Processing
+	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Constants
+	vecOut := ZerosVector(vv.Len())
+
+	// Algorithm
+	for ii, element := range vv.Elements {
+		if element.ID == vIn.ID {
+			vecOut.SetVec(ii, 1)
+		}
+	}
+
+	return KVector(vecOut)
+}

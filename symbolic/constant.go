@@ -173,3 +173,13 @@ func (c K) ToMonomial() Monomial {
 		Degrees:         []int{},
 	}
 }
+
+/*
+DerivativeWrt
+Description:
+
+	Computes the derivative of a constant, which should be 0 for any constant.
+*/
+func (c K) DerivativeWrt(vIn Variable) Expression {
+	return Zero
+}

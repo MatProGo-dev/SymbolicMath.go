@@ -254,3 +254,14 @@ func Identity(dim int) mat.Dense {
 
 	return zeroBase
 }
+
+/*
+DerivativeWrt
+Description:
+
+	Computes the derivative of the constant matrix with respect to the variable
+	v. For a constant matrix, this should create a matrix of all zeros (ZerosMatrix).
+*/
+func (km KMatrix) DerivativeWrt(vIn Variable) Expression {
+	return KMatrix(ZerosMatrix(km.Dims()[0], km.Dims()[1]))
+}

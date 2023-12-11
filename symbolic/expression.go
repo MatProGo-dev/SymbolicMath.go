@@ -40,6 +40,9 @@ type Expression interface {
 
 	// Comparison
 	Comparison(rightIn interface{}, sense ConstrSense) Constraint
+
+	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
+	DerivativeWrt(vIn Variable) Expression
 }
 
 /*

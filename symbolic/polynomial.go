@@ -401,3 +401,42 @@ func (p Polynomial) Simplify() Polynomial {
 	return pCopy
 
 }
+
+/*
+DerivativeWrt
+Description:
+
+	The derivative of the polynomial with respect to the input variable.
+*/
+func (p Polynomial) DerivativeWrt(vIn Variable) Expression {
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var derivative Polynomial
+	for _, monomial := range p.Monomials {
+		if monomial.IsConstant() {
+			// Skip constant monomials
+			continue
+		}
+
+		// Append
+		components := monomial.DerivativeWrt(vIn)
+		derivative.Monomials = append(derivative.Monomials, components.(Monomial))
+	}
+
+	// If the derivative is empty, then return 0.0
+	if len(derivative.Monomials) == 0 {
+		return K(0.0)
+	}
+
+	return derivative
+}

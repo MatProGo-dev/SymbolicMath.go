@@ -386,3 +386,31 @@ func (v Variable) ToMonomial() Monomial {
 		Degrees:         []int{1},
 	}
 }
+
+/*
+DerivativeWrt
+Description:
+
+	Computes the derivative of the Variable with respect to vIn.
+	If vIn is the same as the Variable, then this returns 1.0. Otherwise, it
+	returns 0.0.
+*/
+func (v Variable) DerivativeWrt(vIn Variable) Expression {
+	// Input Processing
+	err := v.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	if v.ID == vIn.ID {
+		return K(1.0)
+	} else {
+		return K(0.0)
+	}
+}

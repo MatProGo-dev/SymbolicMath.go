@@ -309,3 +309,53 @@ func (m Monomial) MatchesFormOf(mIn Monomial) bool {
 	// If all checks pass, then return true!
 	return true
 }
+
+/*
+DerivativeWrt
+Description:
+
+	This function returns the derivative of the monomial with respect to the input
+	variable vIn. If the monomial does not contain the variable vIn, then the
+	derivative is zero.
+	If the monomial does contain the variable vIn, then the derivative is the monomial
+	with a decreased degree of vIn and a coefficient equal to the original coefficient.
+*/
+func (m Monomial) DerivativeWrt(vIn Variable) Expression {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	foundIndex, _ := FindInSlice(vIn, m.VariableFactors)
+	if foundIndex == -1 {
+		// If vIn is not in the monomial, then the derivative is zero
+		return K(0.0)
+	} else {
+		// If vIn is in the monomial, then decrease that element's degree in the
+		// monomial.
+		var monomialOut Monomial
+		if monomialOut.Degrees[foundIndex] == 1 {
+			// If the degree of vIn is 1, then remove it from the monomial
+			monomialOut.Coefficient = m.Coefficient
+			for ii, variable := range m.VariableFactors {
+				if ii != foundIndex {
+					monomialOut.VariableFactors = append(monomialOut.VariableFactors, variable)
+					monomialOut.Degrees = append(monomialOut.Degrees, m.Degrees[ii])
+				}
+			}
+		} else {
+			monomialOut = m
+			monomialOut.Degrees[foundIndex] -= 1
+		}
+
+		// Return monomial
+		return monomialOut
+	}
+}

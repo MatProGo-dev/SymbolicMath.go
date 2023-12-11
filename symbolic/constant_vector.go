@@ -353,3 +353,14 @@ func ZerosVector(lengthIn int) mat.VecDense {
 	}
 	return *mat.NewVecDense(lengthIn, elts)
 }
+
+/*
+DerivativeWrt
+Description:
+
+	Computes the derivative of the symbolic expression with respect to the
+	variable vIn which should be a vector of all zeros.
+*/
+func (kv KVector) DerivativeWrt(vIn Variable) Expression {
+	return KVector(ZerosVector(kv.Len()))
+}
