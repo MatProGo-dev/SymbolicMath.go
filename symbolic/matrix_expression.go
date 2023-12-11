@@ -57,6 +57,9 @@ type MatrixExpression interface {
 
 	// Dims returns the dimensions of the given expression
 	Dims() []int
+
+	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
+	DerivativeWrt(vIn Variable) Expression
 }
 
 /*

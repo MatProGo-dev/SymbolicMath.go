@@ -48,6 +48,9 @@ type ScalarExpression interface {
 
 	//Transpose returns the transpose of the given vector expression
 	Transpose() Expression
+
+	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
+	DerivativeWrt(vIn Variable) Expression
 }
 
 // NewExpr returns a new expression with a single additive constant value, c,
