@@ -440,3 +440,27 @@ func (p Polynomial) DerivativeWrt(vIn Variable) Expression {
 
 	return derivative
 }
+
+/*
+IsLinear
+Description:
+
+	This function returns true only if all of the monomials in the polynomial are linear.
+*/
+func (p Polynomial) IsLinear() bool {
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	for _, monomial := range p.Monomials {
+		if !monomial.IsLinear() {
+			return false
+		}
+	}
+
+	// All monomials are linear
+	return true
+}

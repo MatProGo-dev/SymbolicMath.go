@@ -26,20 +26,8 @@ Description:
 	Describes whether or not a given linear constraint is
 	linear or not.
 */
-func (sc ScalarConstraint) IsLinear() (bool, error) {
-	// Check left and right side.
-	//if _, tf := sc.LeftHandSide.(ScalarQuadraticExpression); tf {
-	//	return false, nil
-	//}
-	//
-	//// If left side has degree less than two, then this only depends
-	//// on the right side.
-	//if _, tf := sc.RightHandSide.(ScalarQuadraticExpression); tf {
-	//	return false, nil
-	//}
-
-	// Otherwise return true
-	return false, nil
+func (sc ScalarConstraint) IsLinear() bool {
+	return sc.LeftHandSide.IsLinear() && sc.RightHandSide.IsLinear()
 }
 
 /*

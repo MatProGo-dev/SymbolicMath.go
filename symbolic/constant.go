@@ -183,3 +183,13 @@ Description:
 func (c K) DerivativeWrt(vIn Variable) Expression {
 	return Zero
 }
+
+/*
+IsLinear
+Description:
+
+	Returns true always. A constant expression is always linear.
+*/
+func (c K) IsLinear() bool {
+	return true
+}

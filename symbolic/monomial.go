@@ -359,3 +359,26 @@ func (m Monomial) DerivativeWrt(vIn Variable) Expression {
 		return monomialOut
 	}
 }
+
+/*
+IsLinear
+Description:
+
+	This function returns true only if the sum of all degrees in the monomial is
+	less than or equal to 1.
+*/
+func (m Monomial) IsLinear() bool {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	sum := 0
+	for _, degree := range m.Degrees {
+		sum += degree
+	}
+
+	return sum <= 1
+}

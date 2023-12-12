@@ -51,6 +51,9 @@ type ScalarExpression interface {
 
 	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
 	DerivativeWrt(vIn Variable) Expression
+
+	// IsLinear returns true if the expression is linear
+	IsLinear() bool
 }
 
 // NewExpr returns a new expression with a single additive constant value, c,

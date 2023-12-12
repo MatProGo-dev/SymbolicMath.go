@@ -414,3 +414,13 @@ func (v Variable) DerivativeWrt(vIn Variable) Expression {
 		return K(0.0)
 	}
 }
+
+/*
+IsLinear
+Description:
+
+	This function always returns true. A single variable is always a linear expression.
+*/
+func (v Variable) IsLinear() bool {
+	return true
+}

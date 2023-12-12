@@ -48,6 +48,12 @@ Description:
 	This function returns the value at the k index.
 */
 func (kv KVector) AtVec(idx int) ScalarExpression {
+	// Input Processing
+	if idx < 0 || idx >= kv.Len() {
+		// TODO: Create new error type to handle this; maybe put it in new package?
+	}
+
+	// Algorithm
 	kvAsVector := mat.VecDense(kv)
 	return K(kvAsVector.AtVec(idx))
 }
