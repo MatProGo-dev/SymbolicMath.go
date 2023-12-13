@@ -299,7 +299,7 @@ func (v Variable) Transpose() Expression {
 NewVariable
 Description:
 */
-func NewVariable(envs ...Environment) Variable {
+func NewVariable(envs ...*Environment) Variable {
 	return NewContinuousVariable(envs...)
 }
 
@@ -309,14 +309,14 @@ Description:
 
 	Creates a new continuous variable.
 */
-func NewContinuousVariable(envs ...Environment) Variable {
+func NewContinuousVariable(envs ...*Environment) Variable {
 	// Constants
 
 	// Input Processing
 	var currentEnv = &BackgroundEnvironment
 	switch len(envs) {
 	case 1:
-		currentEnv = &(envs[0])
+		currentEnv = envs[0]
 	}
 
 	// Get New Index
