@@ -113,3 +113,118 @@ func TestConstantVector_AtVec2(t *testing.T) {
 
 	kv.AtVec(3)
 }
+
+/*
+TestConstantVector_Variables1
+Description:
+
+	Verifies that the variables function returns an empty slice for this constant.
+*/
+func TestConstantVector_Variables1(t *testing.T) {
+	// Constants
+	kv := symbolic.KVector(symbolic.OnesVector(3))
+
+	// Test
+	vars := kv.Variables()
+	if len(vars) != 0 {
+		t.Errorf(
+			"Expected len(vars) to be 0; received %v",
+			len(vars),
+		)
+	}
+}
+
+/*
+TestConstantVector_LinearCoeff1
+Description:
+
+	Verifies that the LinearCoeff method returns a matrix of all zeros for a long
+	constant matrix vector.
+*/
+func TestConstantVector_LinearCoeff1(t *testing.T) {
+	// Constants
+	N := 11
+	kv := symbolic.KVector(symbolic.OnesVector(N))
+
+	// Test
+	for ii := 0; ii < N; ii++ {
+		for jj := 0; jj < N; jj++ {
+			if L := kv.LinearCoeff(); L.At(ii, jj) != 0 {
+				t.Errorf(
+					"Expected kv.LinearCoeff().At(%v,%v) to be 0; received %v",
+					ii, jj,
+					L.At(ii, jj),
+				)
+			}
+		}
+	}
+}
+
+/*
+TestConstantVector_Constant1
+Description:
+
+	This function verifies that the constant method produces a mat.VecDense containing
+	the same elements used to initialize the KVector.
+*/
+func TestConstantVector_Constant1(t *testing.T) {
+	// Constants
+	N := 11
+	kv := symbolic.KVector(symbolic.OnesVector(N))
+
+	// Test
+	for ii := 0; ii < N; ii++ {
+		if L := kv.Constant(); L.AtVec(ii) != 1 {
+			t.Errorf(
+				"Expected kv.Constant().AtVec(%v) to be 1; received %v",
+				ii,
+				L.AtVec(ii),
+			)
+		}
+	}
+}
+
+/*
+TestConstantVector_Plus1
+Description:
+
+	Verifies that the Plus method panics when two vectors are added together with
+	different lengths.
+*/
+func TestConstantVector_Plus1(t *testing.T) {
+	// Constants
+	kv1 := symbolic.KVector(symbolic.OnesVector(3))
+	kv2 := symbolic.KVector(symbolic.OnesVector(4))
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected kv1.Plus(kv2) to panic; received %v",
+				kv1.Plus(kv2),
+			)
+		}
+
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		if rAsError.Error() != (symbolic.DimensionError{
+			Operation: "Plus",
+			Arg1:      kv1,
+			Arg2:      kv2,
+		}).Error() {
+			t.Errorf(
+				"Expected r to be a DimensionError; received %v",
+				r,
+			)
+		}
+	}()
+
+	kv1.Plus(kv2)
+}

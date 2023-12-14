@@ -115,6 +115,8 @@ func IsVectorExpression(e interface{}) bool {
 	switch e.(type) {
 	case mat.VecDense:
 		return true
+	case KVector:
+		return true
 	default:
 		return false
 

@@ -69,16 +69,6 @@ func (kv KVector) Variables() []Variable {
 }
 
 /*
-Vars
-Description:
-
-	This function returns a slice of the Var ids in the expression. For constants, this is always nil.
-*/
-func (kv KVector) IDs() []uint64 {
-	return nil
-}
-
-/*
 LinearCoeff
 Description:
 
@@ -138,10 +128,12 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 		// Return Sum
 		var result mat.VecDense
 		kv2 := mat.VecDense(kv)
+
 		result.AddVec(&kv2, &right)
 
 		return KVector(result)
 	case KVector:
+		fmt.Println("got here!")
 		// Compute Addition
 		var result mat.VecDense
 		kvAsVec := mat.VecDense(kv)

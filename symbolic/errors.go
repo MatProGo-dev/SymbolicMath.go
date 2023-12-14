@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 )
 
 /*
@@ -110,7 +111,7 @@ func CheckDimensionsInAddition(left, right Expression) error {
 	dimsAreMatched = dimsAreMatched || IsScalarExpression(right)
 
 	if !dimsAreMatched {
-		return DimensionError{
+		return smErrors.DimensionError{
 			Operation: "Plus",
 			Arg1:      left,
 			Arg2:      right,
