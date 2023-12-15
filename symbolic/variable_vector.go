@@ -107,6 +107,14 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 		panic(err)
 	}
 
+	if IsExpression(rightIn) {
+		rightAsE, _ := ToExpression(rightIn)
+		err = CheckDimensionsInAddition(vv, rightAsE)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	// Algorithm
 	switch right := rightIn.(type) {
 

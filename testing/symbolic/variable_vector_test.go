@@ -7,6 +7,7 @@ Description:
 */
 
 import (
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"testing"
 )
@@ -90,4 +91,110 @@ func TestVariableVector_Variables1(t *testing.T) {
 			}
 		}
 	}
+}
+
+/*
+TestVariableVector_Constant1
+Description:
+
+	Verifies that the VariableVector's constant always returns a vector of all zeros.
+*/
+func TestVariableVector_Constant1(t *testing.T) {
+	// Constants
+	N := 111
+	vv := symbolic.NewVariableVector(N)
+
+	// Test
+	for ii := 0; ii < N; ii++ {
+		if const0 := vv.Constant(); const0.AtVec(ii) != 0 {
+			t.Errorf(
+				"Expected vv.Constant().AtVec(%v) to be 0; received %v",
+				ii,
+				const0.AtVec(ii),
+			)
+		}
+	}
+}
+
+/*
+TestVariableVector_LinearCoeff1
+Description:
+
+	Verifies that the LinearCoeff method returns an identity matrix for a long
+	variable vector.
+*/
+func TestVariableVector_LinearCoeff1(t *testing.T) {
+	// Constants
+	N := 111
+	vv := symbolic.NewVariableVector(N)
+
+	// Test
+	for ii := 0; ii < N; ii++ {
+		for jj := 0; jj < N; jj++ {
+			if ii == jj {
+				if L := vv.LinearCoeff(); L.At(ii, jj) != 1 {
+					t.Errorf(
+						"Expected vv.LinearCoeff().At(%v,%v) to be 1; received %v",
+						ii, jj,
+						L.At(ii, jj),
+					)
+				}
+				continue
+			} else {
+				if L := vv.LinearCoeff(); L.At(ii, jj) != 0 {
+					t.Errorf(
+						"Expected vv.LinearCoeff().At(%v,%v) to be 0; received %v",
+						ii, jj,
+						L.At(ii, jj),
+					)
+				}
+			}
+		}
+	}
+}
+
+/*
+TestVariableVector_Plus1
+Description:
+
+	Tests that the Plus method correctly panics when a vector of length 11 to
+	a vector of length 111.
+*/
+func TestVariableVector_Plus1(t *testing.T) {
+	// Constants
+	N := 111
+	vv1 := symbolic.NewVariableVector(N)
+	vv2 := symbolic.NewVariableVector(N - 100)
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vv1.Plus(vv2) to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected vv1.Plus(vv2) to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if rAsE.Error() != (smErrors.DimensionError{
+			Operation: "Plus",
+			Arg1:      vv1,
+			Arg2:      vv2,
+		}).Error() {
+			t.Errorf(
+				"Expected vv1.Plus(vv2) to panic with a DimensionError; received %v",
+				r,
+			)
+		}
+	}()
+
+	vv1.Plus(vv2)
 }

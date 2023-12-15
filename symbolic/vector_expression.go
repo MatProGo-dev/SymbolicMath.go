@@ -117,6 +117,8 @@ func IsVectorExpression(e interface{}) bool {
 		return true
 	case KVector:
 		return true
+	case VariableVector:
+		return true
 	default:
 		return false
 
@@ -144,6 +146,8 @@ func ToVectorExpression(e interface{}) (VectorExpression, error) {
 		return e2, nil
 	case mat.VecDense:
 		return KVector(e2), nil
+	case VariableVector:
+		return e2, nil
 	default:
 		return KVector(OnesVector(1)), fmt.Errorf(
 			"unexpected vector expression conversion requested for type %T!",
