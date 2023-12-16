@@ -1,6 +1,9 @@
 package symbolic
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+)
 
 /*
 FindInSlice
@@ -129,4 +132,28 @@ func Unique(listIn []uint64) []uint64 {
 	}
 
 	return uniqueList
+}
+
+/*
+CheckDimensionsInComparison
+Description:
+
+	Verifies that the two objects being compared in a Comparison method (Comparison, LessEq, Eq, GreaterEq)
+	have the same dimensions.
+*/
+func CheckDimensionsInComparison(left, right Expression, senseIn ConstrSense) error {
+	// Check that the size of columns in left and right agree
+	dimsAreMatched := (left.Dims()[0] == right.Dims()[0]) && (left.Dims()[1] == right.Dims()[1])
+	dimsAreMatched = dimsAreMatched || IsScalarExpression(left)
+	dimsAreMatched = dimsAreMatched || IsScalarExpression(right)
+
+	if !dimsAreMatched {
+		return smErrors.DimensionError{
+			Operation: "Comparison (" + senseIn.String() + ")",
+			Arg1:      left,
+			Arg2:      right,
+		}
+	}
+	// If dimensions match, then return nothing.
+	return nil
 }

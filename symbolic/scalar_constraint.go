@@ -59,15 +59,3 @@ func (sc ScalarConstraint) Simplify() (ScalarConstraint, error) {
 	}
 
 }
-
-// ConstrSense represents if the constraint x <= y, x >= y, or x == y. For easy
-// integration with Gurobi, the senses have been encoding using a byte in
-// the same way Gurobi encodes the constraint senses.
-type ConstrSense byte
-
-// Different constraint senses conforming to Gurobi's encoding.
-const (
-	SenseEqual            ConstrSense = '='
-	SenseLessThanEqual                = '<'
-	SenseGreaterThanEqual             = '>'
-)
