@@ -388,6 +388,18 @@ func (v Variable) ToMonomial() Monomial {
 }
 
 /*
+ToPolynomial
+Description:
+
+	Converts the variable into a monomial and then into a polynomial.
+*/
+func (v Variable) ToPolynomial() Polynomial {
+	return Polynomial{
+		Monomials: []Monomial{v.ToMonomial()},
+	}
+}
+
+/*
 DerivativeWrt
 Description:
 

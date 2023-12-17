@@ -51,6 +51,11 @@ Description:
 	The number of elements in the Polynomial vector.
 */
 func (pv PolynomialVector) Length() int {
+	err := pv.Check()
+	if err != nil {
+		panic(err)
+	}
+
 	return len(pv.Elements)
 }
 
