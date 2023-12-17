@@ -23,6 +23,6 @@ func (cs ConstrSense) String() string {
 	case SenseGreaterThanEqual:
 		return ">="
 	default:
-		panic(fmt.Errorf("unexpected constraint sense: %v", cs))
+		panic(fmt.Errorf("unexpected constraint sense!"))
 	}
 }
