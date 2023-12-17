@@ -43,6 +43,9 @@ type Expression interface {
 
 	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
 	DerivativeWrt(vIn Variable) Expression
+
+	// Check
+	Check() error
 }
 
 /*

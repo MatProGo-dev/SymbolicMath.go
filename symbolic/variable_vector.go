@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -109,6 +110,11 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 
 	if IsExpression(rightIn) {
 		rightAsE, _ := ToExpression(rightIn)
+		err = rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
 		err = CheckDimensionsInAddition(vv, rightAsE)
 		if err != nil {
 			panic(err)
@@ -117,25 +123,31 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 
 	// Algorithm
 	switch right := rightIn.(type) {
-
+	case KVector:
+		// Create a polynomial vector
+		var pv PolynomialVector
+		for ii := 0; ii < vv.Len(); ii++ {
+			var tempPolynomial Polynomial
+			if right.AtVec(ii).(K) != 0 {
+				rightAsK := right.AtVec(ii).(K)
+				tempPolynomial.Monomials = append(tempPolynomial.Monomials, rightAsK.ToMonomial())
+			}
+			tempPolynomial.Monomials = append(
+				tempPolynomial.Monomials,
+				vv.Elements[ii].ToMonomial(),
+			)
+			// Create next polynomial.
+			pv.Elements = append(pv.Elements, tempPolynomial)
+		}
+		return pv
 	default:
-		errString := fmt.Sprintf(
-			"Unrecognized expression type %T for addition of VariableVector vv.Plus(%v)!",
-			right, right,
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "VariableVector.Plus",
+				Input:        right,
+			},
 		)
-		panic(fmt.Errorf(errString))
 	}
-}
-
-/*
-Mult
-Description:
-
-	This member function computest the multiplication of the receiver vector var with some
-	incoming vector expression (may result in quadratic?).
-*/
-func (vv VariableVector) Mult(c float64) (VectorExpression, error) {
-	return vv, fmt.Errorf("The Mult() method for VariableVector is not implemented yet!")
 }
 
 /*

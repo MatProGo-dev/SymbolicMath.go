@@ -280,9 +280,9 @@ Description:
 */
 func (v Variable) Check() error {
 	// Check that the lower bound is below is the upper bound
-	if v.Lower > v.Upper {
+	if v.Lower >= v.Upper {
 		return fmt.Errorf(
-			"lower bound (%v) of variable is above upper bound (%v).",
+			"lower bound (%v) of variable must be less than upper bound (%v).",
 			v.Lower, v.Upper,
 		)
 	}

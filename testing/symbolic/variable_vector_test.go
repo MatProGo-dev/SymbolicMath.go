@@ -9,6 +9,7 @@ Description:
 import (
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"strings"
 	"testing"
 )
 
@@ -191,6 +192,58 @@ func TestVariableVector_Plus1(t *testing.T) {
 		}).Error() {
 			t.Errorf(
 				"Expected vv1.Plus(vv2) to panic with a DimensionError; received %v",
+				r,
+			)
+		}
+	}()
+
+	vv1.Plus(vv2)
+}
+
+/*
+TestVariableVector_Plus2
+Description:
+
+	Verifies that the Plus method will throw an error if an improperly defined variable
+	vector was given as the receiver.
+*/
+func TestVariableVector_Plus2(t *testing.T) {
+	// Constants
+	N := 111
+	vv2 := symbolic.NewVariableVector(N)
+	var vv1 symbolic.VariableVector
+	for ii := 0; ii < N; ii++ {
+		if ii != 100 {
+			vv1.Elements = append(vv1.Elements, symbolic.NewVariable())
+		} else {
+			vv1.Elements = append(vv1.Elements, symbolic.Variable{})
+		}
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vv1.Plus(vv2) to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected vv1.Plus(vv2) to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if !strings.Contains(
+			rAsE.Error(),
+			"element 100 has an issue:",
+		) {
+			t.Errorf(
+				"Expected vv1.Plus(vv2) to panic with a specific error; instead received %v",
 				r,
 			)
 		}
