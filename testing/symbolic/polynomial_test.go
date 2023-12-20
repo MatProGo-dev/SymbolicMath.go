@@ -481,3 +481,67 @@ func TestPolynomial_VariableMonomialIndex1(t *testing.T) {
 	}
 
 }
+
+/*
+TestPolynomial_LinearCoeff1
+Description:
+
+	This test verifies that the LinearCoeff function returns a VecDense of all zeros
+	when the provided polynomial is a constant.
+*/
+func TestPolynomial_LinearCoeff1(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{
+				Coefficient:     3.14,
+				VariableFactors: []symbolic.Variable{},
+				Degrees:         []int{},
+			},
+		},
+	}
+
+	// Check that coeff has the same length as the number of variables in p1
+	coeff := p1.LinearCoeff()
+	if coeff.Len() != 1 {
+		t.Errorf(
+			"expected LinearCoeff to return a vector of length %v; received %v",
+			symbolic.NumVariables(p1),
+			coeff.Len(),
+		)
+	}
+}
+
+/*
+TestPolynomial_LinearCoeff2
+Description:
+
+	This test verifies that the LinearCoeff function applied to a polynomial with all
+	quadratic terms is a vector of all zeros.
+*/
+func TestPolynomial_LinearCoeff2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	v3 := symbolic.NewVariable()
+
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v1}, Degrees: []int{2}},
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v2}, Degrees: []int{2}},
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v1, v3}, Degrees: []int{1, 1}},
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v2, v3}, Degrees: []int{1, 1}},
+		},
+	}
+
+	// Collect coefficient and check each of its elements
+	coeff := p1.LinearCoeff()
+	for i := 0; i < coeff.Len(); i++ {
+		if coeff.At(i, 0) != 0 {
+			t.Errorf(
+				"expected LinearCoeff to return a vector of all zeros; received %v",
+				coeff,
+			)
+		}
+	}
+}

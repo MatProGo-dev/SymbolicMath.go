@@ -1,6 +1,9 @@
 package symbolic
 
-import "fmt"
+import (
+	"fmt"
+	"gonum.org/v1/gonum/mat"
+)
 
 /*
 polynomial.go
@@ -463,4 +466,41 @@ func (p Polynomial) IsLinear() bool {
 
 	// All monomials are linear
 	return true
+}
+
+/*
+LinearCoeff
+Description:
+
+	This function returns a vector describing the coefficients of the linear component
+	of the polynomial.
+	The (ii)th element of the vector is the coefficient of the (ii)th variable in the
+	p.Variables() slice as it appears in the polynomial.
+*/
+func (p Polynomial) LinearCoeff() mat.VecDense {
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Constants
+	varSlice := p.Variables()
+
+	// If there are no variables in the slice, then return a vector of length 1 containing zero.
+	if len(varSlice) == 0 {
+		return ZerosVector(1)
+	}
+
+	// Algorithm
+	coeffOut := ZerosVector(NumVariables(p))
+	for ii := 0; ii < NumVariables(p); ii++ {
+		// Try to find the variable in the polynomial
+		varIndex := p.VariableMonomialIndex(varSlice[ii])
+		if varIndex != -1 {
+			coeffOut.SetVec(ii, p.Monomials[varIndex].Coefficient)
+		}
+	}
+
+	return coeffOut
 }
