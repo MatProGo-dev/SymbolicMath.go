@@ -112,6 +112,12 @@ Description:
 	Returns all of the constant components of the polynomial vector.
 */
 func (pv PolynomialVector) Constant() mat.VecDense {
+	// Input Processing
+	err := pv.Check()
+	if err != nil {
+		panic(err)
+	}
+
 	// Constants
 	var constant mat.VecDense = ZerosVector(pv.Len())
 
@@ -126,13 +132,16 @@ func (pv PolynomialVector) Constant() mat.VecDense {
 LinearCoeff
 Description:
 
-TODO: implement
+	Retrieves the coefficients of the linear terms in the polynomial vector.
+	The output is a matrix where element (ii,jj) of the matrix describes the coefficient
+	of variable jj (from pv.Variables()) in the polynomial at index ii.
 */
 func (pv PolynomialVector) LinearCoeff() mat.Dense {
 	// Constants
 	var linearCoeff mat.Dense = ZerosMatrix(pv.Len(), pv.Len())
 
 	// Algorithm
+	// TODO: Use the new Polynomial.LinearCoeff() method to construct matrix row by row
 	//for ii, polynomial := range pv.Elements {
 	//	linearCoeff.SetRow(ii, polynomial.LinearCoeff().RowView(0))
 	//}
@@ -293,7 +302,12 @@ func (pv PolynomialVector) Comparison(e interface{}, senseIn ConstrSense) Constr
 	// Check the dimensions of the input
 	if IsExpression(e) {
 		eAsE, _ := ToExpression(e)
-		err := CheckDimensionsInComparison(pv, eAsE, senseIn)
+		err := eAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		err = CheckDimensionsInComparison(pv, eAsE, senseIn)
 		if err != nil {
 			panic(err)
 		}

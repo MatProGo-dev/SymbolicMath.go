@@ -353,3 +353,107 @@ func TestPolynomialVector_Variables3(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestPolynomialVector_Constant1
+Description:
+
+	Verifies that the Constant method panics if the polynomial vector is not properly
+	initialized.
+*/
+func TestPolynomialVector_Constant1(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Constant to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Constant to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if rAsE.Error() != "polynomial vector has no polynomials" {
+			t.Errorf(
+				"Expected Constant to panic with error 'polynomial vector has no polynomials'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv.Constant()
+}
+
+/*
+TestPolynomialVector_Constant2
+Description:
+
+	Tests that the constant method returns all zeros when the polynomial vector
+	contains ALL monomials.
+*/
+func TestPolynomialVector_Constant2(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{
+		Elements: make([]symbolic.Polynomial, 20),
+	}
+
+	for ii := 0; ii < 20; ii++ {
+		pv.Elements[ii] = symbolic.NewVariable().ToPolynomial()
+	}
+
+	// Check each element of the constant vector
+	constantOut := pv.Constant()
+	for ii := 0; ii < pv.Len(); ii++ {
+		// check that constantOut.AtVec(ii) is zer
+		if constantOut.AtVec(ii) != 0 {
+			t.Errorf(
+				"Expected constantOut.AtVec(%v) to be 0; received %v",
+				ii,
+				constantOut.AtVec(ii),
+			)
+		}
+	}
+}
+
+/*
+TestPolynomialVector_Constant3
+Description:
+
+	Verifies that a small polynomial vector containing a mixture of nonzero constants
+	and non-constant polynomials returns the correct constant vector.
+*/
+func TestPolynomialVector_Constant3(t *testing.T) {
+	// Constants
+	pv0 := symbolic.PolynomialVector{}
+	monom1 := symbolic.Monomial{Coefficient: 3.14}
+	monom2 := symbolic.NewVariable().ToMonomial()
+
+	pv0.Elements = append(pv0.Elements, monom1.ToPolynomial())
+	pv0.Elements = append(pv0.Elements, monom2.ToPolynomial())
+
+	// Test that the constant vector contains a 3.14 at the first position and a 0 at the second position
+	constantOut := pv0.Constant()
+	if constantOut.AtVec(0) != 3.14 {
+		t.Errorf(
+			"Expected constantOut.AtVec(0) to be 3.14; received %v",
+			constantOut.AtVec(0),
+		)
+	}
+	if constantOut.AtVec(1) != 0 {
+		t.Errorf(
+			"Expected constantOut.AtVec(1) to be 0; received %v",
+			constantOut.AtVec(1),
+		)
+	}
+
+}
