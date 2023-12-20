@@ -264,3 +264,92 @@ func TestPolynomialVector_AtVec2(t *testing.T) {
 
 	pv.AtVec(20)
 }
+
+/*
+TestPolynomialVector_Variables1
+Description:
+
+	Verifies that the number of variables found in a polynomial vector containing all constant
+	elements is zero.
+*/
+func TestPolynomialVector_Variables1(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{
+		Elements: make([]symbolic.Polynomial, 20),
+	}
+
+	for ii := 0; ii < 20; ii++ {
+		tempK := symbolic.K(1)
+		pv.Elements[ii] = tempK.ToMonomial().ToPolynomial()
+	}
+
+	// Test
+	if len(pv.Variables()) != 0 {
+		t.Errorf(
+			"Expected Variables to return 0; received %v",
+			pv.Variables(),
+		)
+	}
+}
+
+/*
+TestPolynomialVector_Variables2
+Description:
+
+	Verifies that the number of variables found in a polynomial vector containing a number of variables
+	that matches the second polynomial.
+*/
+func TestPolynomialVector_Variables2(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	v2 := symbolic.NewVariable()
+	v3 := symbolic.NewVariable()
+	v4 := symbolic.NewVariable()
+
+	pv := symbolic.PolynomialVector{
+		Elements: []symbolic.Polynomial{
+			k1.ToMonomial().ToPolynomial(),
+			symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3}, Degrees: []int{1, 2}}.ToPolynomial(),
+			symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3, v4}, Degrees: []int{3, 5, 11}}.ToPolynomial(),
+		},
+	}
+
+	// Check that there are 3 variables in pv
+	if len(pv.Variables()) != 3 {
+		t.Errorf(
+			"Expected Variables to return 3; received %v",
+			pv.Variables(),
+		)
+	}
+}
+
+/*
+TestPolynomialVector_Variables3
+Description:
+
+	Verifies that the number of variables found in a polynomial vector containing a number of variables
+	that doesn't match any individual polynomial but correctly captures the union of all variables.
+*/
+func TestPolynomialVector_Variables3(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	v2 := symbolic.NewVariable()
+	v3 := symbolic.NewVariable()
+	v4 := symbolic.NewVariable()
+
+	pv := symbolic.PolynomialVector{
+		Elements: []symbolic.Polynomial{
+			k1.ToMonomial().ToPolynomial(),
+			symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3}, Degrees: []int{1, 2}}.ToPolynomial(),
+			symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v4}, Degrees: []int{3, 11}}.ToPolynomial(),
+		},
+	}
+
+	// Check that there are 3 variables in pv
+	if len(pv.Variables()) != 3 {
+		t.Errorf(
+			"Expected Variables to return 3; received %v",
+			pv.Variables(),
+		)
+	}
+}

@@ -382,3 +382,15 @@ func (m Monomial) IsLinear() bool {
 
 	return sum <= 1
 }
+
+/*
+ToPolynomial
+Description:
+
+	Creates a copy of the monomial m as a polynomial.
+*/
+func (m Monomial) ToPolynomial() Polynomial {
+	return Polynomial{
+		Monomials: []Monomial{m},
+	}
+}
