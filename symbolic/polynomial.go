@@ -477,24 +477,34 @@ Description:
 	The (ii)th element of the vector is the coefficient of the (ii)th variable in the
 	p.Variables() slice as it appears in the polynomial.
 */
-func (p Polynomial) LinearCoeff() mat.VecDense {
+func (p Polynomial) LinearCoeff(vSlices ...[]Variable) mat.VecDense {
 	// Input Processing
 	err := p.Check()
 	if err != nil {
 		panic(err)
 	}
 
+	// Check to see if the user provided a slice of variables
+	var varSlice []Variable
+	switch len(vSlices) {
+	case 0:
+		varSlice = p.Variables()
+	case 1:
+		varSlice = vSlices[0]
+	default:
+		panic(fmt.Errorf("Too many inputs provided to LinearCoeff() method."))
+	}
+
 	// Constants
-	varSlice := p.Variables()
 
 	// If there are no variables in the slice, then return a vector of length 1 containing zero.
 	if len(varSlice) == 0 {
-		return ZerosVector(1)
+		panic(fmt.Errorf("No variables in the polynomial."))
 	}
 
 	// Algorithm
-	coeffOut := ZerosVector(NumVariables(p))
-	for ii := 0; ii < NumVariables(p); ii++ {
+	coeffOut := ZerosVector(len(varSlice))
+	for ii := 0; ii < len(varSlice); ii++ {
 		// Try to find the variable in the polynomial
 		varIndex := p.VariableMonomialIndex(varSlice[ii])
 		if varIndex != -1 {
@@ -503,4 +513,22 @@ func (p Polynomial) LinearCoeff() mat.VecDense {
 	}
 
 	return coeffOut
+}
+
+/*
+IsConstant
+Description:
+
+	This method returns true if and only if the polynomial
+	represented by pv is a constant (i.e., it contains no variables).
+*/
+func (p Polynomial) IsConstant() bool {
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	return len(p.Variables()) == 0
 }

@@ -457,3 +457,180 @@ func TestPolynomialVector_Constant3(t *testing.T) {
 	}
 
 }
+
+/*
+TestPolynomialVector_LinearCoeff1
+Description:
+
+	This test verifies that a panic is thrown if the LinearCoeff method is called on a polynomial vector
+	that is not properly initialized.
+*/
+func TestPolynomialVector_LinearCoeff1(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected LinearCoeff to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected LinearCoeff to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if rAsE.Error() != "polynomial vector has no polynomials" {
+			t.Errorf(
+				"Expected LinearCoeff to panic with error 'polynomial vector has no polynomials'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv.LinearCoeff()
+}
+
+/*
+TestPolynomialVector_LinearCoeff2
+Description:
+
+	This test verifies that the LinearCoeff method panics when a polynomial of all
+	constants is provided to the method.
+*/
+func TestPolynomialVector_LinearCoeff2(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{
+		Elements: make([]symbolic.Polynomial, 20),
+	}
+
+	for ii := 0; ii < 20; ii++ {
+		kII := symbolic.K(float64(ii))
+		pv.Elements[ii] = kII.ToMonomial().ToPolynomial()
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected LinearCoeff to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected LinearCoeff to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if rAsE.Error() != (smErrors.LinearCoeffsError{pv}).Error() {
+			t.Errorf(
+				"Expected LinearCoeff to panic with error 'polynomial vector has no linear coefficients'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv.LinearCoeff()
+}
+
+/*
+TestPolynomialVector_LinearCoeff3
+Description:
+
+	This test verifies that the LinearCoeff method returns
+	a matrix of zeros when it contains terms that are all of
+	degree 2 or higher.
+*/
+func TestPolynomialVector_LinearCoeff3(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{
+		Elements: make([]symbolic.Polynomial, 20),
+	}
+
+	for ii := 0; ii < 20; ii++ {
+		vII := symbolic.NewVariable()
+		pv.Elements[ii] = symbolic.Monomial{
+			VariableFactors: []symbolic.Variable{vII},
+			Degrees:         []int{2},
+		}.ToPolynomial()
+	}
+
+	// Test
+	linearCoeff := pv.LinearCoeff()
+	nr, nc := linearCoeff.Dims()
+	for ii := 0; ii < nr; ii++ {
+		for jj := 0; jj < nc; jj++ {
+			if linearCoeff.At(ii, jj) != 0 {
+				t.Errorf(
+					"Expected linearCoeff.At(%v, %v) to be 0; received %v",
+					ii,
+					jj,
+					linearCoeff.At(ii, jj),
+				)
+			}
+		}
+	}
+}
+
+/*
+TestPolynomialVector_LinearCoeff4
+Description:
+
+	This test verifies that the LinearCoeff method returns
+	an identity matrix when each polynomial in the vector
+	contains a linear term containing just that variable.
+*/
+func TestPolynomialVector_LinearCoeff4(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{
+		Elements: make([]symbolic.Polynomial, 20),
+	}
+
+	for ii := 0; ii < 20; ii++ {
+		vII := symbolic.NewVariable()
+		pv.Elements[ii] = symbolic.Monomial{
+			Coefficient:     float64(ii),
+			VariableFactors: []symbolic.Variable{vII},
+			Degrees:         []int{1},
+		}.ToPolynomial()
+	}
+
+	// Test
+	linearCoeff := pv.LinearCoeff()
+	nr, nc := linearCoeff.Dims()
+	for ii := 0; ii < nr; ii++ {
+		for jj := 0; jj < nc; jj++ {
+			if ii == jj {
+				if linearCoeff.At(ii, jj) != float64(ii) {
+					t.Errorf(
+						"Expected linearCoeff.At(%v, %v) to be 1; received %v",
+						ii,
+						jj,
+						linearCoeff.At(ii, jj),
+					)
+				}
+			} else {
+				if linearCoeff.At(ii, jj) != 0 {
+					t.Errorf(
+						"Expected linearCoeff.At(%v, %v) to be 0; received %v",
+						ii,
+						jj,
+						linearCoeff.At(ii, jj),
+					)
+				}
+			}
+		}
+	}
+}
