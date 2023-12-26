@@ -9,6 +9,7 @@ Description:
 import (
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"strings"
 	"testing"
 )
 
@@ -631,6 +632,123 @@ func TestPolynomialVector_LinearCoeff4(t *testing.T) {
 					)
 				}
 			}
+		}
+	}
+}
+
+/*
+TestPolynomialVector_Plus1
+Description:
+
+	This test verifies that the plus method throws a panic
+	if it is called with a receiver PolynomialVector that isn't
+	propertly initialized.
+*/
+func TestPolynomialVector_Plus1(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	pv2 := symbolic.PolynomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Plus to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Plus to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if rAsE.Error() != "polynomial vector has no polynomials" {
+			t.Errorf(
+				"Expected Plus to panic with error 'polynomial vector has no polynomials'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv1.Plus(pv2)
+}
+
+/*
+TestPolynomialVector_Plus2
+Description:
+
+	This test verifies that the Plus method throws an error if
+	a correctly initialized PolynomialVector object is added to
+	a second expression that is not properly defined.
+*/
+func TestPolynomialVector_Plus2(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+
+	pv2 := symbolic.PolynomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Plus to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Plus to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if !strings.Contains(rAsE.Error(), "polynomial vector has no polynomials") {
+			t.Errorf(
+				"Expected Plus to panic with error 'polynomial vector has no polynomials'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv1.Plus(pv2)
+}
+
+/*
+TestPolynomialVector_Plus3
+Description:
+
+	Tests that a polynomial vector, created by a large number of
+	variables, remains a polynomial vector after summing with a
+	constant of type float64.
+	Then, we test that all polynomials in the vector get an added
+	term (for th econstant).
+*/
+func TestPolynomialVector_Plus3(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	pv2 := pv1.Plus(3.14).(symbolic.PolynomialVector)
+	for _, polynomial := range pv2.Elements {
+		if len(polynomial.Monomials) != 2 {
+			t.Errorf(
+				"Expected polynomial.Monomials to have length 2; received %v",
+				len(polynomial.Monomials),
+			)
 		}
 	}
 }

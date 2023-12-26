@@ -155,7 +155,9 @@ func (pv PolynomialVector) LinearCoeff(vSlices ...[]Variable) mat.Dense {
 	}
 
 	if len(varSlice) == 0 {
-		panic(smErrors.CanNotGetLinearCoeffOfConstantError{pv})
+		panic(
+			smErrors.CanNotGetLinearCoeffOfConstantError{pv},
+		)
 	}
 
 	// Constants
@@ -192,6 +194,11 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 
 	if IsExpression(e) {
 		eAsE, _ := ToExpression(e)
+		err = eAsE.Check()
+		if err != nil {
+			panic(fmt.Errorf("error in second argument to Plus: %v", err))
+		}
+
 		err := CheckDimensionsInAddition(pv, eAsE)
 		if err != nil {
 			panic(err)
