@@ -7,6 +7,7 @@ Description:
 */
 
 import (
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
 	"testing"
@@ -501,15 +502,37 @@ func TestPolynomial_LinearCoeff1(t *testing.T) {
 		},
 	}
 
+	// Check that a panic is thrown when the LinearCoeff method is called
+	// on such a polynomial
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected LinearCoeff to panic when called on a constant polynomial; received nil",
+			)
+		}
+
+		// Check that the recovered value is an error
+		rAsErr, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"expected LinearCoeff to panic with an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		// Check that the panic message is correct
+		if rAsErr.Error() != (smErrors.CanNotGetLinearCoeffOfConstantError{p1}).Error() {
+			t.Errorf(
+				"expected LinearCoeff to panic with an error %v; received %v",
+				smErrors.CanNotGetLinearCoeffOfConstantError{p1},
+				rAsErr,
+			)
+		}
+	}()
+
 	// Check that coeff has the same length as the number of variables in p1
-	coeff := p1.LinearCoeff()
-	if coeff.Len() != 1 {
-		t.Errorf(
-			"expected LinearCoeff to return a vector of length %v; received %v",
-			symbolic.NumVariables(p1),
-			coeff.Len(),
-		)
-	}
+	p1.LinearCoeff()
 }
 
 /*

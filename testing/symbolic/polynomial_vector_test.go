@@ -534,7 +534,7 @@ func TestPolynomialVector_LinearCoeff2(t *testing.T) {
 		}
 
 		// Check that the error message is correct
-		if rAsE.Error() != (smErrors.LinearCoeffsError{pv}).Error() {
+		if rAsE.Error() != (smErrors.CanNotGetLinearCoeffOfConstantError{pv}).Error() {
 			t.Errorf(
 				"Expected LinearCoeff to panic with error 'polynomial vector has no linear coefficients'; received '%v'",
 				rAsE.Error(),

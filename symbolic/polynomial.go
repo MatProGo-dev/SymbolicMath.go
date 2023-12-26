@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -499,7 +500,7 @@ func (p Polynomial) LinearCoeff(vSlices ...[]Variable) mat.VecDense {
 
 	// If there are no variables in the slice, then return a vector of length 1 containing zero.
 	if len(varSlice) == 0 {
-		panic(fmt.Errorf("No variables in the polynomial."))
+		panic(smErrors.CanNotGetLinearCoeffOfConstantError{p})
 	}
 
 	// Algorithm

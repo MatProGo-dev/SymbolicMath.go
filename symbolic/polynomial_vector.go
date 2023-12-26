@@ -155,7 +155,7 @@ func (pv PolynomialVector) LinearCoeff(vSlices ...[]Variable) mat.Dense {
 	}
 
 	if len(varSlice) == 0 {
-		panic(smErrors.LinearCoeffsError{pv})
+		panic(smErrors.CanNotGetLinearCoeffOfConstantError{pv})
 	}
 
 	// Constants
