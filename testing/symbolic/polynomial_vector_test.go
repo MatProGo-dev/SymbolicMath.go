@@ -752,3 +752,484 @@ func TestPolynomialVector_Plus3(t *testing.T) {
 		}
 	}
 }
+
+/*
+TestPolynomialVector_Plus4
+Description:
+
+	Tests that a polynomial vector added to a constant vector
+	produces a polynomial vector.
+*/
+func TestPolynomialVector_Plus4(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	pv2 := pv1.Plus(3.14).(symbolic.PolynomialVector)
+	for _, polynomial := range pv2.Elements {
+		if len(polynomial.Monomials) != 2 {
+			t.Errorf(
+				"Expected polynomial.Monomials to have length 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+	}
+}
+
+/*
+TestPolynomialVector_Plus5
+Description:
+
+	Tests that a polynomial vector added to a polynomial vector
+	produces a polynomial vector.
+*/
+func TestPolynomialVector_Plus5(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	pv2 := pv1.Plus(pv1).(symbolic.PolynomialVector)
+	for _, polynomial := range pv2.Elements {
+		if len(polynomial.Monomials) != 2 {
+			t.Errorf(
+				"Expected polynomial.Monomials to have length 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+	}
+}
+
+/*
+TestPolynomialVector_Plus6
+Description:
+
+	Tests that a polynomial vector added to a polynomial
+	results in a polynomial vector object.
+*/
+func TestPolynomialVector_Plus6(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	pv2 := pv1.Plus(symbolic.NewVariable().ToPolynomial()).(symbolic.PolynomialVector)
+	for _, polynomial := range pv2.Elements {
+		if len(polynomial.Monomials) != 2 {
+			t.Errorf(
+				"Expected polynomial.Monomials to have length 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+	}
+}
+
+/*
+TestPolynomialVector_Multiply1
+Description:
+
+	This test verifies that the Multiply() method panics
+	when called on an improperly initialized polynomial vector.
+*/
+func TestPolynomialVector_Multiply1(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Multiply to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Multiply to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if rAsE.Error() != "polynomial vector has no polynomials" {
+			t.Errorf(
+				"Expected Multiply to panic with error 'polynomial vector has no polynomials'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv.Multiply(3.14)
+}
+
+/*
+TestPolynomialVector_Multiply2
+Description:
+
+	This test verifies that the Multiply() method panics
+	when the second input to it (not the receiver) is improperly
+	initialized.
+*/
+func TestPolynomialVector_Multiply2(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv.Elements = append(pv.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+	pv2 := symbolic.PolynomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Multiply to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Multiply to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if !strings.Contains(rAsE.Error(), "polynomial vector has no polynomials") {
+			t.Errorf(
+				"Expected Multiply to panic with error \"polynomial vector has no polynomials\"; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv.Multiply(pv2)
+}
+
+/*
+TestPolynomialVector_Multiply3
+Description:
+
+	This test verifies that the Multiply() method returns a polynomial
+	with the correct coefficients when the second input is a constant.
+*/
+func TestPolynomialVector_Multiply3(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv.Elements = append(pv.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+	k2 := symbolic.K(3.14)
+
+	// Test
+	pv3 := pv.Multiply(k2).(symbolic.PolynomialVector)
+	for _, polynomial := range pv3.Elements {
+		for _, monomial := range polynomial.Monomials {
+			if monomial.Coefficient != 3.14 {
+				t.Errorf(
+					"Expected monomial.Coefficient to be 3.14; received %v",
+					monomial.Coefficient,
+				)
+			}
+		}
+	}
+}
+
+/*
+TestPolynomialVector_Multiply4
+Description:
+
+	This test verifies that the Multiply() method returns a polynomial
+	with the correct coefficients when the second input is a float64.
+*/
+func TestPolynomialVector_Multiply4(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv.Elements = append(pv.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+	f2 := 3.14
+
+	// Test
+	pv3 := pv.Multiply(f2).(symbolic.PolynomialVector)
+	for _, polynomial := range pv3.Elements {
+		for _, monomial := range polynomial.Monomials {
+			if monomial.Coefficient != 3.14 {
+				t.Errorf(
+					"Expected monomial.Coefficient to be 3.14; received %v",
+					monomial.Coefficient,
+				)
+			}
+		}
+	}
+}
+
+/*
+TestPolynomialVector_Multiply5
+Description:
+
+	This test verifies that a polynomial vector when multiplied
+	by a polynomial results in a polynomial vector object.
+*/
+func TestPolynomialVector_Multiply5(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv.Elements = append(pv.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+	p2 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	pv3 := pv.Multiply(p2).(symbolic.PolynomialVector)
+	for _, polynomial := range pv3.Elements {
+		if len(polynomial.Monomials) != 1 {
+			t.Errorf(
+				"Expected polynomial.Monomials to have length 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+	}
+}
+
+/*
+TestPolynomialVector_Multiply6
+Description:
+
+	Tests that a polynomial vector when multiplied by a polynomial
+	vector of incompatible size results in a panic.
+*/
+func TestPolynomialVector_Multiply6(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+	pv2 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 2; ii++ {
+		pv2.Elements = append(pv2.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Multiply to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Multiply to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if rAsE.Error() != (smErrors.DimensionError{
+			Arg1:      pv1,
+			Arg2:      pv2,
+			Operation: "Multiply",
+		}).Error() {
+			t.Errorf(
+				"Expected Multiply to panic with error \"polynomial vector has no polynomials\"; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv1.Multiply(pv2)
+}
+
+/*
+TestPolynomialVector_Multiply7
+Description:
+
+	Tests that a polynomial vector when multiplied by a polynomial
+	vector of compatible size (1 x 1) results in a polynomial vector.
+*/
+func TestPolynomialVector_Multiply7(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+	pv2 := symbolic.PolynomialVector{}
+	pv2.Elements = append(pv2.Elements, symbolic.NewVariable().ToPolynomial())
+
+	// Test
+	pv3 := pv1.Multiply(pv2).(symbolic.PolynomialVector)
+	for _, polynomial := range pv3.Elements {
+		if len(polynomial.Monomials) != 1 {
+			t.Errorf(
+				"Expected polynomial.Monomials to have length 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+	}
+}
+
+/*
+TestPolynomialVector_Dims1
+Description:
+
+	This test verifies that a length 20 polynomial vector
+	returns a slice []int{20,1} from the Dims() method.
+*/
+func TestPolynomialVector_Dims1(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv.Elements = append(pv.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	dims := pv.Dims()
+	nr, nc := dims[0], dims[1]
+	if nr != 20 {
+		t.Errorf(
+			"Expected nr to be 20; received %v",
+			nr,
+		)
+	}
+	if nc != 1 {
+		t.Errorf(
+			"Expected nc to be 1; received %v",
+			nc,
+		)
+	}
+}
+
+/*
+TestPolynomialVector_Comparison1
+Description:
+
+	This test verifies that the Comparison method throws an error
+	when the polynomial vector that calls it is improperly
+	defined.
+*/
+func TestPolynomialVector_Comparison1(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	pv2 := symbolic.PolynomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Comparison to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Comparison to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if rAsE.Error() != "polynomial vector has no polynomials" {
+			t.Errorf(
+				"Expected Comparison to panic with error 'polynomial vector has no polynomials'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv1.Comparison(pv2, symbolic.SenseGreaterThanEqual)
+}
+
+/*
+TestPolynomialVector_Comparison2
+Description:
+
+	This test verifies that the Comparison method panics
+	when the right hand side argument is improperly defined.
+*/
+func TestPolynomialVector_Comparison2(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	pv2 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Comparison to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Comparison to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if !strings.Contains(rAsE.Error(), "polynomial vector has no polynomials") {
+			t.Errorf(
+				"Expected Comparison to panic with error 'polynomial vector has no polynomials'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv1.Comparison(pv2, symbolic.SenseGreaterThanEqual)
+}
+
+/*
+TestPolynomialVector_Comparison3
+Description:
+
+	This test verifies that the comparison function returns
+	a proper vector constraint when a float64 variable is
+	provided to the function.
+*/
+func TestPolynomialVector_Comparison3(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	pv2 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+		pv2.Elements = append(pv2.Elements, symbolic.NewVariable().ToPolynomial())
+	}
+	f1 := 3.14
+
+	// Test
+	comp := pv1.Comparison(f1, symbolic.SenseGreaterThanEqual)
+	vectorComparison1, tf := comp.(symbolic.VectorConstraint)
+	if !tf {
+		t.Errorf(
+			"Expected comp to be of type VectorConstraint; received %T",
+			comp,
+		)
+	}
+
+	// Check that the right hand side of the constraint has the length of 20.
+	if vectorComparison1.RightHandSide.Len() != 20 {
+		t.Errorf(
+			"Expected vectorComparison1.RightHandSide.Len() to be 20; received %v",
+			vectorComparison1.RightHandSide.Len(),
+		)
+	}
+}

@@ -129,7 +129,10 @@ func (m Monomial) Multiply(e interface{}) Expression {
 	case float64:
 		return m.Multiply(K(right))
 	case K:
-		return m.Multiply(Monomial{Coefficient: float64(right)})
+		rightAsFloat64 := float64(right)
+		monomialOut := m
+		monomialOut.Coefficient *= rightAsFloat64
+		return monomialOut
 	case Variable:
 		monomialOut := m
 
@@ -139,6 +142,35 @@ func (m Monomial) Multiply(e interface{}) Expression {
 		} else {
 			monomialOut.Degrees[foundIndex] += 1
 		}
+		return monomialOut
+	case Monomial:
+		var monomialOut Monomial
+
+		// Collect all variables in both monomials
+		variables := append(m.VariableFactors, right.VariableFactors...)
+		variables = UniqueVars(variables)
+
+		multiDegree := make([]int, len(variables))
+
+		// Iterate through each variable in monomial one
+		for ii, variable := range m.VariableFactors {
+			// Find the index of the variable in the slice variables
+			foundIndex, _ := FindInSlice(variable, variables)
+			// And modify the multidegree
+			multiDegree[foundIndex] += m.Degrees[ii]
+		}
+
+		// Iterate through each variable in monomial two
+		for ii, variable := range right.VariableFactors {
+			// Find the index of the variable in the slice variables
+			foundIndex, _ := FindInSlice(variable, variables)
+			// And modify the multidegree
+			multiDegree[foundIndex] += right.Degrees[ii]
+		}
+
+		// Create coefficient
+		monomialOut.Coefficient = m.Coefficient * right.Coefficient
+
 		return monomialOut
 	}
 

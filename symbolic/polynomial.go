@@ -131,6 +131,14 @@ func (p Polynomial) Plus(e interface{}) Expression {
 			pCopy.Monomials[variableIndex] = newMonomial
 		}
 
+	case Polynomial:
+		pCopy := p
+
+		// Combine the list of monomials.
+		pCopy.Monomials = append(pCopy.Monomials, right.Monomials...)
+
+		// Simplify?
+		return pCopy.Simplify()
 	}
 
 	// Unrecognized response is a panic
@@ -269,6 +277,16 @@ func (p Polynomial) Multiply(e interface{}) Expression {
 			pCopy.Monomials[ii] = product_ii.(Monomial)
 		}
 		return pCopy
+	case Polynomial:
+		pCopy := p
+
+		// Multiply each monomial of the polynomial by the polynomial
+		productOut := pCopy.Multiply(right.Monomials[0])
+		for ii := 1; ii < len(right.Monomials); ii++ {
+			productOut = productOut.Plus(pCopy.Multiply(right.Monomials[ii]))
+		}
+
+		return productOut
 	}
 
 	// Unrecognized response is a panic
@@ -388,7 +406,7 @@ func (p Polynomial) Simplify() Polynomial {
 	for ii := 1; ii < len(p.Monomials); ii++ {
 		// Check to see if the monomial is already in the polynomial
 		monomialIndex := pCopy.MonomialIndex(p.Monomials[ii])
-		if monomialIndex != -1 {
+		if monomialIndex == -1 {
 			// Polynomial does not contain the monomial,
 			// so add a new monomial.
 			pCopy.Monomials = append(pCopy.Monomials, p.Monomials[ii])

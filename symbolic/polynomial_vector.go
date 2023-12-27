@@ -260,7 +260,11 @@ func (pv PolynomialVector) Multiply(e interface{}) Expression {
 
 	if IsExpression(e) {
 		eAsE, _ := ToExpression(e)
-		err := CheckDimensionsInMultiplication(pv, eAsE)
+		err = eAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+		err = CheckDimensionsInMultiplication(pv, eAsE)
 		if err != nil {
 			panic(err)
 		}
