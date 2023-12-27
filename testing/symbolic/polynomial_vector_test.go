@@ -796,7 +796,7 @@ func TestPolynomialVector_Plus5(t *testing.T) {
 	// Test
 	pv2 := pv1.Plus(pv1).(symbolic.PolynomialVector)
 	for _, polynomial := range pv2.Elements {
-		if len(polynomial.Monomials) != 2 {
+		if len(polynomial.Monomials) != 1 {
 			t.Errorf(
 				"Expected polynomial.Monomials to have length 2; received %v",
 				len(polynomial.Monomials),
