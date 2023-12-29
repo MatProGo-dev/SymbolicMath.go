@@ -7,7 +7,10 @@ Description:
 */
 
 import (
+	"fmt"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"gonum.org/v1/gonum/mat"
+	"strings"
 	"testing"
 )
 
@@ -227,4 +230,164 @@ func TestConstantVector_Plus1(t *testing.T) {
 	}()
 
 	kv1.Plus(kv2)
+}
+
+/*
+TestConstantVector_Plus2
+Description:
+
+	This test verifies that the Plus() method panics if the
+	rightIn input to the Plus() method is improperly defined.
+*/
+func TestConstantVector_Plus2(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	vv2 := symbolic.NewVariableVector(N)
+	vv2.Elements[0] = symbolic.Variable{
+		ID:    1001,
+		Lower: 0.0,
+		Upper: -1.0,
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected kv1.Plus(kv2) to panic; received none",
+			)
+		}
+
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		if !strings.Contains(rAsError.Error(), (fmt.Errorf(
+			"lower bound (%v) of variable must be less than upper bound (%v).",
+			0.0, -1.0,
+		)).Error()) {
+			t.Errorf(
+				"Expected r to be a DimensionError; received %v",
+				r,
+			)
+		}
+	}()
+
+	kv1.Plus(vv2)
+}
+
+/*
+TestConstantVector_Plus3
+Description:
+
+	This test verifies that the Plus() method correctly adds
+	a KVector with a float64 (3.14) by checking all elements
+	of the vector.
+*/
+func TestConstantVector_Plus3(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	f2 := 3.14
+
+	// Test
+	kv3 := kv1.Plus(f2)
+	for ii := 0; ii < N; ii++ {
+		if float64(kv3.(symbolic.KVector).AtVec(ii).(symbolic.K)) != float64(kv1.AtVec(ii).(symbolic.K))+f2 {
+			t.Errorf(
+				"Expected kv3.AtVec(%v) to be %v; received %v",
+				ii,
+				kv3.(symbolic.KVector).AtVec(ii),
+				float64(kv1.AtVec(ii).(symbolic.K))+f2,
+			)
+		}
+	}
+}
+
+/*
+TestConstantVector_Plus4
+Description:
+
+	This test verifies that the Plus() method correctly adds
+	a KVector with a K (3.14) by checking all elements
+	of the vector.
+*/
+func TestConstantVector_Plus4(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	k2 := symbolic.K(3.14)
+
+	// Test
+	kv3 := kv1.Plus(k2)
+	for ii := 0; ii < N; ii++ {
+		if float64(kv3.(symbolic.KVector).AtVec(ii).(symbolic.K)) != float64(kv1.AtVec(ii).(symbolic.K))+float64(k2) {
+			t.Errorf(
+				"Expected kv3.AtVec(%v) to be %v; received %v",
+				ii,
+				kv3.(symbolic.KVector).AtVec(ii),
+				float64(kv1.AtVec(ii).(symbolic.K))+float64(k2),
+			)
+		}
+	}
+}
+
+/*
+TestConstantVector_Plus5
+Description:
+
+	Tests that the Plus() method correctly computes the sum of a
+	KVector and a mat.VecDense.
+*/
+func TestConstantVector_Plus5(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	vd2 := mat.NewVecDense(N, []float64{3.14, 2.71, 1.41})
+
+	// Test
+	kv3 := kv1.Plus(vd2)
+	for ii := 0; ii < N; ii++ {
+		if float64(kv3.(symbolic.KVector).AtVec(ii).(symbolic.K)) != float64(kv1.AtVec(ii).(symbolic.K))+vd2.AtVec(ii) {
+			t.Errorf(
+				"Expected kv3.AtVec(%v) to be %v; received %v",
+				ii,
+				kv3.(symbolic.KVector).AtVec(ii),
+				float64(kv1.AtVec(ii).(symbolic.K))+vd2.AtVec(ii),
+			)
+		}
+	}
+}
+
+/*
+TestConstantVector_Plus6
+Description:
+
+	Tests that the Plus() method correctly computes the sum of a
+	KVector and a KVector.
+*/
+func TestConstantVector_Plus6(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	vd2 := mat.NewVecDense(N, []float64{3.14, 2.71, 1.41})
+	kv2 := symbolic.KVector(*vd2)
+
+	// Test
+	kv3 := kv1.Plus(vd2)
+	for ii := 0; ii < N; ii++ {
+		if float64(kv3.(symbolic.KVector).AtVec(ii).(symbolic.K)) != float64(kv1.AtVec(ii).(symbolic.K))+float64(kv2.AtVec(ii).(symbolic.K)) {
+			t.Errorf(
+				"Expected kv3.AtVec(%v) to be %v; received %v",
+				ii,
+				kv3.(symbolic.KVector).AtVec(ii),
+				float64(kv1.AtVec(ii).(symbolic.K))+float64(kv2.AtVec(ii).(symbolic.K)),
+			)
+		}
+	}
 }

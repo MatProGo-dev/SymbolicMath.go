@@ -124,16 +124,11 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 	case K:
 		// Return Addition
 		return kv.Plus(float64(right))
-	case mat.VecDense:
-		// Return Sum
-		var result mat.VecDense
-		kv2 := mat.VecDense(kv)
 
-		result.AddVec(&kv2, &right)
+	case *mat.VecDense:
+		return kv.Plus(KVector(*right)) // Convert to KVector
 
-		return KVector(result)
 	case KVector:
-		fmt.Println("got here!")
 		// Compute Addition
 		var result mat.VecDense
 		kvAsVec := mat.VecDense(kv)
