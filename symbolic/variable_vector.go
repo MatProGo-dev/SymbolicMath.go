@@ -123,6 +123,12 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 
 	// Algorithm
 	switch right := rightIn.(type) {
+	case *mat.VecDense:
+		// Use KVector's method
+		return vv.Plus(KVector(*right))
+	case mat.VecDense:
+		// Use KVector's method
+		return vv.Plus(KVector(right))
 	case KVector:
 		// Create a polynomial vector
 		var pv PolynomialVector
@@ -165,6 +171,11 @@ func (vv VariableVector) Multiply(rightIn interface{}) Expression {
 
 	if IsExpression(rightIn) {
 		rightAsE, _ := ToExpression(rightIn)
+		err := rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
 		err = CheckDimensionsInMultiplication(vv, rightAsE)
 		if err != nil {
 			panic(err)
@@ -172,6 +183,7 @@ func (vv VariableVector) Multiply(rightIn interface{}) Expression {
 	}
 
 	switch right := rightIn.(type) {
+
 	default:
 		panic(fmt.Errorf(
 			"The input to VariableVector's Multiply() method (%v) has unexpected type: %T",
@@ -224,11 +236,30 @@ Description:
 	This method creates a constraint of type sense between
 	the receiver (as left hand side) and rhs (as right hand side) if both are valid.
 */
-func (vv VariableVector) Comparison(rhs interface{}, sense ConstrSense) Constraint {
+func (vv VariableVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
+	// Input Processing
+	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(rightIn) {
+		rightAsE, _ := ToExpression(rightIn)
+		err := rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		err = CheckDimensionsInComparison(vv, rightAsE, sense)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	// Constants
 
 	// Algorithm
-	switch rhsConverted := rhs.(type) {
+	switch rhsConverted := rightIn.(type) {
 	case KVector:
 		// Check length of input and output.
 		if vv.Len() != rhsConverted.Len() {
@@ -261,10 +292,10 @@ func (vv VariableVector) Comparison(rhs interface{}, sense ConstrSense) Constrai
 		}
 		// Do Computation
 		return VectorConstraint{vv, rhsConverted, sense}
-
-	default:
-		panic(fmt.Errorf("The Eq() method for VariableVector is not implemented yet for type %T!", rhs))
 	}
+
+	// Default option is to panic
+	panic(fmt.Errorf("The Eq() method for VariableVector is not implemented yet for type %T!", rightIn))
 }
 
 func (vv VariableVector) Copy() VariableVector {

@@ -235,14 +235,15 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 			pvCopy.Elements[ii] = sum.(Polynomial)
 		}
 		return pvCopy
-	default:
-		panic(
-			smErrors.UnsupportedInputError{
-				FunctionName: "PolynomialVector.Plus",
-				Input:        e,
-			},
-		)
 	}
+
+	// Default response is a panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "PolynomialVector.Plus",
+			Input:        e,
+		},
+	)
 }
 
 /*
@@ -251,27 +252,27 @@ Description:
 
 	Computes the product of a polynomial vector and another expression.
 */
-func (pv PolynomialVector) Multiply(e interface{}) Expression {
+func (pv PolynomialVector) Multiply(rightIn interface{}) Expression {
 	// Input Processing
 	err := pv.Check()
 	if err != nil {
 		panic(err)
 	}
 
-	if IsExpression(e) {
-		eAsE, _ := ToExpression(e)
-		err = eAsE.Check()
+	if IsExpression(rightIn) {
+		rightAsE, _ := ToExpression(rightIn)
+		err = rightAsE.Check()
 		if err != nil {
 			panic(err)
 		}
-		err = CheckDimensionsInMultiplication(pv, eAsE)
+		err = CheckDimensionsInMultiplication(pv, rightAsE)
 		if err != nil {
 			panic(err)
 		}
 	}
 
 	// Constants
-	switch right := e.(type) {
+	switch right := rightIn.(type) {
 	case float64:
 		return pv.Multiply(K(right))
 	case K:
@@ -299,7 +300,7 @@ func (pv PolynomialVector) Multiply(e interface{}) Expression {
 		panic(
 			smErrors.UnsupportedInputError{
 				FunctionName: "PolynomialVector.Multiply",
-				Input:        e,
+				Input:        rightIn,
 			},
 		)
 	}
