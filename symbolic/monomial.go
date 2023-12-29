@@ -64,9 +64,19 @@ Description:
 */
 func (m Monomial) Plus(e interface{}) Expression {
 	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
 	if IsExpression(e) {
-		// Check dimensions
+		// Convert to expression
 		rightAsE, _ := ToExpression(e)
+		err = rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+		// Check Dimensions
 		err := CheckDimensionsInAddition(m, rightAsE)
 		if err != nil {
 			panic(err)

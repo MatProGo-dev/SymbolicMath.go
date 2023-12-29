@@ -80,6 +80,10 @@ func IsScalarExpression(e interface{}) bool {
 		return true
 	case Variable:
 		return true
+	case Monomial:
+		return true
+	case Polynomial:
+		return true
 	default:
 		return false
 
@@ -109,6 +113,10 @@ func ToScalarExpression(e interface{}) (ScalarExpression, error) {
 	case K:
 		return e2, nil
 	case Variable:
+		return e2, nil
+	case Monomial:
+		return e2, nil
+	case Polynomial:
 		return e2, nil
 	default:
 		return K(1.0), fmt.Errorf(

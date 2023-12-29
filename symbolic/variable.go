@@ -236,14 +236,19 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 	case float64:
 		return v.Multiply(K(right))
 	case K:
-		// Algorithm
-		return right.Multiply(v)
+		// Create a new monomial
+		monomialOut := Monomial{
+			Coefficient:     float64(right),
+			VariableFactors: []Variable{v},
+			Degrees:         []int{1},
+		}
+		return monomialOut
 	case Variable:
 		var monomialOut Monomial
 		if right.ID == v.ID {
 			monomialOut = Monomial{
 				Coefficient:     1.0,
-				VariableFactors: []Variable{v, v},
+				VariableFactors: []Variable{v},
 				Degrees:         []int{2},
 			}
 		} else {

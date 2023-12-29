@@ -143,3 +143,112 @@ func TestScalarConstraint_IsLinear2(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestScalarConstraint_Simplify1
+Description:
+
+	This function tests that the Simplify() method of a ScalarConstraint
+	formed between a variable on the left hand side and a constant on the
+	right.
+*/
+func TestScalarConstraint_Simplify1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{x, c2, symbolic.SenseLessThanEqual}
+
+	// Simplify
+	sc, err := sc.Simplify()
+	if err != nil {
+		t.Errorf(
+			"Expected no error from sc.Simplify(); received %v",
+			err,
+		)
+	}
+
+	// Verify that the constraint is linear
+	if !sc.IsLinear() {
+		t.Errorf(
+			"Expected sc to be linear; received %v",
+			sc.IsLinear(),
+		)
+	}
+
+	// Verify that the left hand side is a variable
+	if _, ok := sc.Left().(symbolic.Variable); !ok {
+		t.Errorf(
+			"Expected sc.Left() to be a symbolic.Variable; received %T",
+			sc.Left(),
+		)
+	}
+
+	// Verify that the right hand side is a constant
+	if _, ok := sc.Right().(symbolic.K); !ok {
+		t.Errorf(
+			"Expected sc.Right() to be a symbolic.K; received %T",
+			sc.Right(),
+		)
+	}
+}
+
+/*
+TestScalarConstraint_Simplify2
+Description:
+
+	This function tests that the Simplify() method of a ScalarConstraint
+	formed between a constant on the left hand side and a variable on the
+	right.
+	This test verifies that the simplified function has a polynomial on the
+	left and zero on the right.
+*/
+func TestScalarConstraint_Simplify2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{c2, x, symbolic.SenseLessThanEqual}
+
+	// Simplify
+	sc, err := sc.Simplify()
+	if err != nil {
+		t.Errorf(
+			"Expected no error from sc.Simplify(); received %v",
+			err,
+		)
+	}
+
+	// Verify that the constraint is linear
+	if !sc.IsLinear() {
+		t.Errorf(
+			"Expected sc to be linear; received %v",
+			sc.IsLinear(),
+		)
+	}
+
+	// Verify that the left hand side is a variable
+	if _, ok := sc.Left().(symbolic.Polynomial); !ok {
+		t.Errorf(
+			"Expected sc.Left() to be a symbolic.Polynomial; received %T",
+			sc.Left(),
+		)
+	}
+
+	// Verify that the right hand side is a constant
+	if _, ok := sc.Right().(symbolic.K); !ok {
+		t.Errorf(
+			"Expected sc.Right() to be a symbolic.K; received %T",
+			sc.Right(),
+		)
+	}
+
+	if float64(sc.Right().(symbolic.K)) != 0 {
+		t.Errorf(
+			"Expected sc.Right() to be 0; received %v",
+			sc.Right(),
+		)
+	}
+}
