@@ -17,29 +17,35 @@ type Expression interface {
 
 	// Plus adds the current expression to another and returns the resulting
 	// expression
-	Plus(rightIn interface{}, errors ...error) (Expression, error)
+	Plus(rightIn interface{}) Expression
 
 	// Multiply multiplies the current expression to another and returns the
 	// resulting expression
-	Multiply(rightIn interface{}, errors ...error) (Expression, error)
+	Multiply(rightIn interface{}) Expression
 
 	// Transpose transposes the given expression
 	Transpose() Expression
 
 	// LessEq returns a less than or equal to (<=) constraint between the
 	// current expression and another
-	LessEq(rightIn interface{}, errors ...error) (Constraint, error)
+	LessEq(rightIn interface{}) Constraint
 
 	// GreaterEq returns a greater than or equal to (>=) constraint between the
 	// current expression and another
-	GreaterEq(rightIn interface{}, errors ...error) (Constraint, error)
+	GreaterEq(rightIn interface{}) Constraint
 
 	// Eq returns an equality (==) constraint between the current expression
 	// and another
-	Eq(rightIn interface{}, errors ...error) (Constraint, error)
+	Eq(rightIn interface{}) Constraint
 
 	// Comparison
-	Comparison(rightIn interface{}, sense ConstrSense, errors ...error) (Constraint, error)
+	Comparison(rightIn interface{}, sense ConstrSense) Constraint
+
+	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
+	DerivativeWrt(vIn Variable) Expression
+
+	// Check
+	Check() error
 }
 
 /*
@@ -76,7 +82,7 @@ Description:
 	Tests whether or not the input variable is one of the expression types.
 */
 func IsExpression(e interface{}) bool {
-	return IsScalarExpression(e) || IsVectorExpression(e)
+	return IsScalarExpression(e) || IsVectorExpression(e) || IsMatrixExpression(e)
 }
 
 func ToExpression(e interface{}) (Expression, error) {
@@ -85,6 +91,8 @@ func ToExpression(e interface{}) (Expression, error) {
 		return ToScalarExpression(e)
 	case IsVectorExpression(e):
 		return ToVectorExpression(e)
+	case IsMatrixExpression(e):
+		return ToMatrixExpression(e)
 	default:
 		return K(Infinity), fmt.Errorf("the input expression is not recognized as a scalar or vector expression.")
 	}

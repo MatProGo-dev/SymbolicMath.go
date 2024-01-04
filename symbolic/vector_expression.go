@@ -22,8 +22,9 @@ Description:
 	by single variables, constants, and general linear expressions.
 */
 type VectorExpression interface {
-	//// NumVars returns the number of variables in the expression
-	//NumVars() int
+	// Check returns an error if the expression is not valid
+	Check() error
+
 	// Variables returns the number of variables in the expression.
 	Variables() []Variable
 
@@ -35,28 +36,28 @@ type VectorExpression interface {
 
 	// Plus adds the current expression to another and returns the resulting
 	// expression
-	Plus(e interface{}, errors ...error) (Expression, error)
+	Plus(e interface{}) Expression
 
 	// Mult multiplies the current expression with another and returns the
 	// resulting expression
-	Multiply(e interface{}, errors ...error) (Expression, error)
+	Multiply(e interface{}) Expression
 
 	// LessEq returns a less than or equal to (<=) constraint between the
 	// current expression and another
-	LessEq(rhs interface{}, errors ...error) (Constraint, error)
+	LessEq(rhs interface{}) Constraint
 
 	// GreaterEq returns a greater than or equal to (>=) constraint between the
 	// current expression and another
-	GreaterEq(rhs interface{}, errors ...error) (Constraint, error)
+	GreaterEq(rhs interface{}) Constraint
 
 	// Comparison
 	// Returns a constraint with respect to the sense (senseIn) between the
 	// current expression and another.
-	Comparison(rhs interface{}, sense ConstrSense, errors ...error) (Constraint, error)
+	Comparison(rhs interface{}, sense ConstrSense) Constraint
 
 	// Eq returns an equality (==) constraint between the current expression
 	// and another
-	Eq(rhs interface{}, errors ...error) (Constraint, error)
+	Eq(rhs interface{}) Constraint
 
 	// Len returns the length of the vector expression.
 	Len() int
@@ -69,6 +70,9 @@ type VectorExpression interface {
 
 	// Dims returns the dimensions of the given expression
 	Dims() []int
+
+	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
+	DerivativeWrt(vIn Variable) Expression
 }
 
 ///*
@@ -111,6 +115,12 @@ func IsVectorExpression(e interface{}) bool {
 	switch e.(type) {
 	case mat.VecDense:
 		return true
+	case KVector:
+		return true
+	case VariableVector:
+		return true
+	case PolynomialVector:
+		return true
 	default:
 		return false
 
@@ -138,6 +148,10 @@ func ToVectorExpression(e interface{}) (VectorExpression, error) {
 		return e2, nil
 	case mat.VecDense:
 		return KVector(e2), nil
+	case VariableVector:
+		return e2, nil
+	case PolynomialVector:
+		return e2, nil
 	default:
 		return KVector(OnesVector(1)), fmt.Errorf(
 			"unexpected vector expression conversion requested for type %T!",

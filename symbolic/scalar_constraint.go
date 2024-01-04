@@ -26,20 +26,8 @@ Description:
 	Describes whether or not a given linear constraint is
 	linear or not.
 */
-func (sc ScalarConstraint) IsLinear() (bool, error) {
-	// Check left and right side.
-	//if _, tf := sc.LeftHandSide.(ScalarQuadraticExpression); tf {
-	//	return false, nil
-	//}
-	//
-	//// If left side has degree less than two, then this only depends
-	//// on the right side.
-	//if _, tf := sc.RightHandSide.(ScalarQuadraticExpression); tf {
-	//	return false, nil
-	//}
-
-	// Otherwise return true
-	return false, nil
+func (sc ScalarConstraint) IsLinear() bool {
+	return sc.LeftHandSide.IsLinear() && sc.RightHandSide.IsLinear()
 }
 
 /*
@@ -58,10 +46,7 @@ func (sc ScalarConstraint) Simplify() (ScalarConstraint, error) {
 	case K:
 		return sc, nil
 	case Variable:
-		newLHS, err := newLHS.Plus(right.Multiply(-1.0))
-		if err != nil {
-			return sc, err
-		}
+		newLHS := newLHS.Plus(right.Multiply(-1.0))
 		newLHSAsSE, _ := ToScalarExpression(newLHS)
 
 		return ScalarConstraint{
@@ -74,15 +59,3 @@ func (sc ScalarConstraint) Simplify() (ScalarConstraint, error) {
 	}
 
 }
-
-// ConstrSense represents if the constraint x <= y, x >= y, or x == y. For easy
-// integration with Gurobi, the senses have been encoding using a byte in
-// the same way Gurobi encodes the constraint senses.
-type ConstrSense byte
-
-// Different constraint senses conforming to Gurobi's encoding.
-const (
-	SenseEqual            ConstrSense = '='
-	SenseLessThanEqual                = '<'
-	SenseGreaterThanEqual             = '>'
-)

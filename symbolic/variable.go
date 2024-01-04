@@ -43,46 +43,52 @@ func (v Variable) Constant() float64 {
 
 // Plus adds the current expression to another and returns the resulting
 // expression.
-func (v Variable) Plus(e interface{}, errors ...error) (Expression, error) {
+func (v Variable) Plus(rightIn interface{}) Expression {
 	// Input Processing
 	err := v.Check()
 	if err != nil {
-		return v, err
-	}
-
-	err = CheckErrors(errors)
-	if err != nil {
-		return v, err
+		panic(err)
 	}
 
 	// Algorithm
-	switch right := e.(type) {
-	//case Variable:
-	//	// Convert
-	//	eAsV := e.(Variable)
-	//
-	//	vv := VariableVector{
-	//		UniqueVars(append([]Variable{v}, right.Variables()...)),
-	//	}
-	//
-	//	// Check to see if this is the same Variable or a different one
-	//	if eAsV.ID == v.ID {
-	//		return ScalarLinearExpr{
-	//			X: vv,
-	//			L: *mat.NewVecDense(1, []float64{2.0}),
-	//			C: 0.0,
-	//		}, nil
-	//	} else {
-	//		return ScalarLinearExpr{
-	//			X: vv,
-	//			L: OnesVector(2),
-	//			C: 0.0,
-	//		}, nil
-	//	}
-
-	default:
-		return v, fmt.Errorf("there input %v has unexpected type %T given to Variable.Plus()!", right, e)
+	switch right := rightIn.(type) {
+	case float64:
+		return v.Plus(K(right))
+	case K:
+		return Polynomial{
+			Monomials: []Monomial{
+				v.ToMonomial(),
+				right.ToMonomial(),
+			},
+		}
+	case Variable:
+		if v.ID == right.ID {
+			return Polynomial{
+				Monomials: []Monomial{
+					Monomial{
+						Coefficient:     2.0,
+						VariableFactors: []Variable{v},
+						Degrees:         []int{1},
+					},
+				},
+			}
+		} else {
+			return Polynomial{
+				Monomials: []Monomial{
+					v.ToMonomial(),
+					right.ToMonomial(),
+				},
+			}
+		}
+	case Monomial:
+		return right.Plus(v)
+	case Polynomial:
+		return right.Plus(v)
 	}
+
+	panic(
+		fmt.Errorf("there input %v has unexpected type %T given to Variable.Plus()!", rightIn, rightIn),
+	)
 }
 
 //// Mult multiplies the current expression to another and returns the
@@ -109,20 +115,20 @@ func (v Variable) Plus(e interface{}, errors ...error) (Expression, error) {
 
 // LessEq returns a less than or equal to (<=) constraint between the
 // current expression and another
-func (v Variable) LessEq(rhsIn interface{}, errors ...error) (Constraint, error) {
-	return v.Comparison(rhsIn, SenseLessThanEqual, errors...)
+func (v Variable) LessEq(rhsIn interface{}) Constraint {
+	return v.Comparison(rhsIn, SenseLessThanEqual)
 }
 
 // GreaterEq returns a greater than or equal to (>=) constraint between the
 // current expression and another
-func (v Variable) GreaterEq(rhsIn interface{}, errors ...error) (Constraint, error) {
-	return v.Comparison(rhsIn, SenseGreaterThanEqual, errors...)
+func (v Variable) GreaterEq(rhsIn interface{}) Constraint {
+	return v.Comparison(rhsIn, SenseGreaterThanEqual)
 }
 
 // Eq returns an equality (==) constraint between the current expression
 // and another
-func (v Variable) Eq(rhsIn interface{}, errors ...error) (Constraint, error) {
-	return v.Comparison(rhsIn, SenseEqual, errors...)
+func (v Variable) Eq(rhsIn interface{}) Constraint {
+	return v.Comparison(rhsIn, SenseEqual)
 }
 
 /*
@@ -135,21 +141,17 @@ Usage:
 
 	constr, err := v.Comparison(expr1,SenseGreaterThanEqual)
 */
-func (v Variable) Comparison(rhsIn interface{}, sense ConstrSense, errors ...error) (Constraint, error) {
+func (v Variable) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return ScalarConstraint{}, err
-	}
-
 	rhs, err := ToScalarExpression(rhsIn)
 	if err != nil {
-		return ScalarConstraint{}, err
+		panic(err)
 	}
+
 	// Constants
 
 	// Algorithm
-	return ScalarConstraint{v, rhs, sense}, nil
+	return ScalarConstraint{v, rhs, sense}
 }
 
 /*
@@ -214,39 +216,39 @@ Description:
 
 	multiplies the current expression to another and returns the resulting expression
 */
-func (v Variable) Multiply(val interface{}, errors ...error) (Expression, error) {
+func (v Variable) Multiply(rightIn interface{}) Expression {
 	// Input Processing
 	err := v.Check()
 	if err != nil {
-		return v, err
+		panic(err)
 	}
 
-	err = CheckErrors(errors)
-	if err != nil {
-		return v, err
-	}
-
-	if IsExpression(val) {
-		rightAsE, _ := ToExpression(val)
-		err = CheckDimensionsInMultiplication(v, rightAsE)
+	if IsExpression(rightIn) {
+		rightAsE, _ := ToExpression(rightIn)
+		err := CheckDimensionsInMultiplication(v, rightAsE)
 		if err != nil {
-			return v, err
+			panic(err)
 		}
 	}
 
 	// Constants
-	switch right := val.(type) {
+	switch right := rightIn.(type) {
 	case float64:
 		return v.Multiply(K(right))
 	case K:
-		// Algorithm
-		return right.Multiply(v)
+		// Create a new monomial
+		monomialOut := Monomial{
+			Coefficient:     float64(right),
+			VariableFactors: []Variable{v},
+			Degrees:         []int{1},
+		}
+		return monomialOut
 	case Variable:
 		var monomialOut Monomial
 		if right.ID == v.ID {
 			monomialOut = Monomial{
 				Coefficient:     1.0,
-				VariableFactors: []Variable{v, v},
+				VariableFactors: []Variable{v},
 				Degrees:         []int{2},
 			}
 		} else {
@@ -256,11 +258,13 @@ func (v Variable) Multiply(val interface{}, errors ...error) (Expression, error)
 				Degrees:         []int{1, 1},
 			}
 		}
-		return monomialOut, nil
-
-	default:
-		return v, fmt.Errorf("Unexpected input to v.Multiply(): %T", val)
+		return monomialOut
 	}
+
+	// Unrecornized response is a panic
+	panic(
+		fmt.Errorf("Unexpected input to v.Multiply(): %T", rightIn),
+	)
 }
 
 /*
@@ -281,9 +285,9 @@ Description:
 */
 func (v Variable) Check() error {
 	// Check that the lower bound is below is the upper bound
-	if v.Lower > v.Upper {
+	if v.Lower >= v.Upper {
 		return fmt.Errorf(
-			"lower bound (%v) of variable is above upper bound (%v).",
+			"lower bound (%v) of variable must be less than upper bound (%v).",
 			v.Lower, v.Upper,
 		)
 	}
@@ -300,7 +304,7 @@ func (v Variable) Transpose() Expression {
 NewVariable
 Description:
 */
-func NewVariable(envs ...Environment) Variable {
+func NewVariable(envs ...*Environment) Variable {
 	return NewContinuousVariable(envs...)
 }
 
@@ -310,27 +314,31 @@ Description:
 
 	Creates a new continuous variable.
 */
-func NewContinuousVariable(envs ...Environment) Variable {
+func NewContinuousVariable(envs ...*Environment) Variable {
 	// Constants
 
 	// Input Processing
-	var currentEnv Environment
+	var currentEnv = &BackgroundEnvironment
 	switch len(envs) {
 	case 1:
 		currentEnv = envs[0]
-	default:
-		currentEnv = BackgroundEnvironment
 	}
 
 	// Get New Index
 	nextIdx := len(currentEnv.Variables)
 
-	return Variable{
+	// Create variable
+	variableOut := Variable{
 		ID:    uint64(nextIdx),
 		Lower: float64(-Infinity),
 		Upper: float64(+Infinity),
 		Type:  Continuous,
 	}
+
+	// Update environment
+	currentEnv.Variables = append(currentEnv.Variables, variableOut)
+
+	return variableOut
 
 }
 
@@ -355,11 +363,81 @@ func NewBinaryVariable(envs ...Environment) Variable {
 	// Get New Index
 	nextIdx := len(currentEnv.Variables)
 
-	return Variable{
+	// Get New Variable Object and add it to environment
+	variableOut := Variable{
 		ID:    uint64(nextIdx),
 		Lower: 0.0,
 		Upper: 1.0,
 		Type:  Binary,
 	}
 
+	// Update env
+	currentEnv.Variables = append(currentEnv.Variables, variableOut)
+
+	return variableOut
+
+}
+
+/*
+ToMonomial
+Description:
+
+	Converts the variable into a monomial.
+*/
+func (v Variable) ToMonomial() Monomial {
+	return Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []Variable{v},
+		Degrees:         []int{1},
+	}
+}
+
+/*
+ToPolynomial
+Description:
+
+	Converts the variable into a monomial and then into a polynomial.
+*/
+func (v Variable) ToPolynomial() Polynomial {
+	return Polynomial{
+		Monomials: []Monomial{v.ToMonomial()},
+	}
+}
+
+/*
+DerivativeWrt
+Description:
+
+	Computes the derivative of the Variable with respect to vIn.
+	If vIn is the same as the Variable, then this returns 1.0. Otherwise, it
+	returns 0.0.
+*/
+func (v Variable) DerivativeWrt(vIn Variable) Expression {
+	// Input Processing
+	err := v.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	if v.ID == vIn.ID {
+		return K(1.0)
+	} else {
+		return K(0.0)
+	}
+}
+
+/*
+IsLinear
+Description:
+
+	This function always returns true. A single variable is always a linear expression.
+*/
+func (v Variable) IsLinear() bool {
+	return true
 }

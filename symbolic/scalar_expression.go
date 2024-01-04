@@ -9,6 +9,9 @@ import (
 // variables and k is a constant. This is a base interface that is implemented
 // by single variables, constants, and general linear expressions.
 type ScalarExpression interface {
+	// Check returns an error if the expression is not valid
+	Check() error
+
 	// Variables returns the variables included in the scalar expression
 	Variables() []Variable
 
@@ -17,27 +20,27 @@ type ScalarExpression interface {
 
 	// Plus adds the current expression to another and returns the resulting
 	// expression
-	Plus(rightIn interface{}, errors ...error) (Expression, error)
+	Plus(rightIn interface{}) Expression
 
 	// LessEq returns a less than or equal to (<=) constraint between the
 	// current expression and another
-	LessEq(rhsIn interface{}, errors ...error) (Constraint, error)
+	LessEq(rhsIn interface{}) Constraint
 
 	// GreaterEq returns a greater than or equal to (>=) constraint between the
 	// current expression and another
-	GreaterEq(rhsIn interface{}, errors ...error) (Constraint, error)
+	GreaterEq(rhsIn interface{}) Constraint
 
 	// Eq returns an equality (==) constraint between the current expression
 	// and another
-	Eq(rhsIn interface{}, errors ...error) (Constraint, error)
+	Eq(rhsIn interface{}) Constraint
 
 	//Comparison
 	// Compares the receiver expression rhs with the expression rhs in the sense of sense.
-	Comparison(rhsIn interface{}, sense ConstrSense, errors ...error) (Constraint, error)
+	Comparison(rhsIn interface{}, sense ConstrSense) Constraint
 
 	//Multiply
 	// Multiplies the given scalar expression with another expression
-	Multiply(rightIn interface{}, errors ...error) (Expression, error)
+	Multiply(rightIn interface{}) Expression
 
 	//Dims
 	// Returns the dimensions of the scalar expression (should always be 1,1)
@@ -45,6 +48,12 @@ type ScalarExpression interface {
 
 	//Transpose returns the transpose of the given vector expression
 	Transpose() Expression
+
+	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
+	DerivativeWrt(vIn Variable) Expression
+
+	// IsLinear returns true if the expression is linear
+	IsLinear() bool
 }
 
 // NewExpr returns a new expression with a single additive constant value, c,
@@ -70,6 +79,10 @@ func IsScalarExpression(e interface{}) bool {
 	case K:
 		return true
 	case Variable:
+		return true
+	case Monomial:
+		return true
+	case Polynomial:
 		return true
 	default:
 		return false
@@ -100,6 +113,10 @@ func ToScalarExpression(e interface{}) (ScalarExpression, error) {
 	case K:
 		return e2, nil
 	case Variable:
+		return e2, nil
+	case Monomial:
+		return e2, nil
+	case Polynomial:
 		return e2, nil
 	default:
 		return K(1.0), fmt.Errorf(

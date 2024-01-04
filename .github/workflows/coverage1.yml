@@ -1,0 +1,46 @@
+name: Code Coverage  # The name of the workflow that will appear on Github
+
+on:
+  push:
+    branches: [ main , kr-feature-panics1 ]
+  pull_request:
+    branches: [ main ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go: [1.19]
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      #        with:
+      #          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
+      #          fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
+
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Build
+        run: go install ./...
+
+      - name: Test Coverage
+        run: |
+          go test -v -cover ./... -coverprofile coverage.out -coverpkg ./...
+          go tool cover -func coverage.out -o coverage2.out  
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.out

@@ -22,6 +22,8 @@ func IsConstraint(c interface{}) bool {
 		return true
 	case *VectorConstraint:
 		return true
+	case MatrixConstraint:
+		return true
 	}
 
 	// Return false, if the constraint is not a scalar or vector constraint.

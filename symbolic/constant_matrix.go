@@ -14,6 +14,18 @@ Description:
 type KMatrix mat.Dense
 
 /*
+Check
+Description:
+
+	Checks to make sure that the constant is initialized properly.
+	ConstantMatrix objects are always initialized properly, so this should always return
+	no error.
+*/
+func (km KMatrix) Check() error {
+	return nil
+}
+
+/*
 Variables
 Description:
 
@@ -43,27 +55,56 @@ Description:
 
 	Addition of the constant matrix with another expression.
 */
-func (km KMatrix) Plus(e interface{}, errors ...error) (Expression, error) {
+func (km KMatrix) Plus(e interface{}) Expression {
 	// Input Processing
-	err := CheckErrors(errors)
+	err := km.Check()
 	if err != nil {
-		return km, err
+		panic(err)
 	}
 
 	if IsExpression(e) {
-		// Check dimensions
 		rightAsE, _ := ToExpression(e)
+		// Check expression
+		err = rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+		// Check Dimensions
 		err = CheckDimensionsInAddition(km, rightAsE)
 		if err != nil {
-			return km, err
+			panic(err)
 		}
 	}
 
+	// Constants
+	dims := km.Dims()
+	nR, nC := dims[0], dims[1]
+
 	switch right := e.(type) {
+	case float64:
+		// Create a matrix of all elements with value right
+		ones := OnesMatrix(nR, nC)
+		var rightAsDense mat.Dense
+		rightAsDense.Scale(right, &ones)
+
+		// Create copy of km as a dense matrix
+		kmAsDense := mat.Dense(km)
+
+		// Compute sum
+		var sumAsDense mat.Dense
+		sumAsDense.Add(&rightAsDense, &kmAsDense)
+
+		return KMatrix(sumAsDense)
+
+	case K:
+		return km.Plus(float64(right)) // Reuse float64 case
+
 	default:
-		return km, fmt.Errorf(
-			"The input to KMatrix's Multiply method (%v) has unexpected type: %T",
-			right, right,
+		panic(
+			fmt.Errorf(
+				"The input to KMatrix's Plus() method (%v) has unexpected type: %T",
+				right, right,
+			),
 		)
 	}
 }
@@ -74,26 +115,47 @@ Description:
 
 	Multiplication of the constant matrix with another expression.
 */
-func (km KMatrix) Multiply(e interface{}, errors ...error) (Expression, error) {
-	err := CheckErrors(errors)
+func (km KMatrix) Multiply(e interface{}) Expression {
+	// Input Processing
+	err := km.Check()
 	if err != nil {
-		return km, err
+		panic(err)
 	}
 
 	if IsExpression(e) {
-		// Check dimensions
 		rightAsE, _ := ToExpression(e)
+
+		// Check expressions
+		err = rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check dimensions
 		err = CheckDimensionsInMultiplication(km, rightAsE)
 		if err != nil {
-			return km, err
+			panic(err)
 		}
 	}
 
 	switch right := e.(type) {
+	case float64:
+		// Use gonum's built-in scale function
+		kmAsDense := mat.Dense(km)
+		var product mat.Dense
+		product.Scale(right, &kmAsDense)
+
+		return KMatrix(product)
+
+	case K:
+		return km.Multiply(float64(right)) // Reuse float64 case
+
 	default:
-		return km, fmt.Errorf(
-			"The input to KMatrix's Multiply method (%v) has unexpected type: %T",
-			right, right,
+		panic(
+			fmt.Errorf(
+				"The input to KMatrix's Multiply method (%v) has unexpected type: %T",
+				right, right,
+			),
 		)
 	}
 }
@@ -134,14 +196,8 @@ Description:
 	Returns a constraint between the KMatrix and the
 	expression on the right hand side.
 */
-func (km KMatrix) LessEq(rightIn interface{}, errors ...error) (Constraint, error) {
-	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return MatrixConstraint{}, err
-	}
-
-	return MatrixConstraint{}, fmt.Errorf("not implemented")
+func (km KMatrix) LessEq(rightIn interface{}) Constraint {
+	return km.Comparison(rightIn, SenseLessThanEqual)
 
 }
 
@@ -152,14 +208,8 @@ Description:
 	Returns a greater equal constraint between the KMatrix and the
 	expression on the right hand side.
 */
-func (km KMatrix) GreaterEq(rightIn interface{}, errors ...error) (Constraint, error) {
-	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return MatrixConstraint{}, err
-	}
-
-	return MatrixConstraint{}, fmt.Errorf("not implemented")
+func (km KMatrix) GreaterEq(rightIn interface{}) Constraint {
+	return km.Comparison(rightIn, SenseGreaterThanEqual)
 
 }
 
@@ -170,14 +220,8 @@ Description:
 	Returns an equal constraint between the KMatrix and the
 	expression on the right hand side.
 */
-func (km KMatrix) Eq(rightIn interface{}, errors ...error) (Constraint, error) {
-	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return MatrixConstraint{}, err
-	}
-
-	return MatrixConstraint{}, fmt.Errorf("not implemented")
+func (km KMatrix) Eq(rightIn interface{}) Constraint {
+	return km.Comparison(rightIn, SenseEqual)
 
 }
 
@@ -188,14 +232,11 @@ Description:
 	Returns a constraint between the KMatrix and the
 	expression on the right hand side.
 */
-func (km KMatrix) Comparison(rightIn interface{}, sense ConstrSense, errors ...error) (Constraint, error) {
+func (km KMatrix) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
-	err := CheckErrors(errors)
-	if err != nil {
-		return MatrixConstraint{}, err
-	}
 
-	return MatrixConstraint{}, fmt.Errorf("not implemented")
+	// Algorithm
+	return MatrixConstraint{}
 
 }
 
@@ -241,6 +282,24 @@ func ZerosMatrix(nR, nC int) mat.Dense {
 }
 
 /*
+OnesMatrix
+Description:
+
+	Returns a dense matrix of all ones.
+*/
+func OnesMatrix(nR, nC int) mat.Dense {
+	// Create empty slice
+	elts := make([]float64, nR*nC)
+	for rowIndex := 0; rowIndex < nR; rowIndex++ {
+		for colIndex := 0; colIndex < nC; colIndex++ {
+			elts[rowIndex*nC+colIndex] = 1.0
+		}
+	}
+
+	return *mat.NewDense(nR, nC, elts)
+}
+
+/*
 Identity
 Description:
 
@@ -257,4 +316,15 @@ func Identity(dim int) mat.Dense {
 	}
 
 	return zeroBase
+}
+
+/*
+DerivativeWrt
+Description:
+
+	Computes the derivative of the constant matrix with respect to the variable
+	v. For a constant matrix, this should create a matrix of all zeros (ZerosMatrix).
+*/
+func (km KMatrix) DerivativeWrt(vIn Variable) Expression {
+	return KMatrix(ZerosMatrix(km.Dims()[0], km.Dims()[1]))
 }

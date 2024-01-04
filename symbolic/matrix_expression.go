@@ -12,6 +12,9 @@ import (
 */
 
 type MatrixExpression interface {
+	// Check returns an error if the expression is not initialized properly
+	Check() error
+
 	// Variables returns the number of variables in the expression.
 	Variables() []Variable
 
@@ -23,28 +26,28 @@ type MatrixExpression interface {
 
 	// Plus adds the current expression to another and returns the resulting
 	// expression
-	Plus(e interface{}, errors ...error) (Expression, error)
+	Plus(e interface{}) Expression
 
 	// Mult multiplies the current expression with another and returns the
 	// resulting expression
-	Multiply(e interface{}, errors ...error) (Expression, error)
+	Multiply(e interface{}) Expression
 
 	// LessEq returns a less than or equal to (<=) constraint between the
 	// current expression and another
-	LessEq(rhs interface{}, errors ...error) (Constraint, error)
+	LessEq(rhs interface{}) Constraint
 
 	// GreaterEq returns a greater than or equal to (>=) constraint between the
 	// current expression and another
-	GreaterEq(rhs interface{}, errors ...error) (Constraint, error)
+	GreaterEq(rhs interface{}) Constraint
 
 	// Comparison
 	// Returns a constraint with respect to the sense (senseIn) between the
 	// current expression and another.
-	Comparison(rhs interface{}, sense ConstrSense, errors ...error) (Constraint, error)
+	Comparison(rhs interface{}, sense ConstrSense) Constraint
 
 	// Eq returns an equality (==) constraint between the current expression
 	// and another
-	Eq(rhs interface{}, errors ...error) (Constraint, error)
+	Eq(rhs interface{}) Constraint
 
 	//AtVec returns the expression at a given index
 	At(i int, j int) ScalarExpression
@@ -54,6 +57,9 @@ type MatrixExpression interface {
 
 	// Dims returns the dimensions of the given expression
 	Dims() []int
+
+	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
+	DerivativeWrt(vIn Variable) Expression
 }
 
 /*
@@ -65,7 +71,7 @@ Description:
 func IsMatrixExpression(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
-	case mat.VecDense:
+	case mat.Dense:
 		return true
 	case KMatrix:
 		return true
@@ -83,7 +89,7 @@ Description:
 */
 func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 	// Input Processing
-	if !IsVectorExpression(e) {
+	if !IsMatrixExpression(e) {
 		return KMatrix(ZerosMatrix(1, 1)), fmt.Errorf(
 			"the input interface is of type %T, which is not recognized as a MatrixExpression.",
 			e,
@@ -94,6 +100,8 @@ func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 	switch e2 := e.(type) {
 	case mat.Dense:
 		return KMatrix(e2), nil
+	case KMatrix:
+		return e2, nil
 	default:
 		return KMatrix(ZerosMatrix(1, 1)), fmt.Errorf(
 			"unexpected vector expression conversion requested for type %T!",
