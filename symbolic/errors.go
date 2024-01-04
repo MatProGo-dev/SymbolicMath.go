@@ -90,10 +90,29 @@ func CheckErrors(extras []error) error {
 	return nil
 }
 
+/*
+CheckDimensionsInMultiplication
+Description:
+
+	This function checks that the dimensions of the left and right expressions
+	are compatible for multiplication.
+	We allow:
+	- Multiplication if Dimensions Match OR
+	- Multiplication if one of the expressions is a scalar
+*/
 func CheckDimensionsInMultiplication(left, right Expression) error {
+	// Check that dimensions match
+	dimsMatch := left.Dims()[1] == right.Dims()[0]
+
+	// Check that one of the expressions is a scalar
+	leftIsScalar := IsScalarExpression(left)
+	rightIsScalar := IsScalarExpression(right)
+
+	multiplicationIsAllowed := dimsMatch || leftIsScalar || rightIsScalar
+
 	// Check that the # of columns in left
 	// matches the # of rows in right
-	if left.Dims()[1] != right.Dims()[0] {
+	if !multiplicationIsAllowed {
 		return DimensionError{
 			Operation: "Multiply",
 			Arg1:      left,

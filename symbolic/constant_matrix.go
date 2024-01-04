@@ -63,15 +63,42 @@ func (km KMatrix) Plus(e interface{}) Expression {
 	}
 
 	if IsExpression(e) {
-		// Check dimensions
 		rightAsE, _ := ToExpression(e)
+		// Check expression
+		err = rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+		// Check Dimensions
 		err = CheckDimensionsInAddition(km, rightAsE)
 		if err != nil {
 			panic(err)
 		}
 	}
 
+	// Constants
+	dims := km.Dims()
+	nR, nC := dims[0], dims[1]
+
 	switch right := e.(type) {
+	case float64:
+		// Create a matrix of all elements with value right
+		ones := OnesMatrix(nR, nC)
+		var rightAsDense mat.Dense
+		rightAsDense.Scale(right, &ones)
+
+		// Create copy of km as a dense matrix
+		kmAsDense := mat.Dense(km)
+
+		// Compute sum
+		var sumAsDense mat.Dense
+		sumAsDense.Add(&rightAsDense, &kmAsDense)
+
+		return KMatrix(sumAsDense)
+
+	case K:
+		return km.Plus(float64(right)) // Reuse float64 case
+
 	default:
 		panic(
 			fmt.Errorf(
@@ -96,8 +123,15 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 	}
 
 	if IsExpression(e) {
-		// Check dimensions
 		rightAsE, _ := ToExpression(e)
+
+		// Check expressions
+		err = rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check dimensions
 		err = CheckDimensionsInMultiplication(km, rightAsE)
 		if err != nil {
 			panic(err)
@@ -105,6 +139,17 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 	}
 
 	switch right := e.(type) {
+	case float64:
+		// Use gonum's built-in scale function
+		kmAsDense := mat.Dense(km)
+		var product mat.Dense
+		product.Scale(right, &kmAsDense)
+
+		return KMatrix(product)
+
+	case K:
+		return km.Multiply(float64(right)) // Reuse float64 case
+
 	default:
 		panic(
 			fmt.Errorf(
@@ -230,6 +275,24 @@ func ZerosMatrix(nR, nC int) mat.Dense {
 	for rowIndex := 0; rowIndex < nR; rowIndex++ {
 		for colIndex := 0; colIndex < nC; colIndex++ {
 			elts[rowIndex*nC+colIndex] = 0.0
+		}
+	}
+
+	return *mat.NewDense(nR, nC, elts)
+}
+
+/*
+OnesMatrix
+Description:
+
+	Returns a dense matrix of all ones.
+*/
+func OnesMatrix(nR, nC int) mat.Dense {
+	// Create empty slice
+	elts := make([]float64, nR*nC)
+	for rowIndex := 0; rowIndex < nR; rowIndex++ {
+		for colIndex := 0; colIndex < nC; colIndex++ {
+			elts[rowIndex*nC+colIndex] = 1.0
 		}
 	}
 
