@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/MatProGo-dev/SymbolicMath.go/graph/badge.svg?token=CO7oq7ZZ9l)](https://codecov.io/gh/MatProGo-dev/SymbolicMath.go)
+
 # SymbolicMath.go
 A symbolic math module for the Go (Golang) Programming Language.
 
