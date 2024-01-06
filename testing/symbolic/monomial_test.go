@@ -114,19 +114,11 @@ func TestMonomial_Plus1(t *testing.T) {
 	sum := m1.Plus(f1)
 
 	// Verify that the sum is a monomial
-	sumAsM, tf := sum.(symbolic.Monomial)
+	_, tf := sum.(symbolic.K)
 	if !tf {
 		t.Errorf(
-			"expected sum to be a monomial; received %T",
+			"expected sum to be a K; received %T",
 			sum,
-		)
-	}
-
-	// Test that the sum is a constant
-	if !sumAsM.IsConstant() {
-		t.Errorf(
-			"expected sum to be a constant; received %v",
-			sumAsM,
 		)
 	}
 
