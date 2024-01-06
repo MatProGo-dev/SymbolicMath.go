@@ -1,7 +1,9 @@
 package symbolic
 
 import (
+	"fmt"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"strings"
 	"testing"
 )
 
@@ -144,6 +146,139 @@ func TestConstant_Plus2(t *testing.T) {
 			"expected constant to be %v; received %v",
 			5.85,
 			k1.Plus(f2),
+		)
+	}
+}
+
+/*
+TestConstant_Plus3
+Description:
+
+	This test verifies that the Plus() method panics when it is given an improperly defined
+	expression. In this case, the expression is a symbolic.Variable.
+*/
+func TestConstant_Plus3(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	v1 := symbolic.Variable{
+		Lower: 1,
+		Upper: 0,
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Plus() to panic when given a bad symbolic.Variable; received nothing",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := fmt.Errorf("lower bound (%v) of variable must be less than upper bound (%v)", v1.Lower, v1.Upper)
+		if !strings.Contains(
+			rAsError.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"expected Plus() to panic with error \"%v\"; received %v",
+				expectedError,
+				rAsError,
+			)
+		}
+
+	}()
+
+	k1.Plus(v1)
+}
+
+/*
+TestConstant_Plus4
+Description:
+
+	This test verifies that the K.Plus() method properly returns a Polynomial when given a
+	well-defined Variable as input.
+*/
+func TestConstant_Plus4(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	v1 := symbolic.NewVariable()
+
+	// Test
+	sum := k1.Plus(v1)
+
+	sumAsPolynomial, tf := sum.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected Plus() to return a Polynomial; received %T",
+			sum,
+		)
+	}
+
+	if len(sumAsPolynomial.Monomials) != 2 {
+		t.Errorf(
+			"expected Plus() to return a Polynomial with 2 monomials; received %v",
+			len(sumAsPolynomial.Monomials),
+		)
+	}
+
+	// Check that one of the monomials is the constant 3.14 (i.e., has coefficient 3.14 and has no variables)
+	var constantIndex int = sumAsPolynomial.ConstantMonomialIndex()
+	if constantIndex == -1 {
+		t.Errorf(
+			"expected Plus() to return a Polynomial with a constant monomial; found no constant terms",
+		)
+	}
+
+	if sumAsPolynomial.Monomials[constantIndex].Coefficient != 3.14 {
+		t.Errorf(
+			"expected Plus() to return a Polynomial with a monomial with coefficient 3.14; received %v",
+			sumAsPolynomial.Monomials[0],
+		)
+	}
+
+	// Check that the other monomial is the variable
+	var variableIndex int = 1 - constantIndex
+	if len(sumAsPolynomial.Monomials[variableIndex].VariableFactors) != 1 {
+		t.Errorf(
+			"expected Plus() to return a Polynomial with a monomial with 1 variable; received %v",
+			sumAsPolynomial.Monomials[variableIndex],
+		)
+	}
+}
+
+/*
+TestConstant_Plus5
+Description:
+
+	This test verifies that a constant plus a monomial returns a monomial ONLY if the monomial
+	represents a constant.
+*/
+func TestConstant_Plus5(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	m1 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{},
+		Degrees:         []int{},
+	}
+
+	// Test
+	sum := k1.Plus(m1)
+
+	sumAsK, tf := sum.(symbolic.K)
+	if !tf {
+		t.Errorf(
+			"expected Plus() to return a K; received %T",
+			sum,
+		)
+	}
+
+	// Check that the proper constant is revealed.
+	if (float64(sumAsK) < 4.14-0.01) || (float64(sumAsK) > 4.14+0.01) {
+		t.Errorf(
+			"expected Plus() to return a K 4.14; received %v",
+			sumAsK,
 		)
 	}
 }

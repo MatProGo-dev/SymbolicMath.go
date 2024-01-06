@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+	"gonum.org/v1/gonum/mat"
 )
 
 /*
@@ -56,7 +57,12 @@ func (c K) Plus(rightIn interface{}) Expression {
 	// Input Processing
 	if IsExpression(rightIn) {
 		rightAsE, _ := ToExpression(rightIn)
-		err := CheckDimensionsInAddition(c, rightAsE)
+		err := rightAsE.Check()
+		if err != nil {
+			panic(fmt.Errorf("error in second argument to %v.Plus: %v", c, err))
+		}
+
+		err = CheckDimensionsInAddition(c, rightAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -71,6 +77,16 @@ func (c K) Plus(rightIn interface{}) Expression {
 	case Variable:
 		return right.Plus(c)
 	case Monomial:
+		return right.Plus(c)
+	case Polynomial:
+		return right.Plus(c)
+	case mat.VecDense:
+		return c.Plus(KVector(right))
+	case *mat.VecDense:
+		return c.Plus(KVector(*right))
+	case KVector:
+		return right.Plus(c)
+	case PolynomialVector:
 		return right.Plus(c)
 	}
 

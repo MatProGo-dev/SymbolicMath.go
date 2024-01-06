@@ -89,9 +89,7 @@ func (m Monomial) Plus(e interface{}) Expression {
 		return m.Plus(K(right))
 	case K:
 		if m.IsConstant() {
-			mCopy := m
-			mCopy.Coefficient += float64(right)
-			return mCopy
+			return K(m.Coefficient + float64(right))
 		} else {
 			return Polynomial{
 				Monomials: []Monomial{m, right.ToMonomial()},
