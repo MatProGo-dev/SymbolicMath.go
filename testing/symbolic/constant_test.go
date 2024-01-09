@@ -282,3 +282,223 @@ func TestConstant_Plus5(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestConstant_Plus6
+Description:
+
+	This test verifies that when a constant is added to a polynomial, the result is a polynomial.
+*/
+func TestConstant_Plus6(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.NewVariable().ToMonomial(),
+			symbolic.Monomial{
+				Coefficient:     1.0,
+				VariableFactors: []symbolic.Variable{},
+				Degrees:         []int{},
+			},
+		},
+	}
+
+	// Test
+	sum := k1.Plus(p1)
+
+	sumAsP, tf := sum.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected Plus() to return a Polynomial; received %T",
+			sum,
+		)
+	}
+
+	if len(sumAsP.Monomials) != 2 {
+		t.Errorf(
+			"expected Plus() to return a Polynomial with 2 monomials; received %v",
+			len(sumAsP.Monomials),
+		)
+	}
+
+	// Check that one of the monomials is the constant 4.14 (i.e., has coefficient 4.14 and has no variables)
+	var constantIndex int = sumAsP.ConstantMonomialIndex()
+	if constantIndex == -1 {
+		t.Errorf(
+			"expected Plus() to return a Polynomial with a constant monomial; found no constant terms",
+		)
+	}
+
+	if (sumAsP.Monomials[constantIndex].Coefficient > 4.14+1e-5) || (sumAsP.Monomials[constantIndex].Coefficient < 4.14-1e-5) {
+		t.Errorf(
+			"expected Plus() to return a Polynomial with a monomial with coefficient 4.14; received %v",
+			sumAsP.Monomials[constantIndex],
+		)
+	}
+
+	// Check that the other monomial is the variable
+	var variableIndex int = 1 - constantIndex
+	if len(sumAsP.Monomials[variableIndex].VariableFactors) != 1 {
+		t.Errorf(
+			"expected Plus() to return a Polynomial with a monomial with 1 variable; received %v",
+			sumAsP.Monomials[variableIndex],
+		)
+	}
+}
+
+/*
+TestConstant_Plus7
+Description:
+
+	Tests that when a constant is added to a mat.VecDense object,
+	the result is a constant vector.
+*/
+func TestConstant_Plus7(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	v1 := symbolic.OnesVector(4)
+
+	// Test
+	sum := k1.Plus(v1)
+
+	sumAsKV, tf := sum.(symbolic.KVector)
+	if !tf {
+		t.Errorf(
+			"expected Plus() to return a KVectir; received %T",
+			sum,
+		)
+	}
+
+	// Check that the proper constant is revealed.
+	for ii := 0; ii < v1.Len(); ii++ {
+
+		if (float64(sumAsKV.AtVec(ii).(symbolic.K)) < 4.14-0.01) || (float64(sumAsKV.AtVec(ii).(symbolic.K)) > 4.14+0.01) {
+			t.Errorf(
+				"expected Plus() to return a K 4.14; received %v",
+				sumAsKV.AtVec(ii),
+			)
+		}
+	}
+}
+
+/*
+TestConstant_Plus8
+Description:
+
+	Tests that when a constant is added to a *mat.VecDense object,
+	the result is a constant vector.
+*/
+func TestConstant_Plus8(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	v1 := symbolic.OnesVector(4)
+
+	// Test
+	sum := k1.Plus(&v1)
+
+	sumAsKV, tf := sum.(symbolic.KVector)
+	if !tf {
+		t.Errorf(
+			"expected Plus() to return a KVectir; received %T",
+			sum,
+		)
+	}
+
+	// Check that the proper constant is revealed.
+	for ii := 0; ii < v1.Len(); ii++ {
+
+		if (float64(sumAsKV.AtVec(ii).(symbolic.K)) < 4.14-0.01) || (float64(sumAsKV.AtVec(ii).(symbolic.K)) > 4.14+0.01) {
+			t.Errorf(
+				"expected Plus() to return a K 4.14; received %v",
+				sumAsKV.AtVec(ii),
+			)
+		}
+	}
+}
+
+/*
+TestConstant_Plus9
+Description:
+
+	Tests that when a constant is added to a KVector object,
+	the result is a constant vector.
+*/
+func TestConstant_Plus9(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	v2 := symbolic.OnesVector(4)
+	kv2 := symbolic.KVector(v2)
+
+	// Test
+	sum := k1.Plus(kv2)
+
+	sumAsKV, tf := sum.(symbolic.KVector)
+	if !tf {
+		t.Errorf(
+			"expected Plus() to return a KVectir; received %T",
+			sum,
+		)
+	}
+
+	// Check that the proper constant is revealed.
+	for ii := 0; ii < kv2.Len(); ii++ {
+
+		if (float64(sumAsKV.AtVec(ii).(symbolic.K)) < 4.14-0.01) || (float64(sumAsKV.AtVec(ii).(symbolic.K)) > 4.14+0.01) {
+			t.Errorf(
+				"expected Plus() to return a K 4.14; received %v",
+				sumAsKV.AtVec(ii),
+			)
+		}
+	}
+}
+
+/*
+TestConstant_Plus10
+Description:
+
+	Tests that when a constant is added to a PolynomialVector object,
+	a PolynomialVector object is returned.
+*/
+func TestConstant_Plus10(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	N := 5
+	vv2 := symbolic.NewVariableVector(N)
+	var pv3 symbolic.PolynomialVector
+	for ii := 0; ii < N; ii++ {
+		pv3.Elements = append(pv3.Elements, vv2.Elements[ii].ToPolynomial())
+	}
+
+	// Test
+	sum := k1.Plus(pv3)
+
+	sumAsPV, tf := sum.(symbolic.PolynomialVector)
+	if !tf {
+		t.Errorf(
+			"expected Plus() to return a PolynomialVector; received %T",
+			sum,
+		)
+	}
+
+	// Check that the sum's elements are all correct
+	for ii := 0; ii < pv3.Len(); ii++ {
+		// Collect the polynomial
+		p_ii := sumAsPV.Elements[ii]
+
+		// Check that the polynomial has the correct number of monomials (2)
+		if len(p_ii.Monomials) != 2 {
+			t.Errorf(
+				"expected Plus() to return a PolynomialVector with Polynomial elements with 2 monomials; received %v",
+				len(p_ii.Monomials),
+			)
+		}
+
+		// Check that a constant monomial is present
+		if p_ii.ConstantMonomialIndex() == -1 {
+			t.Errorf(
+				"expected Plus() to return a PolynomialVector with Polynomial elements with a constant monomial; received %v",
+				p_ii,
+			)
+		}
+	}
+}
