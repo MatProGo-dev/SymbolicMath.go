@@ -143,7 +143,7 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 				vv.Elements[ii].ToMonomial(),
 			)
 			// Create next polynomial.
-			pv.Elements = append(pv.Elements, tempPolynomial)
+			pv = append(pv, tempPolynomial)
 		}
 		return pv
 	default:

@@ -12,9 +12,7 @@ Description:
 	Defines a vector of polynomials.
 */
 
-type PolynomialVector struct {
-	Elements []Polynomial
-}
+type PolynomialVector []Polynomial
 
 // =========
 // Functions
@@ -28,12 +26,12 @@ Description:
 */
 func (pv PolynomialVector) Check() error {
 	// Check that the polynomial has at least one monomial
-	if len(pv.Elements) == 0 {
+	if len(pv) == 0 {
 		return fmt.Errorf("polynomial vector has no polynomials")
 	}
 
 	// Check that each of the monomials are well formed
-	for ii, polynomial := range pv.Elements {
+	for ii, polynomial := range pv {
 		err := polynomial.Check()
 		if err != nil {
 			return fmt.Errorf("error in polynomial %v: %v", ii, err)
@@ -56,7 +54,7 @@ func (pv PolynomialVector) Length() int {
 		panic(err)
 	}
 
-	return len(pv.Elements)
+	return len(pv)
 }
 
 /*
@@ -88,7 +86,7 @@ func (pv PolynomialVector) AtVec(idx int) ScalarExpression {
 	}
 
 	//
-	return pv.Elements[idx]
+	return pv[idx]
 }
 
 /*
@@ -99,7 +97,7 @@ Description:
 */
 func (pv PolynomialVector) Variables() []Variable {
 	var variables []Variable // The variables in the polynomial
-	for _, polynomial := range pv.Elements {
+	for _, polynomial := range pv {
 		variables = append(variables, polynomial.Variables()...)
 	}
 	return UniqueVars(variables)
@@ -122,7 +120,7 @@ func (pv PolynomialVector) Constant() mat.VecDense {
 	var constant mat.VecDense = ZerosVector(pv.Len())
 
 	// Algorithm
-	for ii, polynomial := range pv.Elements {
+	for ii, polynomial := range pv {
 		constant.SetVec(ii, polynomial.Constant())
 	}
 	return constant
@@ -166,7 +164,7 @@ func (pv PolynomialVector) LinearCoeff(vSlices ...[]Variable) mat.Dense {
 	// Algorithm
 	for rowIndex := 0; rowIndex < pv.Len(); rowIndex++ {
 		// Row i of the matrix linearCoeff is the linear coefficients of the polynomial at index i
-		polynomialII := pv.Elements[rowIndex]
+		polynomialII := pv[rowIndex]
 		linearCoeffsII := polynomialII.LinearCoeff(varSlice)
 
 		// Convert linearCoeffsII to a slice of float64's
@@ -212,27 +210,27 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 	case K:
 		pvCopy := pv
 
-		for ii, polynomial := range pv.Elements {
+		for ii, polynomial := range pv {
 			sum := polynomial.Plus(right)
-			pvCopy.Elements[ii] = sum.(Polynomial)
+			pvCopy[ii] = sum.(Polynomial)
 		}
 		return pvCopy
 	case Polynomial:
 		pvCopy := pv
 
 		// Algorithm
-		for ii, polynomial := range pv.Elements {
+		for ii, polynomial := range pv {
 			sum := polynomial.Plus(right)
-			pvCopy.Elements[ii] = sum.(Polynomial)
+			pvCopy[ii] = sum.(Polynomial)
 		}
 		return pvCopy
 	case PolynomialVector:
 		pvCopy := pv
 
 		// Algorithm
-		for ii, polynomial := range right.Elements {
-			sum := pv.Elements[ii].Plus(polynomial)
-			pvCopy.Elements[ii] = sum.(Polynomial)
+		for ii, polynomial := range right {
+			sum := pv[ii].Plus(polynomial)
+			pvCopy[ii] = sum.(Polynomial)
 		}
 		return pvCopy
 	}
@@ -278,23 +276,23 @@ func (pv PolynomialVector) Multiply(rightIn interface{}) Expression {
 	case K:
 		pvCopy := pv
 
-		for ii, polynomial := range pv.Elements {
+		for ii, polynomial := range pv {
 			product := polynomial.Multiply(right)
-			pvCopy.Elements[ii] = product.(Polynomial)
+			pvCopy[ii] = product.(Polynomial)
 		}
 		return pvCopy
 	case Polynomial:
 		pvCopy := pv
 
-		for ii, polynomial := range pv.Elements {
+		for ii, polynomial := range pv {
 			product := polynomial.Multiply(right)
-			pvCopy.Elements[ii] = product.(Polynomial)
+			pvCopy[ii] = product.(Polynomial)
 		}
 		return pvCopy
 	case PolynomialVector:
 		// This should only be true if the polynomial vector is actually a polynomial.
 		// Convert it to a polynomial and do the multiplication as if it was with just the scalar.
-		return pv.Multiply(right.Elements[0])
+		return pv.Multiply(right[0])
 
 	default:
 		panic(
@@ -441,8 +439,8 @@ func (pv PolynomialVector) DerivativeWrt(vIn Variable) Expression {
 	var derivative PolynomialVector = pv
 
 	// Algorithm
-	for ii, polynomial := range pv.Elements {
-		derivative.Elements[ii] = polynomial.DerivativeWrt(vIn).(Polynomial)
+	for ii, polynomial := range pv {
+		derivative[ii] = polynomial.DerivativeWrt(vIn).(Polynomial)
 	}
 
 	return derivative
@@ -459,7 +457,7 @@ func (pv PolynomialVector) IsConstantVector() bool {
 	var isConstant bool = true
 
 	// Algorithm
-	for _, polynomial := range pv.Elements {
+	for _, polynomial := range pv {
 		isConstant = isConstant && polynomial.IsConstant()
 	}
 
