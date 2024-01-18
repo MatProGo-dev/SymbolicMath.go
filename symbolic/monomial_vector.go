@@ -30,7 +30,7 @@ Description:
 func (mv MonomialVector) Check() error {
 	// Check that the polynomial has at least one monomial
 	if len(mv) == 0 {
-		return fmt.Errorf("monomial vector has no monomials")
+		return smErrors.EmptyVectorError{mv}
 	}
 
 	// Check that each of the monomials are well formed
@@ -65,7 +65,7 @@ func (mv MonomialVector) Variables() []Variable {
 	}
 
 	// Return
-	return variables
+	return UniqueVars(variables)
 }
 
 /*
