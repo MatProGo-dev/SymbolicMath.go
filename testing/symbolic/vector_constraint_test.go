@@ -192,7 +192,7 @@ func TestVectorConstraint_AtVec2(t *testing.T) {
 		}
 
 		rAsError := r.(error)
-		expectedError := smErrors.OutOfBoundsError{Index: N, Expression: vc}
+		expectedError := smErrors.InvalidVectorIndexError{Index: N, Expression: vc}
 		if !strings.Contains(
 			rAsError.Error(),
 			expectedError.Error(),

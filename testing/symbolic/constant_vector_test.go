@@ -244,7 +244,7 @@ func TestConstantVector_Plus2(t *testing.T) {
 	N := 3
 	kv1 := symbolic.KVector(symbolic.OnesVector(N))
 	vv2 := symbolic.NewVariableVector(N)
-	vv2.Elements[0] = symbolic.Variable{
+	vv2[0] = symbolic.Variable{
 		ID:    1001,
 		Lower: 0.0,
 		Upper: -1.0,

@@ -50,12 +50,10 @@ Description:
 */
 func TestPolynomialVector_Check2(t *testing.T) {
 	// Constants
-	pv := symbolic.PolynomialVector{
-		Elements: make([]symbolic.Polynomial, 20),
-	}
+	var pv symbolic.PolynomialVector = make([]symbolic.Polynomial, 20)
 	for ii := 0; ii < 20; ii++ {
 		if ii != 11 {
-			pv.Elements[ii] = symbolic.NewVariable().ToPolynomial()
+			pv[ii] = symbolic.NewVariable().ToPolynomial()
 		}
 	}
 
@@ -84,11 +82,10 @@ Description:
 */
 func TestPolynomialVector_Check3(t *testing.T) {
 	// Constants
-	pv := symbolic.PolynomialVector{
-		Elements: make([]symbolic.Polynomial, 20),
-	}
+	var pv symbolic.PolynomialVector = make([]symbolic.Polynomial, 20)
+
 	for ii := 0; ii < 20; ii++ {
-		pv.Elements[ii] = symbolic.NewVariable().ToPolynomial()
+		pv[ii] = symbolic.NewVariable().ToPolynomial()
 	}
 
 	// Test
@@ -110,12 +107,10 @@ Description:
 */
 func TestPolynomialVector_Length1(t *testing.T) {
 	// Constants
-	pv := symbolic.PolynomialVector{
-		Elements: make([]symbolic.Polynomial, 20),
-	}
+	var pv symbolic.PolynomialVector = make([]symbolic.Polynomial, 20)
 
 	for ii := 0; ii < 20; ii++ {
-		pv.Elements[ii] = symbolic.NewVariable().ToPolynomial()
+		pv[ii] = symbolic.NewVariable().ToPolynomial()
 	}
 
 	// Test
@@ -176,12 +171,10 @@ Description:
 */
 func TestPolynomialVector_Len1(t *testing.T) {
 	// Constants
-	pv := symbolic.PolynomialVector{
-		Elements: make([]symbolic.Polynomial, 20),
-	}
+	var pv symbolic.PolynomialVector = make([]symbolic.Polynomial, 20)
 
 	for ii := 0; ii < 20; ii++ {
-		pv.Elements[ii] = symbolic.NewVariable().ToPolynomial()
+		pv[ii] = symbolic.NewVariable().ToPolynomial()
 	}
 
 	// Test
@@ -202,12 +195,10 @@ Description:
 */
 func TestPolynomialVector_AtVec1(t *testing.T) {
 	// Constants
-	pv := symbolic.PolynomialVector{
-		Elements: make([]symbolic.Polynomial, 20),
-	}
+	var pv symbolic.PolynomialVector = make([]symbolic.Polynomial, 20)
 
 	for ii := 0; ii < 20; ii++ {
-		pv.Elements[ii] = symbolic.NewVariable().ToPolynomial()
+		pv[ii] = symbolic.NewVariable().ToPolynomial()
 	}
 
 	// Test
@@ -229,12 +220,10 @@ Description:
 */
 func TestPolynomialVector_AtVec2(t *testing.T) {
 	// Constants
-	pv := symbolic.PolynomialVector{
-		Elements: make([]symbolic.Polynomial, 20),
-	}
+	var pv symbolic.PolynomialVector = make([]symbolic.Polynomial, 20)
 
 	for ii := 0; ii < 20; ii++ {
-		pv.Elements[ii] = symbolic.NewVariable().ToPolynomial()
+		pv[ii] = symbolic.NewVariable().ToPolynomial()
 	}
 
 	// Test
@@ -275,13 +264,11 @@ Description:
 */
 func TestPolynomialVector_Variables1(t *testing.T) {
 	// Constants
-	pv := symbolic.PolynomialVector{
-		Elements: make([]symbolic.Polynomial, 20),
-	}
+	var pv symbolic.PolynomialVector = make([]symbolic.Polynomial, 20)
 
 	for ii := 0; ii < 20; ii++ {
 		tempK := symbolic.K(1)
-		pv.Elements[ii] = tempK.ToMonomial().ToPolynomial()
+		pv[ii] = tempK.ToMonomial().ToPolynomial()
 	}
 
 	// Test
@@ -307,12 +294,10 @@ func TestPolynomialVector_Variables2(t *testing.T) {
 	v3 := symbolic.NewVariable()
 	v4 := symbolic.NewVariable()
 
-	pv := symbolic.PolynomialVector{
-		Elements: []symbolic.Polynomial{
-			k1.ToMonomial().ToPolynomial(),
-			symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3}, Degrees: []int{1, 2}}.ToPolynomial(),
-			symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3, v4}, Degrees: []int{3, 5, 11}}.ToPolynomial(),
-		},
+	var pv symbolic.PolynomialVector = []symbolic.Polynomial{
+		k1.ToMonomial().ToPolynomial(),
+		symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3}, Degrees: []int{1, 2}}.ToPolynomial(),
+		symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3, v4}, Degrees: []int{3, 5, 11}}.ToPolynomial(),
 	}
 
 	// Check that there are 3 variables in pv
@@ -338,12 +323,10 @@ func TestPolynomialVector_Variables3(t *testing.T) {
 	v3 := symbolic.NewVariable()
 	v4 := symbolic.NewVariable()
 
-	pv := symbolic.PolynomialVector{
-		Elements: []symbolic.Polynomial{
-			k1.ToMonomial().ToPolynomial(),
-			symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3}, Degrees: []int{1, 2}}.ToPolynomial(),
-			symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v4}, Degrees: []int{3, 11}}.ToPolynomial(),
-		},
+	var pv symbolic.PolynomialVector = []symbolic.Polynomial{
+		k1.ToMonomial().ToPolynomial(),
+		symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3}, Degrees: []int{1, 2}}.ToPolynomial(),
+		symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v4}, Degrees: []int{3, 11}}.ToPolynomial(),
 	}
 
 	// Check that there are 3 variables in pv
@@ -404,12 +387,10 @@ Description:
 */
 func TestPolynomialVector_Constant2(t *testing.T) {
 	// Constants
-	pv := symbolic.PolynomialVector{
-		Elements: make([]symbolic.Polynomial, 20),
-	}
+	var pv symbolic.PolynomialVector = make([]symbolic.Polynomial, 20)
 
 	for ii := 0; ii < 20; ii++ {
-		pv.Elements[ii] = symbolic.NewVariable().ToPolynomial()
+		pv[ii] = symbolic.NewVariable().ToPolynomial()
 	}
 
 	// Check each element of the constant vector
@@ -439,8 +420,8 @@ func TestPolynomialVector_Constant3(t *testing.T) {
 	monom1 := symbolic.Monomial{Coefficient: 3.14}
 	monom2 := symbolic.NewVariable().ToMonomial()
 
-	pv0.Elements = append(pv0.Elements, monom1.ToPolynomial())
-	pv0.Elements = append(pv0.Elements, monom2.ToPolynomial())
+	pv0 = append(pv0, monom1.ToPolynomial())
+	pv0 = append(pv0, monom2.ToPolynomial())
 
 	// Test that the constant vector contains a 3.14 at the first position and a 0 at the second position
 	constantOut := pv0.Constant()
@@ -508,13 +489,11 @@ Description:
 */
 func TestPolynomialVector_LinearCoeff2(t *testing.T) {
 	// Constants
-	pv := symbolic.PolynomialVector{
-		Elements: make([]symbolic.Polynomial, 20),
-	}
+	var pv symbolic.PolynomialVector = make([]symbolic.Polynomial, 20)
 
 	for ii := 0; ii < 20; ii++ {
 		kII := symbolic.K(float64(ii))
-		pv.Elements[ii] = kII.ToMonomial().ToPolynomial()
+		pv[ii] = kII.ToMonomial().ToPolynomial()
 	}
 
 	// Test
@@ -556,13 +535,11 @@ Description:
 */
 func TestPolynomialVector_LinearCoeff3(t *testing.T) {
 	// Constants
-	pv := symbolic.PolynomialVector{
-		Elements: make([]symbolic.Polynomial, 20),
-	}
+	var pv symbolic.PolynomialVector = make([]symbolic.Polynomial, 20)
 
 	for ii := 0; ii < 20; ii++ {
 		vII := symbolic.NewVariable()
-		pv.Elements[ii] = symbolic.Monomial{
+		pv[ii] = symbolic.Monomial{
 			VariableFactors: []symbolic.Variable{vII},
 			Degrees:         []int{2},
 		}.ToPolynomial()
@@ -595,13 +572,11 @@ Description:
 */
 func TestPolynomialVector_LinearCoeff4(t *testing.T) {
 	// Constants
-	pv := symbolic.PolynomialVector{
-		Elements: make([]symbolic.Polynomial, 20),
-	}
+	var pv symbolic.PolynomialVector = make([]symbolic.Polynomial, 20)
 
 	for ii := 0; ii < 20; ii++ {
 		vII := symbolic.NewVariable()
-		pv.Elements[ii] = symbolic.Monomial{
+		pv[ii] = symbolic.Monomial{
 			Coefficient:     float64(ii),
 			VariableFactors: []symbolic.Variable{vII},
 			Degrees:         []int{1},
@@ -690,7 +665,7 @@ func TestPolynomialVector_Plus2(t *testing.T) {
 	// Constants
 	pv1 := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
 	}
 
 	pv2 := symbolic.PolynomialVector{}
@@ -738,12 +713,12 @@ func TestPolynomialVector_Plus3(t *testing.T) {
 	// Constants
 	pv1 := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
 	}
 
 	// Test
 	pv2 := pv1.Plus(3.14).(symbolic.PolynomialVector)
-	for _, polynomial := range pv2.Elements {
+	for _, polynomial := range pv2 {
 		if len(polynomial.Monomials) != 2 {
 			t.Errorf(
 				"Expected polynomial.Monomials to have length 2; received %v",
@@ -764,12 +739,12 @@ func TestPolynomialVector_Plus4(t *testing.T) {
 	// Constants
 	pv1 := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
 	}
 
 	// Test
 	pv2 := pv1.Plus(3.14).(symbolic.PolynomialVector)
-	for _, polynomial := range pv2.Elements {
+	for _, polynomial := range pv2 {
 		if len(polynomial.Monomials) != 2 {
 			t.Errorf(
 				"Expected polynomial.Monomials to have length 2; received %v",
@@ -790,12 +765,12 @@ func TestPolynomialVector_Plus5(t *testing.T) {
 	// Constants
 	pv1 := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
 	}
 
 	// Test
 	pv2 := pv1.Plus(pv1).(symbolic.PolynomialVector)
-	for _, polynomial := range pv2.Elements {
+	for _, polynomial := range pv2 {
 		if len(polynomial.Monomials) != 1 {
 			t.Errorf(
 				"Expected polynomial.Monomials to have length 2; received %v",
@@ -816,12 +791,12 @@ func TestPolynomialVector_Plus6(t *testing.T) {
 	// Constants
 	pv1 := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
 	}
 
 	// Test
 	pv2 := pv1.Plus(symbolic.NewVariable().ToPolynomial()).(symbolic.PolynomialVector)
-	for _, polynomial := range pv2.Elements {
+	for _, polynomial := range pv2 {
 		if len(polynomial.Monomials) != 2 {
 			t.Errorf(
 				"Expected polynomial.Monomials to have length 2; received %v",
@@ -883,7 +858,7 @@ func TestPolynomialVector_Multiply2(t *testing.T) {
 	// Constants
 	pv := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv.Elements = append(pv.Elements, symbolic.NewVariable().ToPolynomial())
+		pv = append(pv, symbolic.NewVariable().ToPolynomial())
 	}
 	pv2 := symbolic.PolynomialVector{}
 
@@ -927,13 +902,13 @@ func TestPolynomialVector_Multiply3(t *testing.T) {
 	// Constants
 	pv := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv.Elements = append(pv.Elements, symbolic.NewVariable().ToPolynomial())
+		pv = append(pv, symbolic.NewVariable().ToPolynomial())
 	}
 	k2 := symbolic.K(3.14)
 
 	// Test
 	pv3 := pv.Multiply(k2).(symbolic.PolynomialVector)
-	for _, polynomial := range pv3.Elements {
+	for _, polynomial := range pv3 {
 		for _, monomial := range polynomial.Monomials {
 			if monomial.Coefficient != 3.14 {
 				t.Errorf(
@@ -956,13 +931,13 @@ func TestPolynomialVector_Multiply4(t *testing.T) {
 	// Constants
 	pv := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv.Elements = append(pv.Elements, symbolic.NewVariable().ToPolynomial())
+		pv = append(pv, symbolic.NewVariable().ToPolynomial())
 	}
 	f2 := 3.14
 
 	// Test
 	pv3 := pv.Multiply(f2).(symbolic.PolynomialVector)
-	for _, polynomial := range pv3.Elements {
+	for _, polynomial := range pv3 {
 		for _, monomial := range polynomial.Monomials {
 			if monomial.Coefficient != 3.14 {
 				t.Errorf(
@@ -985,13 +960,13 @@ func TestPolynomialVector_Multiply5(t *testing.T) {
 	// Constants
 	pv := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv.Elements = append(pv.Elements, symbolic.NewVariable().ToPolynomial())
+		pv = append(pv, symbolic.NewVariable().ToPolynomial())
 	}
 	p2 := symbolic.NewVariable().ToPolynomial()
 
 	// Test
 	pv3 := pv.Multiply(p2).(symbolic.PolynomialVector)
-	for _, polynomial := range pv3.Elements {
+	for _, polynomial := range pv3 {
 		if len(polynomial.Monomials) != 1 {
 			t.Errorf(
 				"Expected polynomial.Monomials to have length 2; received %v",
@@ -1012,11 +987,11 @@ func TestPolynomialVector_Multiply6(t *testing.T) {
 	// Constants
 	pv1 := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
 	}
 	pv2 := symbolic.PolynomialVector{}
 	for ii := 0; ii < 2; ii++ {
-		pv2.Elements = append(pv2.Elements, symbolic.NewVariable().ToPolynomial())
+		pv2 = append(pv2, symbolic.NewVariable().ToPolynomial())
 	}
 
 	// Test
@@ -1063,14 +1038,14 @@ func TestPolynomialVector_Multiply7(t *testing.T) {
 	// Constants
 	pv1 := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
 	}
 	pv2 := symbolic.PolynomialVector{}
-	pv2.Elements = append(pv2.Elements, symbolic.NewVariable().ToPolynomial())
+	pv2 = append(pv2, symbolic.NewVariable().ToPolynomial())
 
 	// Test
 	pv3 := pv1.Multiply(pv2).(symbolic.PolynomialVector)
-	for _, polynomial := range pv3.Elements {
+	for _, polynomial := range pv3 {
 		if len(polynomial.Monomials) != 1 {
 			t.Errorf(
 				"Expected polynomial.Monomials to have length 2; received %v",
@@ -1091,7 +1066,7 @@ func TestPolynomialVector_Dims1(t *testing.T) {
 	// Constants
 	pv := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv.Elements = append(pv.Elements, symbolic.NewVariable().ToPolynomial())
+		pv = append(pv, symbolic.NewVariable().ToPolynomial())
 	}
 
 	// Test
@@ -1165,7 +1140,7 @@ func TestPolynomialVector_Comparison2(t *testing.T) {
 	pv1 := symbolic.PolynomialVector{}
 	pv2 := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
 	}
 
 	// Test
@@ -1210,8 +1185,8 @@ func TestPolynomialVector_Comparison3(t *testing.T) {
 	pv1 := symbolic.PolynomialVector{}
 	pv2 := symbolic.PolynomialVector{}
 	for ii := 0; ii < 20; ii++ {
-		pv1.Elements = append(pv1.Elements, symbolic.NewVariable().ToPolynomial())
-		pv2.Elements = append(pv2.Elements, symbolic.NewVariable().ToPolynomial())
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
+		pv2 = append(pv2, symbolic.NewVariable().ToPolynomial())
 	}
 	f1 := 3.14
 

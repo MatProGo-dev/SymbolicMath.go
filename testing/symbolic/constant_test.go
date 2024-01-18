@@ -295,7 +295,7 @@ func TestConstant_Plus6(t *testing.T) {
 	p1 := symbolic.Polynomial{
 		Monomials: []symbolic.Monomial{
 			symbolic.NewVariable().ToMonomial(),
-			symbolic.Monomial{
+			{
 				Coefficient:     1.0,
 				VariableFactors: []symbolic.Variable{},
 				Degrees:         []int{},
@@ -466,7 +466,7 @@ func TestConstant_Plus10(t *testing.T) {
 	vv2 := symbolic.NewVariableVector(N)
 	var pv3 symbolic.PolynomialVector
 	for ii := 0; ii < N; ii++ {
-		pv3.Elements = append(pv3.Elements, vv2.Elements[ii].ToPolynomial())
+		pv3 = append(pv3, vv2[ii].ToPolynomial())
 	}
 
 	// Test
@@ -483,7 +483,7 @@ func TestConstant_Plus10(t *testing.T) {
 	// Check that the sum's elements are all correct
 	for ii := 0; ii < pv3.Len(); ii++ {
 		// Collect the polynomial
-		p_ii := sumAsPV.Elements[ii]
+		p_ii := sumAsPV[ii]
 
 		// Check that the polynomial has the correct number of monomials (2)
 		if len(p_ii.Monomials) != 2 {
