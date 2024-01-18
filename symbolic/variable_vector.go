@@ -18,9 +18,7 @@ Description:
 
 	Represnts a variable in a optimization problem. The variable is
 */
-type VariableVector struct {
-	Elements []Variable
-}
+type VariableVector []Variable
 
 // =========
 // Functions
@@ -33,7 +31,7 @@ Description:
 	Returns the length of the vector of optimization variables.
 */
 func (vv VariableVector) Length() int {
-	return len(vv.Elements)
+	return len(vv)
 }
 
 /*
@@ -56,7 +54,7 @@ func (vv VariableVector) AtVec(idx int) ScalarExpression {
 	// Constants
 
 	// Algorithm
-	return vv.Elements[idx]
+	return vv[idx]
 }
 
 /*
@@ -66,7 +64,7 @@ Description:
 	Returns the slice of all variables in the vector.
 */
 func (vv VariableVector) Variables() []Variable {
-	return vv.Elements
+	return UniqueVars(vv)
 }
 
 /*
@@ -140,7 +138,7 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 			}
 			tempPolynomial.Monomials = append(
 				tempPolynomial.Monomials,
-				vv.Elements[ii].ToMonomial(),
+				vv[ii].ToMonomial(),
 			)
 			// Create next polynomial.
 			pv = append(pv, tempPolynomial)
@@ -302,13 +300,13 @@ func (vv VariableVector) Copy() VariableVector {
 	// Constants
 
 	// Algorithm
-	newVarSlice := []Variable{}
+	var newVarSlice VariableVector
 	for varIndex := 0; varIndex < vv.Len(); varIndex++ {
 		// Append to newVar Slice
-		newVarSlice = append(newVarSlice, vv.Elements[varIndex])
+		newVarSlice = append(newVarSlice, vv[varIndex])
 	}
 
-	return VariableVector{newVarSlice}
+	return newVarSlice
 
 }
 
@@ -341,7 +339,7 @@ Description:
 */
 func (vv VariableVector) Check() error {
 	// Check that each variable is properly defined
-	for ii, element := range vv.Elements {
+	for ii, element := range vv {
 		err := element.Check()
 		if err != nil {
 			return fmt.Errorf(
@@ -380,7 +378,7 @@ func (vv VariableVector) DerivativeWrt(vIn Variable) Expression {
 	vecOut := ZerosVector(vv.Len())
 
 	// Algorithm
-	for ii, element := range vv.Elements {
+	for ii, element := range vv {
 		if element.ID == vIn.ID {
 			vecOut.SetVec(ii, 1)
 		}
@@ -408,7 +406,7 @@ func NewVariableVector(N int, envs ...*Environment) VariableVector {
 	// Algorithm
 	var varVectorOut VariableVector
 	for ii := 0; ii < N; ii++ {
-		varVectorOut.Elements = append(varVectorOut.Elements, NewVariable(currentEnv))
+		varVectorOut = append(varVectorOut, NewVariable(currentEnv))
 	}
 
 	return varVectorOut
