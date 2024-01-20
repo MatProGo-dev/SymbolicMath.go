@@ -35,7 +35,7 @@ Description:
 func (mm MonomialMatrix) Check() error {
 	// Check that the matrix has at least one row
 	if len(mm) == 0 {
-		return fmt.Errorf("monomial matrix has no rows")
+		return smErrors.EmptyMatrixError{mm}
 	}
 
 	// Check that the number of columns is the same in each row
