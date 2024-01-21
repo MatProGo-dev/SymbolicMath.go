@@ -35,7 +35,7 @@ Description:
 func (pm PolynomialMatrix) Check() error {
 	// Check that the matrix has at least one row
 	if len(pm) == 0 {
-		return fmt.Errorf("polynomial matrix has no rows")
+		return smErrors.EmptyMatrixError{pm}
 	}
 
 	// Check that the number of columns is the same in each row
@@ -84,7 +84,7 @@ func (pm PolynomialMatrix) Variables() []Variable {
 		}
 	}
 
-	return variables
+	return UniqueVars(variables)
 }
 
 /*
@@ -149,6 +149,19 @@ func (pm PolynomialMatrix) Plus(e interface{}) Expression {
 			sum = append(sum, sumRow)
 		}
 		return sum
+	case PolynomialMatrix:
+		// Create containers
+		var sum PolynomialMatrix
+
+		for ii, row := range pm {
+			var sumRow []Polynomial
+			for jj, polynomial := range row {
+				sumRow = append(sumRow, polynomial.Plus(right[ii][jj]).(Polynomial))
+			}
+			sum = append(sum, sumRow)
+		}
+
+		return sum.Simplify()
 	default:
 		panic(
 			smErrors.UnsupportedInputError{
@@ -422,4 +435,28 @@ func (pm PolynomialMatrix) Constant() mat.Dense {
 	}
 
 	return constant
+}
+
+/*
+Simplify
+Description:
+
+	Simplifies the polynomial matrix, if possible.
+*/
+func (pm PolynomialMatrix) Simplify() PolynomialMatrix {
+	// Constants
+	nRows, nCols := pm.Dims()[0], pm.Dims()[1]
+
+	// Fill container with simplified polynomials
+	var simplified PolynomialMatrix
+	for rowIndex := 0; rowIndex < nRows; rowIndex++ {
+		tempRow := make([]Polynomial, nCols)
+		for colIndex := 0; colIndex < nCols; colIndex++ {
+			tempRow[colIndex] = pm[rowIndex][colIndex].Simplify()
+		}
+		simplified = append(simplified, tempRow)
+	}
+
+	// Return simplified polynomial
+	return simplified
 }
