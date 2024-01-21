@@ -75,6 +75,10 @@ func IsMatrixExpression(e interface{}) bool {
 		return true
 	case KMatrix:
 		return true
+	case MonomialMatrix:
+		return true
+	case PolynomialMatrix:
+		return true
 	default:
 		return false
 
@@ -101,6 +105,10 @@ func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 	case mat.Dense:
 		return KMatrix(e2), nil
 	case KMatrix:
+		return e2, nil
+	case MonomialMatrix:
+		return e2, nil
+	case PolynomialMatrix:
 		return e2, nil
 	default:
 		return KMatrix(ZerosMatrix(1, 1)), fmt.Errorf(
