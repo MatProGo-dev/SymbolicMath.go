@@ -34,6 +34,18 @@ Description:
 	- The sense is valid, (i.e., it is from the set of allowable senses defined in ConstrSense.
 */
 func (mc MatrixConstraint) Check() error {
+	// Input Processing
+	// Check that the left and right hand sides are well formed.
+	err := mc.LeftHandSide.Check()
+	if err != nil {
+		return err
+	}
+
+	err = mc.RightHandSide.Check()
+	if err != nil {
+		return err
+	}
+
 	// Save the dimensions of the left and right hand sides.
 	leftDims := mc.LeftHandSide.Dims()
 	rightDims := mc.RightHandSide.Dims()
@@ -60,7 +72,7 @@ func (mc MatrixConstraint) Check() error {
 	}
 
 	// Check that the sense is valid.
-	err := mc.Sense.Check()
+	err = mc.Sense.Check()
 	if err != nil {
 		return err
 	}
