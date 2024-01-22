@@ -87,7 +87,7 @@ func (mm MonomialMatrix) Variables() []Variable {
 	}
 
 	// Return the variables
-	return variables
+	return UniqueVars(variables)
 }
 
 /*
@@ -143,10 +143,29 @@ func (mm MonomialMatrix) Plus(e interface{}) Expression {
 			sumRow := make([]Polynomial, len(row))
 			for jj, monomial := range row {
 				sumRow[jj].Monomials = append(sumRow[jj].Monomials, monomial, right.ToMonomial())
+				// Simplify
+				sumRow[jj].Simplify()
 			}
 			sum = append(sum, sumRow)
 		}
 		return sum
+	case PolynomialMatrix:
+		// Create containers
+		var sum PolynomialMatrix
+
+		for ii, row := range mm {
+			sumRow := make([]Polynomial, len(row))
+			for jj, monomial := range row {
+				sumRow[jj].Monomials = append(sumRow[jj].Monomials, monomial)
+				sumRow[jj].Monomials = append(sumRow[jj].Monomials, right[ii][jj].Monomials...)
+				// Simplify
+				sumRow[jj].Simplify()
+			}
+			sum = append(sum, sumRow)
+		}
+
+		return sum
+
 	default:
 		panic(
 			smErrors.UnsupportedInputError{
