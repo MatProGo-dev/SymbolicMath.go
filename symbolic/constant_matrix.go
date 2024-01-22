@@ -99,6 +99,9 @@ func (km KMatrix) Plus(e interface{}) Expression {
 	case K:
 		return km.Plus(float64(right)) // Reuse float64 case
 
+	case PolynomialMatrix:
+		return right.Plus(km) // Reuse PolynomialMatrix case
+
 	default:
 		panic(
 			fmt.Errorf(

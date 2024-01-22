@@ -118,7 +118,7 @@ func (p Polynomial) Plus(e interface{}) Expression {
 
 		// Check to see if the variable is already in the polynomial
 		variableIndex := pCopy.VariableMonomialIndex(right)
-		if variableIndex != -1 {
+		if variableIndex == -1 {
 			// Monomial does not contain the variable,
 			// so add a new monomial.
 			rightAsMonom := right.ToMonomial()
@@ -130,6 +130,8 @@ func (p Polynomial) Plus(e interface{}) Expression {
 			newMonomial.Coefficient += 1.0
 			pCopy.Monomials[variableIndex] = newMonomial
 		}
+
+		return pCopy
 
 	case Polynomial:
 		pCopy := p

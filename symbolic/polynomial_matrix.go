@@ -149,6 +149,34 @@ func (pm PolynomialMatrix) Plus(e interface{}) Expression {
 			sum = append(sum, sumRow)
 		}
 		return sum
+	case Monomial:
+		return pm.Plus(right.ToPolynomial())
+	case Polynomial:
+		// Create containers
+		var sum PolynomialMatrix
+
+		for _, row := range pm {
+			var sumRow []Polynomial
+			for _, polynomial := range row {
+				sumRow = append(sumRow, polynomial.Plus(right).(Polynomial))
+			}
+			sum = append(sum, sumRow)
+		}
+		return sum
+	case KMatrix:
+		// Create containers
+		var sum PolynomialMatrix
+
+		for ii, row := range pm {
+			var sumRow []Polynomial
+			for jj, polynomial := range row {
+				sumRow = append(sumRow, polynomial.Plus(right.At(ii, jj).(K)).(Polynomial))
+			}
+			sum = append(sum, sumRow)
+		}
+
+		return sum
+
 	case PolynomialMatrix:
 		// Create containers
 		var sum PolynomialMatrix
