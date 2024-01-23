@@ -386,3 +386,162 @@ func TestMonomialVector_Constant3(t *testing.T) {
 		}
 	}
 }
+
+/*
+TestMonomialVector_Plus1
+Description:
+
+	Verifies that the Plus() method throws a panic when an improperly
+	initialized vector of monomials is given.
+*/
+func TestMonomialVector_Plus1(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Plus(3.14) to panic; received %v",
+				mv.Plus(3.14),
+			)
+		}
+	}()
+
+	mv.Plus(3.14)
+}
+
+/*
+TestMonomialVector_Plus2
+Description:
+
+	Verifies that the Plus() method throws a panic when a well-formed
+	vector of monomials is added to an improperly initialized expression
+	(in this case a monomial matrix).
+*/
+func TestMonomialVector_Plus2(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{
+		symbolic.NewVariable().ToMonomial(),
+		symbolic.NewVariable().ToMonomial(),
+	}
+	pm := symbolic.MonomialMatrix{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Plus(pm) to panic; received %v",
+				mv.Plus(pm),
+			)
+		}
+	}()
+
+	mv.Plus(pm)
+}
+
+/*
+TestMonomialVector_Plus3
+Description:
+
+	Verifies that the Plus() method throws a panic when a well-formed
+	vector of monomials is added to an well formed
+	matrix of polynomials that do not have identical dimensions.
+*/
+func TestMonomialVector_Plus3(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{
+		symbolic.NewVariable().ToMonomial(),
+		symbolic.NewVariable().ToMonomial(),
+	}
+	pm := symbolic.PolynomialMatrix{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Plus(pm) to panic; received %v",
+				mv.Plus(pm),
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected mv.Plus(pm) to panic with an error; received %v",
+				r,
+			)
+		}
+
+		if !strings.Contains(
+			rAsE.Error(),
+			smErrors.DimensionError{
+				Operation: "Plus",
+				Arg1:      mv,
+				Arg2:      pm,
+			}.Error(),
+		) {
+			t.Errorf(
+				"Expected mv.Plus(pm) to panic with an error containing \"dimensions\"; received %v",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	mv.Plus(pm)
+}
+
+/*
+TestMonomialVector_Plus4
+Description:
+
+	Verifies that the Plus() method returns the correct value when a
+	well-formed vector of monomials is added to a well-formed
+	vector of monomials.
+*/
+func TestMonomialVector_Plus4(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{v1},
+		Degrees:         []int{1},
+	}
+	m2 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{v2},
+		Degrees:         []int{1},
+	}
+	mv1 := symbolic.MonomialVector{m1, m2}
+	mv2 := symbolic.MonomialVector{m1, m2}
+
+	// Test
+	sum := mv1.Plus(mv2)
+
+	sumAsPV, tf := sum.(symbolic.PolynomialVector)
+	if !tf {
+		t.Errorf(
+			"expected sum to be a PolynomialVector; received %T",
+			sum,
+		)
+	}
+
+	for _, polynomial := range sumAsPV {
+		if len(polynomial.Monomials) != 1 {
+			t.Errorf(
+				"expected len(polynomial.Monomials) to be 1; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+	}
+}

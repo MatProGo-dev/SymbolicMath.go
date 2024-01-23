@@ -154,11 +154,20 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 			pv = append(pv, monomial.Plus(right).(Polynomial))
 		}
 		return pv
+	case MonomialVector:
+		// Create a polynomial vector
+		var pv PolynomialVector
+		for ii, monomial := range mv {
+			var tempPolynomial Polynomial
+			tempPolynomial.Monomials = append(tempPolynomial.Monomials, monomial, mv[ii])
+			pv = append(pv, tempPolynomial.Simplify())
+		}
+		return pv
 	}
 
 	// Unrecognized response is a panic
 	panic(
-		fmt.Errorf("Unexpected type of term1 in the Plus() method: %T (%v)", term1, term1),
+		fmt.Errorf("Unexpected type of term1 in the MonomialVector.Plus() method: %T (%v)", term1, term1),
 	)
 }
 
