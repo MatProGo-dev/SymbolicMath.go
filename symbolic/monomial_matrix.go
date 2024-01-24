@@ -235,6 +235,9 @@ func (mm MonomialMatrix) Multiply(e interface{}) Expression {
 		panic(err)
 	}
 
+	nRows := mm.Dims()[0]
+	//nCols := -1 // Will be reassigned for a valid expression.
+
 	if IsExpression(e) {
 		eAsE, _ := ToExpression(e)
 		err = eAsE.Check()
@@ -249,6 +252,8 @@ func (mm MonomialMatrix) Multiply(e interface{}) Expression {
 	}
 
 	// Constants
+
+	// Algorithm
 	switch right := e.(type) {
 	case float64:
 		return mm.Multiply(K(right))
@@ -264,6 +269,31 @@ func (mm MonomialMatrix) Multiply(e interface{}) Expression {
 			product = append(product, productRow)
 		}
 		return product
+	case VariableVector:
+		if nRows == 1 {
+			// Output will be a polynomial
+			var product Polynomial
+			for ii, monomial := range mm[0] {
+				product.Monomials = append(product.Monomials, monomial.Multiply(right[ii]).(Monomial))
+			}
+			return product.Simplify()
+
+		} else {
+			// Output will be a polynomial matrix
+			var product PolynomialVector
+			for _, row := range mm {
+				product_ii := row[0].ToPolynomial().Multiply(right[0]).(Polynomial)
+				for jj := 1; jj < len(row); jj++ {
+					product_ii = product_ii.Plus(
+						row[jj].ToPolynomial().Multiply(right[jj]),
+					).(Polynomial)
+				}
+				product = append(product, product_ii)
+			}
+
+			return product
+
+		}
 	default:
 		panic(
 			smErrors.UnsupportedInputError{

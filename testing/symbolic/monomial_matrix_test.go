@@ -752,4 +752,249 @@ func TestMonomialMatrix_Plus8(t *testing.T) {
 TestMonomialMatrix_Multiply1
 Description:
 
+	Tests that the Multiply() method panics if the monomial matrix
+	that it is called on is not well formed.
 */
+func TestMonomialMatrix_Multiply1(t *testing.T) {
+	// Constants
+	var mm1 symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected Multiply() to panic; it did not",
+			)
+		}
+	}()
+	mm1.Multiply(mm1)
+}
+
+/*
+TestMonomialMatrix_Multiply2
+Description:
+
+	Tests that the Multiply() method panics if the second expression
+	input to the method is not well formed.
+*/
+func TestMonomialMatrix_Multiply2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+	var mm2 symbolic.MonomialMatrix
+
+	expectedError := mm2.Check()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Multiply() to panic; it did not",
+			)
+		}
+
+		// Check that the error is correct
+		err, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected Multiply() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		if !strings.Contains(
+			err.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"expected Multiply() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				err,
+			)
+		}
+
+	}()
+	mm.Multiply(mm2)
+}
+
+/*
+TestMonomialMatrix_Multiply3
+Description:
+
+	Tests that the Multiply() method panics if the two expressions
+	do not have the matching sizes for matrix multiplication (i.e.,
+	the number of columns in the matrix of monomials doesn't match
+	the number of rows in the second expression).
+*/
+func TestMonomialMatrix_Multiply3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+	km2 := symbolic.KMatrix(symbolic.OnesMatrix(3, 2))
+
+	expectedError := smErrors.DimensionError{
+		Arg1:      mm,
+		Arg2:      km2,
+		Operation: "Multiply",
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Multiply() to panic; it did not",
+			)
+		}
+
+		// Check that the error is correct
+		err, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected Multiply() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		if !strings.Contains(
+			err.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"expected Multiply() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				err,
+			)
+		}
+
+	}()
+	mm.Multiply(km2)
+}
+
+/*
+TestMonomialMatrix_Multiply4
+Description:
+
+	Tests that the Multiply() method properly multiplies a matrix
+	of Monomials with a constant. The result should be a matrix of
+	monomials where each monomial has the scaled coefficients
+	of the original monomial.
+*/
+func TestMonomialMatrix_Multiply4(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1},
+		{m1, m1},
+	}
+	f2 := 2.0
+
+	// Test
+	product := mm.Multiply(f2)
+
+	// Check that the product is of the MonomialMatrix type
+	productMat, ok := product.(symbolic.MonomialMatrix)
+	if !ok {
+		t.Errorf(
+			"expected Multiply() to return a MonomialMatrix; received %v",
+			product,
+		)
+	}
+
+	// Check that each entry in the product:
+	// 1. Contains the original monomial
+	// 2. Contains the constant monomial
+	for ii, row := range productMat {
+		for jj, monomial := range row {
+			// Check that the coefficient of this monomial is f2 * mm1[ii][jj].Coefficient
+			if monomial.Coefficient != f2*m1.Coefficient {
+				t.Errorf(
+					"expected Multiply() to return a MonomialMatrix with coefficient %v at (%v,%v); received %v",
+					f2*m1.Coefficient,
+					ii,
+					jj,
+					monomial.Coefficient,
+				)
+			}
+		}
+	}
+}
+
+/*
+TestMonomialMatrix_Multiply5
+Description:
+
+	Tests that the Multiply() method properly multiplies a matrix
+	of Monomials with a vector of variables. The result should be a matrix of
+	monomials where each polynomial has a number of monomials
+	equal to the number of values in the variable vector.
+*/
+func TestMonomialMatrix_Multiply5(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	v3 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	m2 := v2.ToMonomial()
+	m3 := v3.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1, m1},
+		{m2, m2, m2},
+		{m3, m3, m3},
+	}
+	var variableVector symbolic.VariableVector = []symbolic.Variable{v1, v2, v3}
+
+	// Test
+	product := mm.Multiply(variableVector)
+
+	// Check that the dimensions of the product are (3,1)
+	if dims := product.Dims(); dims[0] != 3 || dims[1] != 1 {
+		t.Errorf(
+			"expected Multiply() to return a MonomialMatrix with dimensions (3,1); received %v",
+			dims,
+		)
+	}
+
+	// Check that the product is of the PolynomialMatrix type
+	productVec, ok := product.(symbolic.PolynomialVector)
+	if !ok {
+		t.Errorf(
+			"expected Multiply() to return a PolynomialMatrix; received %v",
+			product,
+		)
+	}
+
+	// Check that each entry in the product:
+	// 1. Does not contains the original monomials
+	for jj, polynomial := range productVec {
+		// Check that the number of monomials in this polynomial is equal to the number expected
+		if len(polynomial.Monomials) != 3 {
+			t.Errorf(
+				"expected Multiply() to return a PolynomialMatrix with %v monomials at index %v; received %v",
+				len(variableVector),
+				jj,
+				len(polynomial.Monomials),
+			)
+		}
+
+		// Check that each of the original monomials is NOT in this polynomial
+		for _, monomial := range []symbolic.Monomial{m1, m2, m3} {
+			if monomialIndex := polynomial.MonomialIndex(monomial); monomialIndex != -1 {
+				t.Errorf(
+					"expected Multiply() to return a PolynomialMatrix without monomial %v at index %v; received %v",
+					monomial,
+					monomialIndex,
+					polynomial,
+				)
+			}
+		}
+	}
+}
