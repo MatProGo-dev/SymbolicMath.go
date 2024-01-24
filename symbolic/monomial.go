@@ -433,7 +433,17 @@ Description:
 	Creates a copy of the monomial m as a polynomial.
 */
 func (m Monomial) ToPolynomial() Polynomial {
+	// Copy Values
+	mCopy := Monomial{
+		Coefficient:     m.Coefficient,
+		Degrees:         make([]int, len(m.Degrees)),
+		VariableFactors: make([]Variable, len(m.VariableFactors)),
+	}
+	copy(mCopy.Degrees, m.Degrees)
+	copy(mCopy.VariableFactors, m.VariableFactors)
+
+	// Return polynomial with copied monomial
 	return Polynomial{
-		Monomials: []Monomial{m},
+		Monomials: []Monomial{mCopy},
 	}
 }

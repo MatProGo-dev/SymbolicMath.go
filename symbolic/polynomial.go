@@ -95,7 +95,10 @@ func (p Polynomial) Plus(e interface{}) Expression {
 	case float64:
 		return p.Plus(K(right))
 	case K:
-		pCopy := p
+		pCopy := Polynomial{
+			Monomials: make([]Monomial, len(p.Monomials)),
+		}
+		copy(pCopy.Monomials, p.Monomials)
 
 		// Algorithm
 		constantIndex := pCopy.ConstantMonomialIndex()
@@ -114,7 +117,10 @@ func (p Polynomial) Plus(e interface{}) Expression {
 		return pCopy
 
 	case Variable:
-		pCopy := p
+		pCopy := Polynomial{
+			Monomials: make([]Monomial, len(p.Monomials)),
+		}
+		copy(pCopy.Monomials, p.Monomials)
 
 		// Check to see if the variable is already in the polynomial
 		variableIndex := pCopy.VariableMonomialIndex(right)
@@ -134,7 +140,10 @@ func (p Polynomial) Plus(e interface{}) Expression {
 		return pCopy
 
 	case Polynomial:
-		pCopy := p
+		pCopy := Polynomial{
+			Monomials: make([]Monomial, len(p.Monomials)),
+		}
+		copy(pCopy.Monomials, p.Monomials)
 
 		// Combine the list of monomials.
 		pCopy.Monomials = append(pCopy.Monomials, right.Monomials...)
