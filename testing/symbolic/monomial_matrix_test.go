@@ -220,6 +220,30 @@ func TestMonomialMatrix_Variables2(t *testing.T) {
 }
 
 /*
+TestMonomialMatrix_Variables3
+Description:
+
+	Tests that the Variables() method properly panics
+	when an improperly defined matrix of Monomials is given.
+*/
+func TestMonomialMatrix_Variables3(t *testing.T) {
+	// Constants
+	var mm1 symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected Variables() to panic; it did not",
+			)
+		}
+	}()
+
+	mm1.Variables()
+
+}
+
+/*
 TestMonomialMatrix_Dims1
 Description:
 
@@ -474,3 +498,258 @@ func TestMonomialMatrix_Plus4(t *testing.T) {
 		}
 	}
 }
+
+/*
+TestMonomialMatrix_Plus5
+Description:
+
+	Tests that the Plus() method properly adds a matrix of Monomials
+	to a unique variable object. The result should be a matrix of polynomials
+	where each polynomial has two terms. We will check the number of terms
+	in each polynomial.
+*/
+func TestMonomialMatrix_Plus5(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+
+	v2 := symbolic.NewVariable()
+
+	// Test
+	sum := mm.Plus(v2)
+
+	// Check that the sum is of the PolynomialMatrix type
+	_, ok := sum.(symbolic.PolynomialMatrix)
+	if !ok {
+		t.Errorf(
+			"expected Plus() to return a PolynomialMatrix; received %v",
+			sum,
+		)
+	}
+
+	// Check that each entry in the sum:
+	// 1. Contains 2 monomials
+	// 2. Contains the original monomial
+	// 3. Contains the constant monomial
+	for _, row := range sum.(symbolic.PolynomialMatrix) {
+		for _, polynomial := range row {
+			if len(polynomial.Monomials) != 2 {
+				t.Errorf(
+					"expected Plus() to return a PolynomialMatrix with 2 monomials; received %v",
+					polynomial.Monomials,
+				)
+			}
+
+			// Check that the first monomial is the original monomial
+			if v1Index := polynomial.VariableMonomialIndex(v1); v1Index == -1 {
+				t.Errorf(
+					"expected Plus() to return a PolynomialMatrix with the original monomial; received %v",
+					polynomial,
+				)
+			}
+
+		}
+	}
+}
+
+/*
+TestMonomialMatrix_Plus6
+Description:
+
+	Tests that the Plus() method properly adds a matrix of Monomials
+	to a monomial. The result should be a matrix of polynomials
+	where each polynomial has two terms. We will check the number of terms
+	in each polynomial.
+*/
+func TestMonomialMatrix_Plus6(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+
+	m2 := symbolic.NewVariable().ToMonomial()
+
+	// Test
+	sum := mm.Plus(m2)
+
+	// Check that the sum is of the PolynomialMatrix type
+	_, ok := sum.(symbolic.PolynomialMatrix)
+	if !ok {
+		t.Errorf(
+			"expected Plus() to return a PolynomialMatrix; received %v",
+			sum,
+		)
+	}
+
+	// Check that each entry in the sum:
+	// 1. Contains 2 monomials
+	// 2. Contains the original monomial
+	// 3. Contains the constant monomial
+	for _, row := range sum.(symbolic.PolynomialMatrix) {
+		for _, polynomial := range row {
+			if len(polynomial.Monomials) != 2 {
+				t.Errorf(
+					"expected Plus() to return a PolynomialMatrix with 2 monomials; received %v",
+					polynomial.Monomials,
+				)
+			}
+
+			// Check that the first monomial is the original monomial
+			if v1Index := polynomial.VariableMonomialIndex(v1); v1Index == -1 {
+				t.Errorf(
+					"expected Plus() to return a PolynomialMatrix with the original monomial; received %v",
+					polynomial,
+				)
+			}
+
+		}
+	}
+}
+
+/*
+TestMonomialMatrix_Plus7
+Description:
+
+	Tests that the Plus() method properly adds a matrix of Monomials
+	to a polynomial. The result should be a matrix of polynomials
+	where each polynomial has three terms. We will check the number
+	of terms in each polynomial.
+*/
+func TestMonomialMatrix_Plus7(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+
+	m2 := symbolic.NewVariable().ToMonomial()
+	m3 := symbolic.NewVariable().ToMonomial()
+
+	p4 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{m2, m3},
+	}
+
+	// Test
+	sum := mm.Plus(p4)
+
+	// Check that the sum is of the PolynomialMatrix type
+	_, ok := sum.(symbolic.PolynomialMatrix)
+	if !ok {
+		t.Errorf(
+			"expected Plus() to return a PolynomialMatrix; received %v",
+			sum,
+		)
+	}
+
+	// Check that each entry in the sum:
+	// 1. Contains 2 monomials
+	// 2. Contains the original monomial
+	// 3. Contains the constant monomial
+	for _, row := range sum.(symbolic.PolynomialMatrix) {
+		for _, polynomial := range row {
+			if len(polynomial.Monomials) != 3 {
+				t.Errorf(
+					"expected Plus() to return a PolynomialMatrix with 2 monomials; received %v",
+					polynomial.Monomials,
+				)
+			}
+
+			// Check that the first monomial is the original monomial
+			if v1Index := polynomial.VariableMonomialIndex(v1); v1Index == -1 {
+				t.Errorf(
+					"expected Plus() to return a PolynomialMatrix with the original monomial; received %v",
+					polynomial,
+				)
+			}
+
+		}
+	}
+}
+
+/*
+TestMonomialMatrix_Plus8
+Description:
+
+	Tests that the Plus() method properly adds a matrix of Monomials
+	to a polynomial matrix. The result should be a matrix of polynomials
+	where each polynomial has three terms. We will check the number
+	of terms in each polynomial.
+*/
+func TestMonomialMatrix_Plus8(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+
+	m2 := symbolic.NewVariable().ToMonomial()
+	m3 := symbolic.NewVariable().ToMonomial()
+
+	p4 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{m2, m3},
+	}
+
+	var pm5 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p4, p4},
+		{p4, m2.Plus(3.0).(symbolic.Polynomial)},
+	}
+
+	// Test
+	sum := mm.Plus(pm5)
+
+	// Check that the sum is of the PolynomialMatrix type
+	_, ok := sum.(symbolic.PolynomialMatrix)
+	if !ok {
+		t.Errorf(
+			"expected Plus() to return a PolynomialMatrix; received %v",
+			sum,
+		)
+	}
+
+	// Check that each entry in the sum:
+	// 1. Contains 2 monomials
+	// 2. Contains the original monomial
+	// 3. Contains the constant monomial
+	for ii, row := range sum.(symbolic.PolynomialMatrix) {
+		for jj, polynomial := range row {
+			if len(polynomial.Monomials) != 3 {
+				t.Errorf(
+					"expected Plus() to return a PolynomialMatrix with 2 monomials; received %v",
+					polynomial.Monomials,
+				)
+			}
+
+			// Check that the first monomial is the original monomial
+			if v1Index := polynomial.VariableMonomialIndex(v1); v1Index == -1 {
+				t.Errorf(
+					"expected Plus() to return a PolynomialMatrix with the original monomial; received %v",
+					polynomial,
+				)
+			}
+
+			if ii == 1 && jj == 1 {
+				// There should be a constant in this polynomial.
+				if constantIndex := polynomial.ConstantMonomialIndex(); constantIndex == -1 {
+					t.Errorf(
+						"expected Plus() to return a PolynomialMatrix with the original monomial; received %v",
+						polynomial,
+					)
+				}
+			}
+
+		}
+	}
+}
+
+/*
+TestMonomialMatrix_Multiply1
+Description:
+
+*/

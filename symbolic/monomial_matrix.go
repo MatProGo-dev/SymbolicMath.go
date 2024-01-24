@@ -149,6 +149,37 @@ func (mm MonomialMatrix) Plus(e interface{}) Expression {
 			sum = append(sum, sumRow)
 		}
 		return sum
+	case Variable:
+		// Create containers
+		var sum PolynomialMatrix
+
+		for _, row := range mm {
+			sumRow := make([]Polynomial, len(row))
+			for jj, monomial := range row {
+				sumRow[jj].Monomials = append(sumRow[jj].Monomials, monomial, right.ToMonomial())
+				// Simplify
+				sumRow[jj].Simplify()
+			}
+			sum = append(sum, sumRow)
+		}
+		return sum
+
+	case Monomial:
+		// Create containers
+		var sum PolynomialMatrix
+
+		for _, row := range mm {
+			sumRow := make([]Polynomial, len(row))
+			for jj, monomial := range row {
+				sumRow[jj].Monomials = append(sumRow[jj].Monomials, monomial, right)
+				// Simplify
+				sumRow[jj].Simplify()
+			}
+			sum = append(sum, sumRow)
+		}
+
+		return sum
+
 	case Polynomial:
 		// Create containers
 		var sum PolynomialMatrix
