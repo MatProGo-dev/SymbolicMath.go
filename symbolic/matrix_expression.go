@@ -94,7 +94,7 @@ Description:
 func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 	// Input Processing
 	if !IsMatrixExpression(e) {
-		return KMatrix(ZerosMatrix(1, 1)), fmt.Errorf(
+		return DenseToKMatrix(ZerosMatrix(1, 1)), fmt.Errorf(
 			"the input interface is of type %T, which is not recognized as a MatrixExpression.",
 			e,
 		)
@@ -103,7 +103,7 @@ func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 	// Convert
 	switch e2 := e.(type) {
 	case mat.Dense:
-		return KMatrix(e2), nil
+		return DenseToKMatrix(e2), nil
 	case KMatrix:
 		return e2, nil
 	case MonomialMatrix:
@@ -111,7 +111,7 @@ func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 	case PolynomialMatrix:
 		return e2, nil
 	default:
-		return KMatrix(ZerosMatrix(1, 1)), fmt.Errorf(
+		return DenseToKMatrix(ZerosMatrix(1, 1)), fmt.Errorf(
 			"unexpected vector expression conversion requested for type %T!",
 			e,
 		)

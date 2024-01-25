@@ -375,7 +375,7 @@ func (mm MonomialMatrix) Comparison(rightIn interface{}, sense ConstrSense) Cons
 
 		return MatrixConstraint{
 			LeftHandSide:  mm,
-			RightHandSide: KMatrix(KAsDense),
+			RightHandSide: DenseToKMatrix(KAsDense),
 			Sense:         sense,
 		}
 	default:

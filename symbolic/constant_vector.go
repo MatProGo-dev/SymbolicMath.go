@@ -18,7 +18,7 @@ KVector
 	A type which is built on top of the KVector()
 	a constant expression type for an MIP. K for short ¯\_(ツ)_/¯
 */
-type KVector mat.VecDense // Inherit all methods from mat.VecDense
+type KVector []K // Inherit all methods from mat.VecDense
 
 /*
 Len
@@ -26,8 +26,7 @@ Len
 	Computes the length of the KVector given.
 */
 func (kv KVector) Len() int {
-	kvAsVector := mat.VecDense(kv)
-	return kvAsVector.Len()
+	return len(kv)
 }
 
 /*
@@ -54,7 +53,7 @@ func (kv KVector) AtVec(idx int) ScalarExpression {
 	}
 
 	// Algorithm
-	kvAsVector := mat.VecDense(kv)
+	kvAsVector := kv.ToVecDense()
 	return K(kvAsVector.AtVec(idx))
 }
 
@@ -84,7 +83,7 @@ Constant
 	Returns the constant additive value in the expression. For constants, this is just the constants value
 */
 func (kv KVector) Constant() mat.VecDense {
-	return mat.VecDense(kv)
+	return kv.ToVecDense()
 }
 
 /*
@@ -120,22 +119,22 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 		eAsVec.ScaleVec(right, &tempOnes)
 
 		// Add the values
-		return kv.Plus(KVector(eAsVec))
+		return kv.Plus(VecDenseToKVector(eAsVec))
 	case K:
 		// Return Addition
 		return kv.Plus(float64(right))
 
 	case *mat.VecDense:
-		return kv.Plus(KVector(*right)) // Convert to KVector
+		return kv.Plus(VecDenseToKVector(*right)) // Convert to KVector
 
 	case KVector:
 		// Compute Addition
 		var result mat.VecDense
-		kvAsVec := mat.VecDense(kv)
-		eAsVec := mat.VecDense(right)
+		kvAsVec := kv.ToVecDense()
+		eAsVec := right.ToVecDense()
 		result.AddVec(&kvAsVec, &eAsVec)
 
-		return KVector(result)
+		return VecDenseToKVector(result)
 
 	case VariableVector:
 		return right.Plus(kv)
@@ -240,10 +239,10 @@ func (kv KVector) Multiply(rightIn interface{}) Expression {
 	case float64:
 		// Use mat.Vector's multiplication method
 		var result mat.VecDense
-		kvAsVec := mat.VecDense(kv)
+		kvAsVec := kv.ToVecDense()
 		result.ScaleVec(right, &kvAsVec)
 
-		return KVector(result)
+		return VecDenseToKVector(result)
 	case K:
 		// Convert to float64
 		eAsFloat := float64(right)
@@ -289,7 +288,7 @@ Description:
 */
 func (kv KVector) Transpose() Expression {
 	// Constants
-	kvAsVD := mat.VecDense(kv)
+	kvAsVD := kv.ToVecDense()
 	kvLen := kv.Len()
 
 	// Create empty matrix and populate
@@ -298,7 +297,7 @@ func (kv KVector) Transpose() Expression {
 		kvT.Set(0, colIndex, kvAsVD.AtVec(colIndex))
 	}
 
-	return KMatrix(kvT)
+	return DenseToKMatrix(kvT)
 }
 
 /*
@@ -355,5 +354,56 @@ Description:
 	variable vIn which should be a vector of all zeros.
 */
 func (kv KVector) DerivativeWrt(vIn Variable) Expression {
-	return KVector(ZerosVector(kv.Len()))
+	return VecDenseToKVector(ZerosVector(kv.Len()))
+}
+
+/*
+String
+Description:
+
+	Returns a string representation of the constant vector.
+*/
+func (kv KVector) String() string {
+	// Constants
+	lenKV := kv.Len()
+
+	// Assemble string
+	stringKV := "["
+	for ii, tempK := range kv {
+		stringKV += fmt.Sprintf("%v", tempK)
+		if ii < lenKV-1 {
+			stringKV += ", "
+		}
+	}
+	stringKV += "]"
+
+	return stringKV
+}
+
+/*
+ToVecDense
+Description:
+
+	This method converts the KVector to a mat.VecDense.
+*/
+func (kv KVector) ToVecDense() mat.VecDense {
+	dataIn := make([]float64, kv.Len())
+	for ii, tempK := range kv {
+		dataIn[ii] = float64(tempK)
+	}
+	return *mat.NewVecDense(len(kv), dataIn)
+}
+
+/*
+VecDenseToKVector
+Description:
+
+	This method converts the mat.VecDense to a KVector.
+*/
+func VecDenseToKVector(v mat.VecDense) KVector {
+	out := make([]K, v.Len())
+	for ii := 0; ii < v.Len(); ii++ {
+		out[ii] = K(v.AtVec(ii))
+	}
+	return out
 }

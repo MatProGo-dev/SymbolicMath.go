@@ -123,10 +123,10 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 	switch right := rightIn.(type) {
 	case *mat.VecDense:
 		// Use KVector's method
-		return vv.Plus(KVector(*right))
+		return vv.Plus(VecDenseToKVector(*right))
 	case mat.VecDense:
 		// Use KVector's method
-		return vv.Plus(KVector(right))
+		return vv.Plus(VecDenseToKVector(right))
 	case KVector:
 		// Create a polynomial vector
 		var pv PolynomialVector
@@ -272,7 +272,7 @@ func (vv VariableVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 		}
 		return VectorConstraint{vv, rhsConverted, sense}
 	case mat.VecDense:
-		rhsAsKVector := KVector(rhsConverted)
+		rhsAsKVector := VecDenseToKVector(rhsConverted)
 
 		return vv.Comparison(rhsAsKVector, sense)
 
@@ -384,7 +384,7 @@ func (vv VariableVector) DerivativeWrt(vIn Variable) Expression {
 		}
 	}
 
-	return KVector(vecOut)
+	return VecDenseToKVector(vecOut)
 }
 
 /*

@@ -24,7 +24,7 @@ Description:
 func TestVectorConstraint_Check1(t *testing.T) {
 	// Constants
 	N := 3
-	left := symbolic.KVector(symbolic.OnesVector(N))
+	left := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	right := symbolic.NewVariableVector(N + 1)
 
 	// Test
@@ -54,7 +54,7 @@ Description:
 func TestVectorConstraint_Check2(t *testing.T) {
 	// Constants
 	N := 3
-	left := symbolic.KVector(symbolic.OnesVector(N))
+	left := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	right := symbolic.NewVariableVector(N)
 
 	// Test
@@ -78,7 +78,7 @@ Description:
 func TestVectorConstraint_Dims1(t *testing.T) {
 	// Constants
 	N := 10
-	left := symbolic.KVector(symbolic.OnesVector(N))
+	left := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	right := symbolic.NewVariableVector(N)
 
 	// Test
@@ -102,7 +102,7 @@ Description:
 func TestVectorConstraint_Dims2(t *testing.T) {
 	// Constants
 	N := 10
-	left := symbolic.KVector(symbolic.OnesVector(N))
+	left := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	right := symbolic.NewVariableVector(N + 1)
 
 	// Test
@@ -142,7 +142,7 @@ Description:
 func TestVectorConstraint_AtVec1(t *testing.T) {
 	// Constants
 	N := 7
-	left := symbolic.KVector(symbolic.OnesVector(N))
+	left := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	right := symbolic.NewVariableVector(N)
 	vc := symbolic.VectorConstraint{left, right, symbolic.SenseLessThanEqual}
 
@@ -177,7 +177,7 @@ Description:
 func TestVectorConstraint_AtVec2(t *testing.T) {
 	// Constants
 	N := 7
-	left := symbolic.KVector(symbolic.OnesVector(N))
+	left := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	right := symbolic.NewVariableVector(N)
 	vc := symbolic.VectorConstraint{left, right, symbolic.SenseLessThanEqual}
 
@@ -219,7 +219,7 @@ Description:
 func TestVectorConstraint_AtVec3(t *testing.T) {
 	// Constants
 	N := 7
-	left := symbolic.KVector(symbolic.OnesVector(N))
+	left := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	right := symbolic.NewVariableVector(N + 1)
 	vc := symbolic.VectorConstraint{left, right, symbolic.SenseLessThanEqual}
 

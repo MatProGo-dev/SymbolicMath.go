@@ -837,7 +837,7 @@ func TestMonomialMatrix_Multiply3(t *testing.T) {
 		{v1.ToMonomial(), v1.ToMonomial()},
 		{v1.ToMonomial(), v1.ToMonomial()},
 	}
-	km2 := symbolic.KMatrix(symbolic.OnesMatrix(3, 2))
+	km2 := symbolic.DenseToKMatrix(symbolic.OnesMatrix(3, 2))
 
 	expectedError := smErrors.DimensionError{
 		Arg1:      mm,

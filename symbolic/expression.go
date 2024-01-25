@@ -46,6 +46,9 @@ type Expression interface {
 
 	// Check
 	Check() error
+
+	// String returns a string representation of the expression
+	String() string
 }
 
 /*

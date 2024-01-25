@@ -311,7 +311,7 @@ func (mv MonomialVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 
 		return VectorConstraint{
 			LeftHandSide:  mv,
-			RightHandSide: KVector(tempVD),
+			RightHandSide: VecDenseToKVector(tempVD),
 			Sense:         sense,
 		}
 	default:
@@ -368,7 +368,7 @@ func (mv MonomialVector) DerivativeWrt(v Variable) Expression {
 		}
 		return mv
 	} else {
-		return KVector(OnesVector(mv.Len()))
+		return VecDenseToKVector(OnesVector(mv.Len()))
 	}
 }
 

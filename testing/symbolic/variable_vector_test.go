@@ -315,7 +315,7 @@ func TestVariableVector_Plus4(t *testing.T) {
 	// Constants
 	N := 111
 	vv1 := symbolic.NewVariableVector(N)
-	kv2 := symbolic.KVector(symbolic.OnesVector(N))
+	kv2 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 
 	// Test
 	r := vv1.Plus(kv2)

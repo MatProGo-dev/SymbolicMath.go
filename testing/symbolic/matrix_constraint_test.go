@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
-	"gonum.org/v1/gonum/mat"
 	"testing"
 )
 
@@ -25,8 +24,8 @@ Description:
 */
 func TestMatrixConstraint_Left1(t *testing.T) {
 	// Constants
-	left := symbolic.KMatrix(symbolic.Identity(3))
-	right := symbolic.KMatrix(symbolic.ZerosMatrix(3, 3))
+	left := symbolic.DenseToKMatrix(symbolic.Identity(3))
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 3))
 
 	// Test
 	mc := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
@@ -43,8 +42,8 @@ func TestMatrixConstraint_Left1(t *testing.T) {
 	}
 
 	// Verify that each of mcLeftAsKM's elements match left's elements
-	mcLeftAsD := mat.Dense(mcLeftAsKM)
-	leftAsD := mat.Dense(left)
+	mcLeftAsD := mcLeftAsKM.ToDense()
+	leftAsD := left.ToDense()
 	for rIndex := 0; rIndex < 3; rIndex++ {
 		for cIndex := 0; cIndex < 3; cIndex++ {
 			if mcLeftAsD.At(rIndex, cIndex) != leftAsD.At(rIndex, cIndex) {
@@ -70,8 +69,8 @@ Description:
 */
 func TestMatrixConstraint_Right1(t *testing.T) {
 	// Constants
-	left := symbolic.KMatrix(symbolic.Identity(3))
-	right := symbolic.KMatrix(symbolic.ZerosMatrix(3, 3))
+	left := symbolic.DenseToKMatrix(symbolic.Identity(3))
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 3))
 
 	// Test
 	mc := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
@@ -88,8 +87,8 @@ func TestMatrixConstraint_Right1(t *testing.T) {
 	}
 
 	// Verify that each of mcRightAsKM's elements match right's elements
-	mcRightAsD := mat.Dense(mcRightAsKM)
-	rightAsD := mat.Dense(right)
+	mcRightAsD := mcRightAsKM.ToDense()
+	rightAsD := right.ToDense()
 	for rIndex := 0; rIndex < 3; rIndex++ {
 		for cIndex := 0; cIndex < 3; cIndex++ {
 			if mcRightAsD.At(rIndex, cIndex) != rightAsD.At(rIndex, cIndex) {
@@ -114,8 +113,8 @@ Description:
 */
 func TestMatrixConstraint_Check1(t *testing.T) {
 	// Constants
-	left := symbolic.KMatrix(symbolic.Identity(3))
-	right := symbolic.KMatrix(symbolic.ZerosMatrix(3, 2))
+	left := symbolic.DenseToKMatrix(symbolic.Identity(3))
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 2))
 	expectedError := fmt.Errorf(
 		"there are a different number of columns in the left (%v) and right (%v) sides of the constraint!",
 		left.Dims()[1],
@@ -144,7 +143,7 @@ Description:
 func TestMatrixConstraint_Check2(t *testing.T) {
 	// Constants
 	left := symbolic.MonomialMatrix{}
-	right := symbolic.KMatrix(symbolic.ZerosMatrix(3, 3))
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 3))
 
 	// Test
 	mc := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
@@ -167,7 +166,7 @@ Description:
 */
 func TestMatrixConstraint_Check3(t *testing.T) {
 	// Constants
-	left := symbolic.KMatrix(symbolic.Identity(3))
+	left := symbolic.DenseToKMatrix(symbolic.Identity(3))
 	right := symbolic.MonomialMatrix{}
 
 	// Test
@@ -192,8 +191,8 @@ Description:
 */
 func TestMatrixConstraint_Check4(t *testing.T) {
 	// Constants
-	left := symbolic.KMatrix(symbolic.Identity(4))
-	right := symbolic.KMatrix(symbolic.ZerosMatrix(3, 3))
+	left := symbolic.DenseToKMatrix(symbolic.Identity(4))
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 3))
 	expectedError := fmt.Errorf(
 		"there are a different number of rows in the left (%v) and right (%v) sides of the constraint!",
 		left.Dims()[0],
@@ -221,8 +220,8 @@ Description:
 */
 func TestMatrixConstraint_Check5(t *testing.T) {
 	// Constants
-	left := symbolic.KMatrix(symbolic.Identity(3))
-	right := symbolic.KMatrix(symbolic.ZerosMatrix(3, 3))
+	left := symbolic.DenseToKMatrix(symbolic.Identity(3))
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 3))
 	var sense symbolic.ConstrSense = 12
 
 	// Test
@@ -247,8 +246,8 @@ Description:
 */
 func TestMatrixConstraint_Check6(t *testing.T) {
 	// Constants
-	left := symbolic.KMatrix(symbolic.Identity(3))
-	right := symbolic.KMatrix(symbolic.ZerosMatrix(3, 3))
+	left := symbolic.DenseToKMatrix(symbolic.Identity(3))
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 3))
 
 	// Test
 	mc := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
@@ -271,8 +270,8 @@ Description:
 */
 func TestMatrixConstraint_Dims1(t *testing.T) {
 	// Constants
-	left := symbolic.KMatrix(symbolic.ZerosMatrix(3, 4))
-	right := symbolic.KMatrix(symbolic.ZerosMatrix(3, 4))
+	left := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 4))
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 4))
 	mc := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
 
 	// Test
@@ -315,7 +314,7 @@ func TestMatrixConstraint_At1(t *testing.T) {
 	left := symbolic.MonomialMatrix{
 		{v1.ToMonomial(), v1.ToMonomial(), v1.ToMonomial(), v1.ToMonomial()},
 	}
-	right := symbolic.KMatrix(symbolic.ZerosMatrix(1, 4))
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(1, 4))
 	mc := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
 
 	// Test
@@ -347,8 +346,8 @@ Description:
 */
 func TestMatrixConstraint_At2(t *testing.T) {
 	// Constants
-	left := symbolic.KMatrix(symbolic.ZerosMatrix(3, 4))
-	right := symbolic.KMatrix(symbolic.ZerosMatrix(3, 4))
+	left := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 4))
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 4))
 	mc := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
 
 	expectedError := smErrors.InvalidMatrixIndexError{
@@ -398,7 +397,7 @@ Description:
 func TestMatrixConstraint_At3(t *testing.T) {
 	// Constants
 	left := symbolic.MonomialMatrix{}
-	right := symbolic.KMatrix(symbolic.ZerosMatrix(3, 4))
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 4))
 	mc := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
 
 	expectedError := left.Check()

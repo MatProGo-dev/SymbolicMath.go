@@ -427,7 +427,7 @@ func TestConstant_Plus9(t *testing.T) {
 	// Constants
 	k1 := symbolic.K(3.14)
 	v2 := symbolic.OnesVector(4)
-	kv2 := symbolic.KVector(v2)
+	kv2 := symbolic.VecDenseToKVector(v2)
 
 	// Test
 	sum := k1.Plus(kv2)

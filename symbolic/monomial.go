@@ -447,3 +447,35 @@ func (m Monomial) ToPolynomial() Polynomial {
 		Monomials: []Monomial{mCopy},
 	}
 }
+
+/*
+String
+Description:
+
+	Returns a string representation of the monomial.
+*/
+func (m Monomial) String() string {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	// Create string
+	monomialString := ""
+
+	// Add coefficient
+	monomialString += fmt.Sprintf("%v", m.Coefficient)
+
+	// Add variables
+	for ii, variable := range m.VariableFactors {
+		monomialString += fmt.Sprintf(" %v", variable)
+		if m.Degrees[ii] != 1 {
+			monomialString += fmt.Sprintf("^%v", m.Degrees[ii])
+		}
+	}
+
+	// Return
+	return monomialString
+}

@@ -42,7 +42,7 @@ Description:
 func TestConstantVector_Len2(t *testing.T) {
 	// Constants
 	N := 101
-	kv := symbolic.KVector(symbolic.OnesVector(N))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 
 	// Test
 	if kv.Len() != N {
@@ -62,7 +62,7 @@ Description:
 */
 func TestConstantVector_Check1(t *testing.T) {
 	// Constants
-	kv := symbolic.KVector(symbolic.OnesVector(3))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
 
 	// Test
 	if kv.Check() != nil {
@@ -82,7 +82,7 @@ Description:
 */
 func TestConstantVector_AtVec1(t *testing.T) {
 	// Constants
-	kv := symbolic.KVector(symbolic.OnesVector(3))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
 
 	// Test
 	if float64(kv.AtVec(0).(symbolic.K)) != 1 {
@@ -101,7 +101,7 @@ Description:
 */
 func TestConstantVector_AtVec2(t *testing.T) {
 	// Constants
-	kv := symbolic.KVector(symbolic.OnesVector(3))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
 
 	// Test
 	defer func() {
@@ -125,7 +125,7 @@ Description:
 */
 func TestConstantVector_Variables1(t *testing.T) {
 	// Constants
-	kv := symbolic.KVector(symbolic.OnesVector(3))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
 
 	// Test
 	vars := kv.Variables()
@@ -147,7 +147,7 @@ Description:
 func TestConstantVector_LinearCoeff1(t *testing.T) {
 	// Constants
 	N := 11
-	kv := symbolic.KVector(symbolic.OnesVector(N))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 
 	// Test
 	for ii := 0; ii < N; ii++ {
@@ -173,7 +173,7 @@ Description:
 func TestConstantVector_Constant1(t *testing.T) {
 	// Constants
 	N := 11
-	kv := symbolic.KVector(symbolic.OnesVector(N))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 
 	// Test
 	for ii := 0; ii < N; ii++ {
@@ -196,8 +196,8 @@ Description:
 */
 func TestConstantVector_Plus1(t *testing.T) {
 	// Constants
-	kv1 := symbolic.KVector(symbolic.OnesVector(3))
-	kv2 := symbolic.KVector(symbolic.OnesVector(4))
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	kv2 := symbolic.VecDenseToKVector(symbolic.OnesVector(4))
 
 	// Test
 	defer func() {
@@ -242,7 +242,7 @@ Description:
 func TestConstantVector_Plus2(t *testing.T) {
 	// Constants
 	N := 3
-	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	vv2 := symbolic.NewVariableVector(N)
 	vv2[0] = symbolic.Variable{
 		ID:    1001,
@@ -292,7 +292,7 @@ Description:
 func TestConstantVector_Plus3(t *testing.T) {
 	// Constants
 	N := 3
-	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	f2 := 3.14
 
 	// Test
@@ -320,7 +320,7 @@ Description:
 func TestConstantVector_Plus4(t *testing.T) {
 	// Constants
 	N := 3
-	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	k2 := symbolic.K(3.14)
 
 	// Test
@@ -347,7 +347,7 @@ Description:
 func TestConstantVector_Plus5(t *testing.T) {
 	// Constants
 	N := 3
-	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	vd2 := mat.NewVecDense(N, []float64{3.14, 2.71, 1.41})
 
 	// Test
@@ -374,9 +374,9 @@ Description:
 func TestConstantVector_Plus6(t *testing.T) {
 	// Constants
 	N := 3
-	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	vd2 := mat.NewVecDense(N, []float64{3.14, 2.71, 1.41})
-	kv2 := symbolic.KVector(*vd2)
+	kv2 := symbolic.VecDenseToKVector(*vd2)
 
 	// Test
 	kv3 := kv1.Plus(vd2)

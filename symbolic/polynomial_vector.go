@@ -363,7 +363,7 @@ func (pv PolynomialVector) Comparison(e interface{}, senseIn ConstrSense) Constr
 
 		return VectorConstraint{
 			LeftHandSide:  pv,
-			RightHandSide: KVector(tempVD),
+			RightHandSide: VecDenseToKVector(tempVD),
 			Sense:         senseIn,
 		}
 	//case Polynomial:

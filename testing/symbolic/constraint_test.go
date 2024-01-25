@@ -66,7 +66,7 @@ func TestConstraint_IsConstraint3(t *testing.T) {
 	// Constants
 	N := 11
 	x := symbolic.NewVariableVector(N)
-	kv2 := symbolic.KVector(symbolic.OnesVector(N))
+	kv2 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 
 	vConstr := symbolic.VectorConstraint{x, kv2, symbolic.SenseLessThanEqual}
 
@@ -89,8 +89,8 @@ Description:
 func TestConstraint_IsConstraint4(t *testing.T) {
 	// Constants
 	N := 11
-	mk1 := symbolic.KMatrix(symbolic.Identity(N))
-	mk2 := symbolic.KMatrix(symbolic.ZerosMatrix(N, N))
+	mk1 := symbolic.DenseToKMatrix(symbolic.Identity(N))
+	mk2 := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(N, N))
 
 	mConstr := symbolic.MatrixConstraint{mk1, mk2, symbolic.SenseGreaterThanEqual}
 

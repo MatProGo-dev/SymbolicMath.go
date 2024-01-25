@@ -11,6 +11,7 @@ type Variable struct {
 	Lower float64
 	Upper float64
 	Type  VarType
+	Name  string
 }
 
 /*
@@ -333,6 +334,7 @@ func NewContinuousVariable(envs ...*Environment) Variable {
 		Lower: float64(-Infinity),
 		Upper: float64(+Infinity),
 		Type:  Continuous,
+		Name:  fmt.Sprintf("x_%v", nextIdx),
 	}
 
 	// Update environment
@@ -369,6 +371,7 @@ func NewBinaryVariable(envs ...Environment) Variable {
 		Lower: 0.0,
 		Upper: 1.0,
 		Type:  Binary,
+		Name:  fmt.Sprintf("x_%v", nextIdx),
 	}
 
 	// Update env
@@ -440,4 +443,14 @@ Description:
 */
 func (v Variable) IsLinear() bool {
 	return true
+}
+
+/*
+String
+Description:
+
+	This method returns a string representation of the variable.
+*/
+func (v Variable) String() string {
+	return v.Name
 }

@@ -197,3 +197,30 @@ func TestVariable_Plus4(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestVariable_Plus5
+Description:
+
+
+*/
+
+/*
+TestVariable_String1
+Description:
+
+	Tests that the String() method works properly.
+*/
+func TestVariable_String1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	if x.String() != "x_0" {
+		t.Errorf(
+			"expected %v to be \"x\"; received %v",
+			x,
+			x.String(),
+		)
+	}
+}

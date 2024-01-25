@@ -332,7 +332,7 @@ func (pm PolynomialMatrix) Comparison(e interface{}, sense ConstrSense) Constrai
 
 		return MatrixConstraint{
 			LeftHandSide:  pm,
-			RightHandSide: KMatrix(KAsDense),
+			RightHandSide: DenseToKMatrix(KAsDense),
 			Sense:         sense,
 		}
 	default:

@@ -81,9 +81,9 @@ func (c K) Plus(rightIn interface{}) Expression {
 	case Polynomial:
 		return right.Plus(c)
 	case mat.VecDense:
-		return c.Plus(KVector(right))
+		return c.Plus(VecDenseToKVector(right))
 	case *mat.VecDense:
-		return c.Plus(KVector(*right))
+		return c.Plus(VecDenseToKVector(*right))
 	case KVector:
 		return right.Plus(c)
 	case PolynomialVector:
@@ -208,4 +208,14 @@ Description:
 */
 func (c K) IsLinear() bool {
 	return true
+}
+
+/*
+String
+Description:
+
+	Returns a string representation of the constant.
+*/
+func (c K) String() string {
+	return fmt.Sprintf("%v", float64(c))
 }
