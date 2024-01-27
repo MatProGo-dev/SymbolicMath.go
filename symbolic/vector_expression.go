@@ -73,6 +73,9 @@ type VectorExpression interface {
 
 	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
 	DerivativeWrt(vIn Variable) Expression
+
+	// String returns a string representation of the expression
+	String() string
 }
 
 ///*

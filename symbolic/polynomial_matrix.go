@@ -488,3 +488,41 @@ func (pm PolynomialMatrix) Simplify() PolynomialMatrix {
 	// Return simplified polynomial
 	return simplified
 }
+
+/*
+String
+Description:
+
+	Returns a string representation of the polynomial matrix.
+*/
+func (pm PolynomialMatrix) String() string {
+	// Input Processing
+	// - Check that pm is valid
+	err := pm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Constants
+	nRows, nCols := pm.Dims()[0], pm.Dims()[1]
+
+	// Create the string
+	var out string = "PolynomialMatrix =\n["
+	for ii, row := range pm {
+		out += "["
+		for jj, polynomial := range row {
+			out += fmt.Sprintf("%v", polynomial)
+			if jj != nCols-1 {
+				out += ", "
+			}
+		}
+		out += "]"
+		if ii != nRows-1 {
+			out += ",\n"
+		}
+	}
+	out += "]"
+
+	// Return the string
+	return out
+}

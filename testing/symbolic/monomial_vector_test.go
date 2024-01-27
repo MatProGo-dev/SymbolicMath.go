@@ -545,3 +545,63 @@ func TestMonomialVector_Plus4(t *testing.T) {
 		}
 	}
 }
+
+/*
+TestMonomialVector_Plus5
+Description:
+
+	This test verifies that the method properly panics if a valid
+	vector of monomials is multiplied by an invalid expression
+	(in this case a matrix of monomials).
+*/
+func TestMonomialVector_Plus5(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{v1},
+		Degrees:         []int{1},
+	}
+	m2 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{v2},
+		Degrees:         []int{1},
+	}
+	mv1 := symbolic.MonomialVector{m1, m2}
+
+	var pm symbolic.MonomialMatrix
+
+	// Setup defer function for catching panic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv1.Plus(pm) to panic; received %v",
+				mv1.Plus(pm),
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected mv1.Plus(pm) to panic with an error; received %v",
+				r,
+			)
+		}
+
+		if !strings.Contains(
+			rAsE.Error(),
+			pm.Check().Error(),
+		) {
+			t.Errorf(
+				"Expected mv1.Plus(pm) to panic with an error containing \"%v\"; received %v",
+				pm.Check().Error(),
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	// Test
+	mv1.Plus(pm)
+}

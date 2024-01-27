@@ -54,6 +54,9 @@ type ScalarExpression interface {
 
 	// IsLinear returns true if the expression is linear
 	IsLinear() bool
+
+	// String returns a string representation of the expression
+	String() string
 }
 
 // NewExpr returns a new expression with a single additive constant value, c,

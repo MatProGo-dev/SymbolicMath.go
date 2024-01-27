@@ -562,3 +562,32 @@ func (p Polynomial) IsConstant() bool {
 	// Algorithm
 	return len(p.Variables()) == 0
 }
+
+/*
+String
+Description:
+
+	This method returns a string representation of the polynomial.
+*/
+func (p Polynomial) String() string {
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	// Create string
+	polynomialString := ""
+
+	// Add monomials
+	for ii, monomial := range p.Monomials {
+		if ii != 0 {
+			polynomialString += " + "
+		}
+		polynomialString += monomial.String()
+	}
+
+	// Return
+	return polynomialString
+}

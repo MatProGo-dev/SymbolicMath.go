@@ -511,3 +511,38 @@ func (mm MonomialMatrix) Constant() mat.Dense {
 	// Return the constant
 	return constant
 }
+
+/*
+String
+Description:
+
+	Returns a string representation of the monomial matrix.
+*/
+func (mm MonomialMatrix) String() string {
+	// Input Processing
+	err := mm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Create the string
+	nCols := mm.Dims()[1]
+	var out string = "MonomialMatrix =\n[ "
+	for ii, row := range mm {
+		out += "[ "
+		for jj, monomial := range row {
+			out += monomial.String()
+			if jj != nCols-1 {
+				out += ", "
+			}
+		}
+		out += "],"
+		if ii != len(mm)-1 {
+			out += ",\n "
+		}
+	}
+	out += " ]"
+
+	// Return the string
+	return out
+}

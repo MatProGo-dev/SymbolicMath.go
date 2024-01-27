@@ -412,3 +412,29 @@ func NewVariableVector(N int, envs ...*Environment) VariableVector {
 	return varVectorOut
 
 }
+
+/*
+String
+Description:
+
+	Returns a string representation of the VariableVector.
+*/
+func (vv VariableVector) String() string {
+	// Input Processing
+	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Constants
+	var output string = "VariableVector = ["
+	for ii, variable := range vv {
+		output += variable.String()
+		if ii != len(vv)-1 {
+			output += ", "
+		}
+	}
+	output += "]"
+
+	return output
+}
