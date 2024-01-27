@@ -2,6 +2,7 @@ package symbolic_test
 
 import (
 	"fmt"
+	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
@@ -570,38 +571,104 @@ func TestMonomialVector_Plus5(t *testing.T) {
 	}
 	mv1 := symbolic.MonomialVector{m1, m2}
 
-	var pm symbolic.MonomialMatrix
+	var mm symbolic.MonomialMatrix
 
 	// Setup defer function for catching panic
 	defer func() {
 		r := recover()
 		if r == nil {
 			t.Errorf(
-				"Expected mv1.Plus(pm) to panic; received %v",
-				mv1.Plus(pm),
+				"Expected mv1.Plus(mm) to panic; received %v",
+				mv1.Plus(mm),
 			)
 		}
 
 		rAsE, tf := r.(error)
 		if !tf {
 			t.Errorf(
-				"Expected mv1.Plus(pm) to panic with an error; received %v",
+				"Expected mv1.Plus(mm) to panic with an error; received %v",
 				r,
 			)
 		}
 
 		if !strings.Contains(
 			rAsE.Error(),
-			pm.Check().Error(),
+			mm.Check().Error(),
 		) {
 			t.Errorf(
-				"Expected mv1.Plus(pm) to panic with an error containing \"%v\"; received %v",
-				pm.Check().Error(),
+				"Expected mv1.Plus(mm) to panic with an error containing \"%v\"; received %v",
+				mm.Check().Error(),
 				rAsE.Error(),
 			)
 		}
 	}()
 
 	// Test
-	mv1.Plus(pm)
+	mv1.Plus(mm)
+}
+
+/*
+TestMonomialVector_Plus6
+Description:
+
+	This test verifies that the method properly creates a monomial vector,
+	if the current monomial vector contains all constants.
+*/
+func TestMonomialVector_Plus6(t *testing.T) {
+	// Constants
+	k2 := symbolic.K(3.14)
+
+	// Create a monomial vector of constants
+	kv1 := getKVector.From([]float64{1, 2, 3, 4, 5})
+	mv1 := kv1.ToMonomialVector()
+
+	// Compute Sum
+	sum := mv1.Plus(k2)
+
+	// Verify that the sum is a monomial vector
+	if _, tf := sum.(symbolic.MonomialVector); !tf {
+		t.Errorf(
+			"expected sum to be a MonomialVector; received %T",
+			sum,
+		)
+	}
+
+}
+
+/*
+TestMonomialVector_Plus7
+Description:
+
+	This test verifies that the method properly creates a polynomial vector
+	when the monomial vector is added to a constant AND the monomial vector
+	is not already a constant vector.
+*/
+func TestMonomialVector_Plus7(t *testing.T) {
+	// Constants
+	N := 10
+	vv1 := symbolic.NewVariableVector(N)
+	mv1 := vv1.ToMonomialVector()
+	k2 := symbolic.K(3.14)
+
+	// Compute Sum
+	sum := mv1.Plus(k2)
+
+	// Verify that the sum is a polynomial vector
+	if _, tf := sum.(symbolic.PolynomialVector); !tf {
+		t.Errorf(
+			"expected sum to be a PolynomialVector; received %T",
+			sum,
+		)
+	}
+
+	// Check that each element of the polynomial vector
+	// contains 2 monomials
+	for _, polynomial := range sum.(symbolic.PolynomialVector) {
+		if len(polynomial.Monomials) != 2 {
+			t.Errorf(
+				"expected len(polynomial.Monomials) to be 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+	}
 }

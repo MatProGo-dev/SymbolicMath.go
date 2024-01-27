@@ -438,3 +438,27 @@ func (vv VariableVector) String() string {
 
 	return output
 }
+
+/*
+ToMonomialVector
+Description:
+
+	This function converts the input expression to a monomial vector.
+*/
+func (vv VariableVector) ToMonomialVector() MonomialVector {
+	// Input Processing
+	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Constants
+	var out MonomialVector
+
+	// Algorithm
+	for _, variable := range vv {
+		out = append(out, variable.ToMonomial())
+	}
+
+	return out
+}

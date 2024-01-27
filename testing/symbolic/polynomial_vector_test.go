@@ -1208,3 +1208,62 @@ func TestPolynomialVector_Comparison3(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestPolynomialVector_Simplify1
+Description:
+
+	This test verifies that the Simplify method does not clear out
+	all elements of a polynomial vector.
+	(Comes from a specific example encountered during testing).
+*/
+func TestPolynomialVector_Simplify1(t *testing.T) {
+	// Create a polynomial vector
+	pv := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv = append(pv, symbolic.NewVariable().Plus(3.14).(symbolic.Polynomial))
+	}
+
+	// Try to simplify
+	pvOut := pv.Simplify()
+
+	// Check each element of pvOut and verify that it has two monomials.
+	for _, polynomial := range pvOut {
+		if len(polynomial.Monomials) != 2 {
+			t.Errorf(
+				"Expected polynomial.Monomials to have length 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+	}
+}
+
+/*
+TestPolynomialVector_Simplify2
+Description:
+
+	This test verifies that the Simplify method works when simplification
+	of terms is possible.
+*/
+func TestPolynomialVector_Simplify2(t *testing.T) {
+	// Create a polynomial vector
+	pv := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv = append(pv, symbolic.NewVariable().Plus(3.14).Plus(2.17).Plus(
+			symbolic.Monomial{Coefficient: 1.1},
+		).(symbolic.Polynomial))
+	}
+
+	// Try to simplify
+	pvOut := pv.Simplify()
+
+	// Check each element of pvOut and verify that it has two monomials.
+	for _, polynomial := range pvOut {
+		if len(polynomial.Monomials) != 2 {
+			t.Errorf(
+				"Expected polynomial.Monomials to have length 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+	}
+}

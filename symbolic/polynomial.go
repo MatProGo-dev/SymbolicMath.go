@@ -139,6 +139,9 @@ func (p Polynomial) Plus(e interface{}) Expression {
 
 		return pCopy
 
+	case Monomial:
+		return p.Plus(right.ToPolynomial())
+
 	case Polynomial:
 		pCopy := Polynomial{
 			Monomials: make([]Monomial, len(p.Monomials)),
@@ -154,7 +157,10 @@ func (p Polynomial) Plus(e interface{}) Expression {
 
 	// Unrecognized response is a panic
 	panic(
-		fmt.Errorf("Unexpected type of right in the Plus() method: %T (%v)", e, e),
+		smErrors.UnsupportedInputError{
+			FunctionName: "Polynomial.Plus",
+			Input:        e,
+		},
 	)
 }
 

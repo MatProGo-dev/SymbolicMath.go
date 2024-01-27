@@ -407,3 +407,26 @@ func VecDenseToKVector(v mat.VecDense) KVector {
 	}
 	return out
 }
+
+/*
+ToMonomialVector
+Description:
+
+	This function converts the input expression to a monomial vector.
+*/
+func (kv KVector) ToMonomialVector() MonomialVector {
+	// Input Processing
+	err := kv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var mvOut MonomialVector
+	for _, element := range kv {
+		mvOut = append(mvOut, element.ToMonomial())
+	}
+
+	// Return
+	return mvOut
+}

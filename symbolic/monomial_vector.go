@@ -131,7 +131,8 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 
 	if IsExpression(term1) {
 		// Convert term1 to expression and check it
-		term1AsE, err := ToExpression(term1)
+		term1AsE, _ := ToExpression(term1)
+		err = term1AsE.Check()
 		if err != nil {
 			panic(err)
 		}
@@ -148,12 +149,23 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 	case float64:
 		return mv.Plus(K(right))
 	case K:
-		// Create a polynomial vector
-		var pv PolynomialVector
-		for _, monomial := range mv {
-			pv = append(pv, monomial.Plus(right).(Polynomial))
+		if mv.IsConstant() {
+			// If the whole vector is a constant, then don't
+			// convert down but simply update the coefficients.
+			var mvOut MonomialVector = make([]Monomial, len(mv))
+			for ii, monomial := range mv {
+				mvOut[ii].Coefficient = monomial.Coefficient + float64(right)
+			}
+			return mvOut
+
+		} else {
+			// Create a polynomial vector
+			var pv PolynomialVector
+			for _, monomial := range mv {
+				pv = append(pv, monomial.Plus(right).(Polynomial))
+			}
+			return pv.Simplify()
 		}
-		return pv
 	case MonomialVector:
 		// Create a polynomial vector
 		var pv PolynomialVector
@@ -413,4 +425,28 @@ func (mv MonomialVector) String() string {
 	output += "]"
 
 	return output
+}
+
+/*
+IsConstant
+Description:
+
+	Determines whether or not an input object is a valid "MonomialVector" according to MatProInterface.
+*/
+func (mv MonomialVector) IsConstant() bool {
+	// Input Checking
+	err := mv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check each element of mv
+	for _, element := range mv {
+		if !element.IsConstant() {
+			return false
+		}
+	}
+
+	// If all checks pass, then return true!
+	return true
 }
