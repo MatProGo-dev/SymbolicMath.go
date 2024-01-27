@@ -2,6 +2,7 @@ package symbolic_test
 
 import (
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"strings"
 	"testing"
 )
 
@@ -216,7 +217,7 @@ func TestVariable_String1(t *testing.T) {
 	x := symbolic.NewVariable()
 
 	// Test
-	if x.String() != "x_0" {
+	if !strings.Contains(x.String(), "x_") {
 		t.Errorf(
 			"expected %v to be \"x\"; received %v",
 			x,

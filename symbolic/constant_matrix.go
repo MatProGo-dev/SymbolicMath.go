@@ -42,7 +42,7 @@ func (km KMatrix) ToDense() mat.Dense {
 	nR, nC := km.Dims()[0], km.Dims()[1]
 
 	// Construct Dense
-	kmAsDense := mat.NewDense(nR, nC, nil)
+	kmAsDense := mat.NewDense(nR, nC, make([]float64, nR*nC))
 	for rIndex := 0; rIndex < nR; rIndex++ {
 		for cIndex := 0; cIndex < nC; cIndex++ {
 			kmAsDense.Set(rIndex, cIndex, float64(km[rIndex][cIndex]))
@@ -70,11 +70,12 @@ Description:
 	The dimensions of the given matrix.
 */
 func (km KMatrix) Dims() []int {
-	kmAsDense := km.ToDense()
-
-	nR, nC := kmAsDense.Dims()
-
-	return []int{nR, nC}
+	// Input Checking
+	err := km.Check()
+	if err != nil {
+		panic(err)
+	}
+	return []int{len(km), len(km[0])}
 }
 
 /*
