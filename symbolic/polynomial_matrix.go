@@ -242,7 +242,9 @@ func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 		for _, row := range pm {
 			var productRow []Polynomial
 			for _, polynomial := range row {
-				productRow = append(productRow, polynomial.Multiply(right).(Polynomial))
+				polynomialCopy := Polynomial{Monomials: make([]Monomial, len(polynomial.Monomials))}
+				copy(polynomialCopy.Monomials, polynomial.Monomials)
+				productRow = append(productRow, polynomialCopy.Multiply(right).(Polynomial))
 			}
 			product = append(product, productRow)
 		}

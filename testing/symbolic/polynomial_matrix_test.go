@@ -1,6 +1,8 @@
 package symbolic_test
 
 import (
+	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
+	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
@@ -178,6 +180,31 @@ func TestPolynomialMatrix_Variables1(t *testing.T) {
 			len(vars),
 		)
 	}
+}
+
+/*
+TestPolynomialMatrix_Variables2
+Description:
+
+	Test that the variables() method properly panics
+	when applied to an improperly initialized matrix of polynomials.
+*/
+func TestPolynomialMatrix_Variables2(t *testing.T) {
+	// Constants
+	var pm symbolic.PolynomialMatrix
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm.Variables() to panic; received %v",
+				pm.Variables(),
+			)
+		}
+	}()
+
+	pm.Variables()
 }
 
 /*
@@ -484,6 +511,231 @@ func TestPolynomialMatrix_Plus6(t *testing.T) {
 				t.Errorf(
 					"expected len(p.Monomials) to be 2; received %v",
 					len(p.Monomials),
+				)
+			}
+		}
+	}
+}
+
+/*
+TestPolynomialMatrix_Plus7
+Description:
+
+	Tests that the Plus() method properly adds a polynomial matrix
+	to a matrix of constants (K). The result should be a polynomial
+	matrix with each polynomial containing two monomials.
+*/
+func TestPolynomialMatrix_Plus7(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	p1 := v1.ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1, p1},
+		{p1, p1},
+		{p1, p1},
+	}
+
+	km1 := getKMatrix.From(symbolic.OnesMatrix(3, 2))
+
+	// Test
+	pm2 := pm1.Plus(km1)
+
+	pm2AsPM, tf := pm2.(symbolic.PolynomialMatrix)
+	if !tf {
+		t.Errorf(
+			"expected pm2 to be a PolynomialMatrix; received %v",
+			pm2,
+		)
+	}
+
+	for _, pmRow := range pm2AsPM {
+		for _, p := range pmRow {
+			if len(p.Monomials) != 2 {
+				t.Errorf(
+					"expected len(p.Monomials) to be 2; received %v",
+					len(p.Monomials),
+				)
+			}
+		}
+	}
+}
+
+/*
+TestPolynomialMatrix_Multiply1
+Description:
+
+	Tests that the Multiply() method properly panics when an improperly
+	initialized matrix of polynomials is used to call it.
+*/
+func TestPolynomialMatrix_Multiply1(t *testing.T) {
+	// Constants
+	var pm symbolic.PolynomialMatrix
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm.Multiply(pm) to panic; received %v",
+				pm.Multiply(pm),
+			)
+		}
+	}()
+
+	pm.Multiply(pm)
+}
+
+/*
+TestPolynomialMatrix_Multiply2
+Description:
+
+	Tests that the Multiply() method properly panics an error if it
+	is called with a properly defined matrix of Polynomials and an improperly
+	initialized matrix of polynomials.
+*/
+func TestPolynomialMatrix_Multiply2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	p1 := v1.ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1, p1},
+		{p1, p1},
+	}
+
+	var pm2 symbolic.PolynomialMatrix
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm1.Multiply(pm2) to panic; received %v",
+				pm1.Multiply(pm2),
+			)
+		}
+
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		if !strings.Contains(
+			rAsError.Error(),
+			pm2.Check().Error(),
+		) {
+			t.Errorf(
+				"expected r to be a DimensionError; received %v",
+				r,
+			)
+		}
+	}()
+
+	// Test
+	pm1.Multiply(pm2)
+}
+
+/*
+TestPolynomialMatrix_Multiply3
+Description:
+
+	Tests that the Multiply() method properly panics when a polynomial matrix
+	with a KVector (vector of constants) that does not match in size.
+	A DimensionError should be thrown.
+*/
+func TestPolynomialMatrix_Multiply3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	p1 := v1.ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1, p1},
+		{p1, p1},
+	}
+
+	kv1 := getKVector.From([]float64{1.0, 2.1, 3.14})
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm1.Multiply(km1) to panic; received %v",
+				pm1.Multiply(kv1),
+			)
+		}
+
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		if !strings.Contains(
+			rAsError.Error(),
+			smErrors.DimensionError{
+				Operation: "Multiply",
+				Arg1:      pm1,
+				Arg2:      kv1,
+			}.Error(),
+		) {
+			t.Errorf(
+				"expected r to be a DimensionError; received %v",
+				r,
+			)
+		}
+	}()
+
+	// Test
+	pm1.Multiply(kv1)
+}
+
+/*
+TestPolynomialMatrix_Multiply4
+Description:
+
+	Tests that the Multiply() method properly multiplies a polynomial matrix
+	with a single constant. The result should be a polynomial matrix with
+	the same number of monomials as the original. But the coefficient
+	of each monomial should be multiplied by the constant.
+*/
+func TestPolynomialMatrix_Multiply4(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	p1 := v1.ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1},
+		{p1},
+		{p1},
+	}
+
+	// Test
+	pm2 := pm1.Multiply(3.14)
+
+	pm2AsPM, tf := pm2.(symbolic.PolynomialMatrix)
+	if !tf {
+		t.Errorf(
+			"expected pm2 to be a PolynomialMatrix; received %v",
+			pm2,
+		)
+	}
+
+	for _, pmRow := range pm2AsPM {
+		for _, p := range pmRow {
+			if len(p.Monomials) != 1 {
+				t.Errorf(
+					"expected len(p.Monomials) to be 1; received %v",
+					len(p.Monomials),
+				)
+			}
+
+			if p.Monomials[0].Coefficient != 3.14 {
+				t.Errorf(
+					"expected p.Monomials[0].Coefficient to be 3.14; received %v",
+					p.Monomials[0].Coefficient,
 				)
 			}
 		}
