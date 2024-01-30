@@ -672,3 +672,297 @@ func TestMonomialVector_Plus7(t *testing.T) {
 		}
 	}
 }
+
+/*
+TestMonomialVector_Multiply1
+Description:
+
+	Verifies that the Multiply() method throws a panic when an improperly
+	initialized vector of monomials is given.
+*/
+func TestMonomialVector_Multiply1(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Multiply(3.14) to panic; received %v",
+				mv.Multiply(3.14),
+			)
+		}
+	}()
+
+	mv.Multiply(3.14)
+}
+
+/*
+TestMonomialVector_Multiply2
+Description:
+
+	Verifies that the Multiply() method throws a panic when a well-formed
+	vector of monomials is multiplied by an improperly initialized expression
+	(in this case a monomial matrix).
+*/
+func TestMonomialVector_Multiply2(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{
+		symbolic.NewVariable().ToMonomial(),
+		symbolic.NewVariable().ToMonomial(),
+	}
+	mm2 := symbolic.MonomialMatrix{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Multiply(mm2) to panic; received %v",
+				mv.Multiply(mm2),
+			)
+		}
+	}()
+
+	mv.Multiply(mm2)
+}
+
+/*
+TestMonomialVector_Multiply3
+Description:
+
+	Verifies that the Multiply() method throws a panic when a well-formed
+	vector of monomials is multiplied by a well formed monomial matrix
+	that does not have compatible dimensions.
+*/
+func TestMonomialVector_Multiply3(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{
+		symbolic.NewVariable().ToMonomial(),
+		symbolic.NewVariable().ToMonomial(),
+	}
+	mm2 := symbolic.MonomialMatrix{
+		{
+			symbolic.NewVariable().ToMonomial(),
+			symbolic.NewVariable().ToMonomial(),
+			symbolic.NewVariable().ToMonomial(),
+		},
+		{
+			symbolic.NewVariable().ToMonomial(),
+			symbolic.NewVariable().ToMonomial(),
+			symbolic.NewVariable().ToMonomial(),
+		},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Multiply(mm2) to panic; received %v",
+				mv.Multiply(mm2),
+			)
+		}
+	}()
+
+	mv.Multiply(mm2)
+}
+
+/*
+TestMonomialVector_Multiply4
+Description:
+
+	Verifies that the Multiply() method returns the correct value when a
+	well-formed vector of monomials is multiplied by a float64.
+	We will verify that the result is a monomial vector where each
+	monomials coefficient is multiplied by the float64.
+*/
+func TestMonomialVector_Multiply4(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{
+		symbolic.NewVariable().ToMonomial(),
+		symbolic.NewVariable().ToMonomial(),
+	}
+	f2 := 3.14
+
+	// Test
+	product := mv.Multiply(f2)
+
+	// Verify that the product is a monomial vector
+	if _, tf := product.(symbolic.MonomialVector); !tf {
+		t.Errorf(
+			"expected product to be a MonomialVector; received %T",
+			product,
+		)
+	}
+
+	// Verify that the coefficients are correct
+	for _, monomial := range product.(symbolic.MonomialVector) {
+		if monomial.Coefficient != 3.14 {
+			t.Errorf(
+				"expected monomial.Coefficient to be 3.14; received %v",
+				monomial.Coefficient,
+			)
+		}
+	}
+}
+
+/*
+TestMonomialVector_Multiply5
+Description:
+
+	Verifies that the Multiply() method returns the correct value when a
+	well-formed vector of monomials is multiplied by an invalid non-expression
+	(string).
+*/
+func TestMonomialVector_Multiply5(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{
+		symbolic.NewVariable().ToMonomial(),
+		symbolic.NewVariable().ToMonomial(),
+	}
+	s2 := "This is a test string."
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Multiply(s2) to panic; received %v",
+				mv.Multiply(s2),
+			)
+		}
+	}()
+
+	mv.Multiply(s2)
+}
+
+/*
+TestMonomialVector_Transpose1
+Description:
+
+	Verifies that the Transpose() method throws a panic when an improperly
+	initialized vector of monomials is given.
+*/
+func TestMonomialVector_Transpose1(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Transpose() to panic; received %v",
+				mv.Transpose(),
+			)
+		}
+	}()
+
+	mv.Transpose()
+}
+
+/*
+TestMonomialVector_Transpose2
+Description:
+
+	Verifies that the Transpose() method returns the correct value when a
+	well-formed vector of monomials is given.
+	Checks that the dimensions of the transposed vector are correct.
+*/
+func TestMonomialVector_Transpose2(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{
+		symbolic.NewVariable().ToMonomial(),
+		symbolic.NewVariable().ToMonomial(),
+		symbolic.NewVariable().ToMonomial(),
+	}
+
+	// Test
+	transposed := mv.Transpose()
+	mvT, tf := transposed.(symbolic.MonomialMatrix)
+	if !tf {
+		t.Errorf(
+			"expected mvT to be a MonomialMatrix; received %T",
+			transposed,
+		)
+	}
+
+	if mvT.Dims()[0] != mv.Dims()[1] || mvT.Dims()[1] != mv.Dims()[0] {
+		t.Errorf(
+			"expected mvT.Dims() to be [%v,%v]; received %v",
+			mv.Dims()[1],
+			mv.Dims()[0],
+			mvT.Dims(),
+		)
+	}
+}
+
+/*
+TestMonomial_LessEq1
+Description:
+
+	Verifies that the LessEq() method returns the correct value when
+	compared to a KVector.
+*/
+func TestMonomial_LessEq1(t *testing.T) {
+	// Constants
+	N := 4
+	vv1 := symbolic.NewVariableVector(N)
+	mv1 := vv1.ToMonomialVector()
+
+	kv2 := getKVector.From([]float64{1, 2, 3, 4})
+
+	// Create a vector constraint
+	constraint := mv1.LessEq(kv2)
+
+	// verify that the cosntraint is a vector constraint
+	vc2, tf := constraint.(symbolic.VectorConstraint)
+	if !tf {
+		t.Errorf("expected constraint to be a VectorConstraint; received %T", constraint)
+	}
+
+	// Verify that the constraint's dimensions are correct
+	if vc2.Dims()[0] != N {
+		t.Errorf(
+			"expected constraint.Dims()[0] to be %v; received %v",
+			N,
+			vc2.Dims()[0],
+		)
+	}
+}
+
+/*
+TestMonomial_GreaterEq1
+Description:
+
+	Verifies that the GreaterEq() method returns the correct value when
+	compared to a K.
+*/
+func TestMonomial_GreaterEq1(t *testing.T) {
+	// Constants
+	N := 5
+	vv1 := symbolic.NewVariableVector(N)
+	mv1 := vv1.ToMonomialVector()
+
+	k2 := symbolic.K(3.14)
+
+	// Create a vector constraint
+	constraint := mv1.GreaterEq(k2)
+
+	// verify that the cosntraint is a vector constraint
+	vc2, tf := constraint.(symbolic.VectorConstraint)
+	if !tf {
+		t.Errorf("expected constraint to be a VectorConstraint; received %T", constraint)
+	}
+
+	// Verify that the constraint's dimensions are correct
+	if vc2.Dims()[0] != N {
+		t.Errorf(
+			"expected constraint.Dims()[0] to be %v; received %v",
+			N,
+			vc2.Dims()[0],
+		)
+	}
+}

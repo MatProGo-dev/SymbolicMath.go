@@ -326,6 +326,12 @@ func (mv MonomialVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 			RightHandSide: VecDenseToKVector(tempVD),
 			Sense:         sense,
 		}
+	case KVector:
+		return VectorConstraint{
+			LeftHandSide:  mv,
+			RightHandSide: rhs,
+			Sense:         sense,
+		}
 	default:
 		panic(
 			smErrors.UnsupportedInputError{
