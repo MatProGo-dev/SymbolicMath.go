@@ -205,3 +205,49 @@ func TestFrom5(t *testing.T) {
 		}
 	}
 }
+
+/*
+TestFrom6
+Description:
+
+	Tests that the From() function panics when given a [][]float64 object with
+	unequal row lengths.
+*/
+func TestFrom6(t *testing.T) {
+	// Constants
+	floatSliceSlice1 := [][]float64{
+		{1, 2, 3},
+		{4, 5},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected From() to panic when given an [][]float64 object with unequal row lengths; did not panic!",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected From() to panic with an error; received %v",
+				r,
+			)
+		}
+
+		if rAsE.Error() != (smErrors.MatrixColumnMismatchError{
+			ExpectedNColumns: 3,
+			ActualNColumns:   2,
+			Row:              1,
+		}).Error() {
+			t.Errorf(
+				"Expected From() to panic with an error; received %v",
+				r,
+			)
+		}
+	}()
+
+	getKMatrix.From(floatSliceSlice1)
+}
