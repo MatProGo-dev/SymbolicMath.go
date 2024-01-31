@@ -7,6 +7,7 @@ Description:
 */
 
 import (
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"testing"
 )
@@ -57,7 +58,7 @@ func TestConstantMatrix_Plus1(t *testing.T) {
 			t.Errorf("Expected recovered value to be an error; received %T", recoveredVal)
 		}
 
-		expectedError := symbolic.DimensionError{
+		expectedError := smErrors.DimensionError{
 			Operation: "Plus",
 			Arg1:      km1,
 			Arg2:      symbolic.DenseToKMatrix(eye2),
@@ -221,7 +222,7 @@ func TestKMatrix_Multiply2(t *testing.T) {
 			t.Errorf("Expected recovered value to be an error; received %T", recoveredVal)
 		}
 
-		err2 := symbolic.DimensionError{
+		err2 := smErrors.DimensionError{
 			Operation: "Multiply",
 			Arg1:      km1,
 			Arg2:      km2,

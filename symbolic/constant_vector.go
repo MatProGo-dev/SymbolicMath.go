@@ -182,6 +182,26 @@ func (kv KVector) Eq(rightIn interface{}) Constraint {
 }
 
 func (kv KVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
+	// Input Checking
+	err := kv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(rightIn) {
+		// Check dimensions
+		rightAsE, _ := ToExpression(rightIn)
+		err = rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		err = CheckDimensionsInComparison(kv, rightAsE, sense)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	switch rhsConverted := rightIn.(type) {
 	case KVector:
 		// Check Lengths

@@ -9,6 +9,7 @@ Description:
 import (
 	"fmt"
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"gonum.org/v1/gonum/mat"
 	"strings"
@@ -218,7 +219,7 @@ func TestConstantVector_Plus1(t *testing.T) {
 			)
 		}
 
-		if rAsError.Error() != (symbolic.DimensionError{
+		if rAsError.Error() != (smErrors.DimensionError{
 			Operation: "Plus",
 			Arg1:      kv1,
 			Arg2:      kv2,
@@ -494,4 +495,73 @@ func TestConstantVector_Plus8(t *testing.T) {
 			)
 		}
 	}
+}
+
+/*
+TestConstantVector_Plus9
+Description:
+
+	Tests that the Plus() method properly panics
+	when given an unsupported input (string).
+*/
+func TestConstantVector_Plus9(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	var input string = "This is a test string."
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Plus() did not panic when given an unsupported input (string).")
+		}
+	}()
+
+	// Run function
+	kv1.Plus(input)
+}
+
+/*
+TestConstantVector_LessEq1
+Description:
+
+	Verifies that the LessEq method panics when two vectors are compared with
+	different lengths.
+*/
+func TestConstantVector_LessEq1(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	kv2 := symbolic.VecDenseToKVector(symbolic.OnesVector(4))
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected kv1.LessEq(kv2) to panic; received %v",
+				kv1.LessEq(kv2),
+			)
+		}
+
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		var sense0 symbolic.ConstrSense = symbolic.SenseLessThanEqual
+		if rAsError.Error() != (smErrors.DimensionError{
+			Operation: "Comparison (" + sense0.String() + ")",
+			Arg1:      kv1,
+			Arg2:      kv2,
+		}).Error() {
+			t.Errorf(
+				"Expected r to be a DimensionError; received %v",
+				r,
+			)
+		}
+	}()
+
+	kv1.LessEq(kv2)
 }
