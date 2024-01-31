@@ -626,7 +626,7 @@ func TestMonomialVector_Plus6(t *testing.T) {
 	sum := mv1.Plus(k2)
 
 	// Verify that the sum is a monomial vector
-	if _, tf := sum.(symbolic.MonomialVector); !tf {
+	if _, tf := sum.(symbolic.KVector); !tf {
 		t.Errorf(
 			"expected sum to be a MonomialVector; received %T",
 			sum,
