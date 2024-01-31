@@ -149,15 +149,43 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 	case float64:
 		return mv.Plus(K(right))
 	case K:
-		if mv.IsConstant() {
-			// If the whole vector is a constant, then don't
-			// convert down but simply update the coefficients.
-			var mvOut MonomialVector = make([]Monomial, len(mv))
-			for ii, monomial := range mv {
-				mvOut[ii].Coefficient = monomial.Coefficient + float64(right)
+		// Convert the scalar to a scalar vector
+		tempVD := OnesVector(mv.Len())
+		tempVD.ScaleVec(float64(right), &tempVD)
+
+		return mv.Plus(VecDenseToKVector(tempVD))
+	case Monomial:
+		// Check to see if all elements of the monomial vector,
+		// are all monomials like the input monomial.
+		monomialVectorMatches := true
+		for _, monomial := range mv {
+			if !monomial.MatchesFormOf(right) {
+				monomialVectorMatches = false
+			}
+		}
+
+		if monomialVectorMatches {
+			// If all elements of the monomial vector are monomials like the input monomial,
+			// then simply add the coefficients. and return a monomial vector.
+			var mvOut MonomialVector
+			for _, monomial := range mv {
+				mvOut = append(mvOut, monomial.Plus(right).(Monomial))
 			}
 			return mvOut
-
+		} else {
+			// Otherwise, create a polynomial vector
+			var pv PolynomialVector
+			for _, monomial := range mv {
+				pv = append(pv, monomial.Plus(right).(Polynomial))
+			}
+			return pv.Simplify()
+		}
+	case KVector:
+		if mv.IsConstant() {
+			// If monomial vector is really a constant vector,
+			// then don't convert down but simply update the coefficients.
+			var kvOut KVector = VecDenseToKVector(mv.Constant())
+			return kvOut.Plus(right)
 		} else {
 			// Create a polynomial vector
 			var pv PolynomialVector
@@ -455,4 +483,27 @@ func (mv MonomialVector) IsConstant() bool {
 
 	// If all checks pass, then return true!
 	return true
+}
+
+/*
+ToPolynomialVector
+Description:
+
+	This function converts the input monomial vector to a polynomial vector.
+*/
+func (mv MonomialVector) ToPolynomialVector() PolynomialVector {
+	// Input Checking
+	err := mv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var pv PolynomialVector
+	for _, monomial := range mv {
+		pv = append(pv, monomial.ToPolynomial())
+	}
+
+	// Return
+	return pv
 }

@@ -13,7 +13,7 @@ Type Definition
 */
 type Monomial struct {
 	Coefficient     float64
-	Degrees         []int
+	Exponents       []int
 	VariableFactors []Variable
 }
 
@@ -25,10 +25,10 @@ Description:
 */
 func (m Monomial) Check() error {
 	// Check that the number of degrees matches the number of variables
-	if len(m.Degrees) != len(m.VariableFactors) {
+	if len(m.Exponents) != len(m.VariableFactors) {
 		return fmt.Errorf(
 			"the number of degrees (%v) does not match the number of variables (%v)",
-			len(m.Degrees),
+			len(m.Exponents),
 			len(m.VariableFactors),
 		)
 	}
@@ -146,9 +146,9 @@ func (m Monomial) Multiply(e interface{}) Expression {
 
 		if foundIndex, _ := FindInSlice(right, m.VariableFactors); foundIndex == -1 {
 			monomialOut.VariableFactors = append(monomialOut.VariableFactors, right)
-			monomialOut.Degrees = append(monomialOut.Degrees, 1)
+			monomialOut.Exponents = append(monomialOut.Exponents, 1)
 		} else {
-			monomialOut.Degrees[foundIndex] += 1
+			monomialOut.Exponents[foundIndex] += 1
 		}
 		return monomialOut
 	case Monomial:
@@ -165,7 +165,7 @@ func (m Monomial) Multiply(e interface{}) Expression {
 			// Find the index of the variable in the slice variables
 			foundIndex, _ := FindInSlice(variable, variables)
 			// And modify the multidegree
-			multiDegree[foundIndex] += m.Degrees[ii]
+			multiDegree[foundIndex] += m.Exponents[ii]
 		}
 
 		// Iterate through each variable in monomial two
@@ -173,7 +173,7 @@ func (m Monomial) Multiply(e interface{}) Expression {
 			// Find the index of the variable in the slice variables
 			foundIndex, _ := FindInSlice(variable, variables)
 			// And modify the multidegree
-			multiDegree[foundIndex] += right.Degrees[ii]
+			multiDegree[foundIndex] += right.Exponents[ii]
 		}
 
 		// Create coefficient
@@ -303,7 +303,7 @@ func (m Monomial) IsVariable(v Variable) bool {
 	// Algorithm
 	containsOnlyOneFactor := len(m.VariableFactors) == 1
 	firstFactorMatchesV := m.VariableFactors[0].ID == v.ID
-	firstFactorHasDegreeOne := m.Degrees[0] == 1
+	firstFactorHasDegreeOne := m.Exponents[0] == 1
 	if containsOnlyOneFactor && firstFactorMatchesV && firstFactorHasDegreeOne {
 		return true
 	} else {
@@ -342,7 +342,7 @@ func (m Monomial) MatchesFormOf(mIn Monomial) bool {
 			return false
 		} else {
 			// If v was in mIn, but not of the right degree, then these two are not the same
-			if m.Degrees[ii] != mIn.Degrees[ii] {
+			if m.Exponents[ii] != mIn.Exponents[ii] {
 				return false
 			}
 		}
@@ -384,18 +384,18 @@ func (m Monomial) DerivativeWrt(vIn Variable) Expression {
 		// If vIn is in the monomial, then decrease that element's degree in the
 		// monomial.
 		var monomialOut Monomial
-		if monomialOut.Degrees[foundIndex] == 1 {
+		if monomialOut.Exponents[foundIndex] == 1 {
 			// If the degree of vIn is 1, then remove it from the monomial
 			monomialOut.Coefficient = m.Coefficient
 			for ii, variable := range m.VariableFactors {
 				if ii != foundIndex {
 					monomialOut.VariableFactors = append(monomialOut.VariableFactors, variable)
-					monomialOut.Degrees = append(monomialOut.Degrees, m.Degrees[ii])
+					monomialOut.Exponents = append(monomialOut.Exponents, m.Exponents[ii])
 				}
 			}
 		} else {
 			monomialOut = m
-			monomialOut.Degrees[foundIndex] -= 1
+			monomialOut.Exponents[foundIndex] -= 1
 		}
 
 		// Return monomial
@@ -419,7 +419,7 @@ func (m Monomial) IsLinear() bool {
 
 	// Algorithm
 	sum := 0
-	for _, degree := range m.Degrees {
+	for _, degree := range m.Exponents {
 		sum += degree
 	}
 
@@ -436,10 +436,10 @@ func (m Monomial) ToPolynomial() Polynomial {
 	// Copy Values
 	mCopy := Monomial{
 		Coefficient:     m.Coefficient,
-		Degrees:         make([]int, len(m.Degrees)),
+		Exponents:       make([]int, len(m.Exponents)),
 		VariableFactors: make([]Variable, len(m.VariableFactors)),
 	}
-	copy(mCopy.Degrees, m.Degrees)
+	copy(mCopy.Exponents, m.Exponents)
 	copy(mCopy.VariableFactors, m.VariableFactors)
 
 	// Return polynomial with copied monomial
@@ -471,8 +471,8 @@ func (m Monomial) String() string {
 	// Add variables
 	for ii, variable := range m.VariableFactors {
 		monomialString += fmt.Sprintf(" %v", variable)
-		if m.Degrees[ii] != 1 {
-			monomialString += fmt.Sprintf("^%v", m.Degrees[ii])
+		if m.Exponents[ii] != 1 {
+			monomialString += fmt.Sprintf("^%v", m.Exponents[ii])
 		}
 	}
 

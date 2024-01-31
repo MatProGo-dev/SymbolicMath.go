@@ -8,6 +8,7 @@ Description:
 
 import (
 	"fmt"
+	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"gonum.org/v1/gonum/mat"
 	"strings"
@@ -387,6 +388,109 @@ func TestConstantVector_Plus6(t *testing.T) {
 				ii,
 				kv3.(symbolic.KVector).AtVec(ii),
 				float64(kv1.AtVec(ii).(symbolic.K))+float64(kv2.AtVec(ii).(symbolic.K)),
+			)
+		}
+	}
+}
+
+/*
+TestConstantVector_Plus7
+Description:
+
+	Tests that the Plus() method correctly computes the sum of a
+	KVector and a MonomialVector.
+*/
+func TestConstantVector_Plus7(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := getKVector.From(symbolic.OnesVector(N))
+	kv2 := getKVector.From([]float64{3.14, 2.71, 1.41})
+	mv2 := kv2.ToMonomialVector()
+
+	// Test
+	kv3 := kv1.Plus(mv2)
+
+	// Check that the sum is of type Kvector
+	if _, tf := kv3.(symbolic.KVector); !tf {
+		t.Errorf(
+			"Expected kv3 to be of type MonomialVector; received %v",
+			kv3,
+		)
+	}
+
+	// Check that the sum is correct
+	for ii := 0; ii < N; ii++ {
+		if float64(kv3.(symbolic.KVector).AtVec(ii).(symbolic.K)) != float64(kv1.AtVec(ii).(symbolic.K))+float64(kv2.AtVec(ii).(symbolic.K)) {
+			t.Errorf(
+				"Expected kv3.AtVec(%v) to be %v; received %v",
+				ii,
+				kv3.(symbolic.KVector).AtVec(ii),
+				float64(kv1.AtVec(ii).(symbolic.K))+float64(kv2.AtVec(ii).(symbolic.K)),
+			)
+		}
+	}
+}
+
+/*
+TestConstantVector_Plus8
+Description:
+
+	Tests that the Plus() method correctly computes the sum of a
+	KVector and a vector of Polynomials (PolynomialVector).
+*/
+func TestConstantVector_Plus8(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := getKVector.From(symbolic.OnesVector(N))
+	pv2 := symbolic.PolynomialVector{
+		symbolic.Polynomial{
+			Monomials: []symbolic.Monomial{
+				symbolic.Monomial{
+					Coefficient:     3.14,
+					VariableFactors: []symbolic.Variable{symbolic.NewVariable()},
+					Exponents:       []int{1},
+				},
+			},
+		},
+		symbolic.Polynomial{
+			Monomials: []symbolic.Monomial{
+				symbolic.Monomial{
+					Coefficient:     2.71,
+					VariableFactors: []symbolic.Variable{symbolic.NewVariable()},
+					Exponents:       []int{1},
+				},
+			},
+		},
+		symbolic.Polynomial{
+			Monomials: []symbolic.Monomial{
+				symbolic.Monomial{
+					Coefficient:     1.41,
+					VariableFactors: []symbolic.Variable{symbolic.NewVariable()},
+					Exponents:       []int{1},
+				},
+			},
+		},
+	}
+
+	// Test
+	sum := kv1.Plus(pv2)
+
+	// Check that the sum is of type polynomial vector
+	if _, tf := sum.(symbolic.PolynomialVector); !tf {
+		t.Errorf(
+			"Expected sum to be of type MonomialVector; received %v",
+			sum,
+		)
+	}
+
+	// Check that the sum contains two monomials in every
+	// polynomial.
+	for ii := 0; ii < N; ii++ {
+		if len(sum.(symbolic.PolynomialVector)[ii].Monomials) != 2 {
+			t.Errorf(
+				"Expected len(sum[%v].Monomials) to be 2; received %v",
+				ii,
+				len(sum.(symbolic.PolynomialVector)[ii].Monomials),
 			)
 		}
 	}

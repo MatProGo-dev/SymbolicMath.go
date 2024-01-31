@@ -224,6 +224,15 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 			pvCopy[ii] = sum.(Polynomial)
 		}
 		return pvCopy
+	case KVector:
+		pvCopy := pv
+
+		// Algorithm
+		for ii, polynomial := range pv {
+			sum := polynomial.Plus(right[ii])
+			pvCopy[ii] = sum.(Polynomial)
+		}
+		return pvCopy.Simplify()
 	case PolynomialVector:
 		pvCopy := pv
 

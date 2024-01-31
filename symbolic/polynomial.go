@@ -402,7 +402,7 @@ Simplify
 Description:
 
 	This function simplifies the number of monomials in the polynomial,
-	by finding the matching terms (i.e., monomials with matching Variables and Degrees)
+	by finding the matching terms (i.e., monomials with matching Variables and Exponents)
 	and combining them.
 */
 func (p Polynomial) Simplify() Polynomial {

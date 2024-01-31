@@ -40,10 +40,10 @@ func TestConstant_ToMonomial1(t *testing.T) {
 		)
 	}
 
-	if len(m1.Degrees) != 0 {
+	if len(m1.Exponents) != 0 {
 		t.Errorf(
 			"expected there to be 0 degrees in monomial; received %v",
-			len(m1.Degrees),
+			len(m1.Exponents),
 		)
 	}
 
@@ -260,7 +260,7 @@ func TestConstant_Plus5(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{},
-		Degrees:         []int{},
+		Exponents:       []int{},
 	}
 
 	// Test
@@ -298,7 +298,7 @@ func TestConstant_Plus6(t *testing.T) {
 			{
 				Coefficient:     1.0,
 				VariableFactors: []symbolic.Variable{},
-				Degrees:         []int{},
+				Exponents:       []int{},
 			},
 		},
 	}

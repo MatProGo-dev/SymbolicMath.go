@@ -42,7 +42,7 @@ func TestConstraint_IsConstraint2(t *testing.T) {
 	y := symbolic.NewVariable()
 	m := symbolic.Monomial{
 		Coefficient:     1,
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 		VariableFactors: []symbolic.Variable{x, y},
 	}
 	sc := symbolic.ScalarConstraint{x, m, symbolic.SenseLessThanEqual}

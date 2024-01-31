@@ -53,12 +53,12 @@ func TestMonomialVector_Check2(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 	}
 	mv := symbolic.MonomialVector{m1}
 	expectedError := fmt.Errorf(
 		"the number of degrees (%v) does not match the number of variables (%v)",
-		len(m1.Degrees),
+		len(m1.Exponents),
 		len(m1.VariableFactors),
 	)
 
@@ -88,7 +88,7 @@ func TestMonomialVector_Check3(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     3.14,
 		VariableFactors: []symbolic.Variable{},
-		Degrees:         []int{},
+		Exponents:       []int{},
 	}
 	mv := symbolic.MonomialVector{m1}
 
@@ -140,12 +140,12 @@ func TestMonomialVector_Variables2(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 	m2 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v2},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 	mv := symbolic.MonomialVector{m1, m2}
 
@@ -173,12 +173,12 @@ func TestMonomialVector_Variables3(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 	m2 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 	mv := symbolic.MonomialVector{m1, m2}
 
@@ -205,12 +205,12 @@ func TestMonomialVector_Len1(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 	m2 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 	mv := symbolic.MonomialVector{m1, m2}
 
@@ -236,12 +236,12 @@ func TestMonomialVector_Dims1(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 	m2 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 	mv := symbolic.MonomialVector{m1, m2}
 
@@ -296,22 +296,22 @@ func TestMonomialVector_Constant2(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v3},
-		Degrees:         []int{4},
+		Exponents:       []int{4},
 	}
 	m2 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 	m3 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1, v2},
-		Degrees:         []int{1, 1},
+		Exponents:       []int{1, 1},
 	}
 	m4 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1, v2, v3, v4},
-		Degrees:         []int{1, 1, 1, 1},
+		Exponents:       []int{1, 1, 1, 1},
 	}
 	mv := symbolic.MonomialVector{m1, m2, m3, m4}
 
@@ -346,22 +346,22 @@ func TestMonomialVector_Constant3(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     3.14,
 		VariableFactors: []symbolic.Variable{},
-		Degrees:         []int{},
+		Exponents:       []int{},
 	}
 	m2 := symbolic.Monomial{
 		Coefficient:     3.14,
 		VariableFactors: []symbolic.Variable{},
-		Degrees:         []int{},
+		Exponents:       []int{},
 	}
 	m3 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1, v2},
-		Degrees:         []int{1, 1},
+		Exponents:       []int{1, 1},
 	}
 	m4 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1, v2, v3, v4},
-		Degrees:         []int{1, 1, 1, 1},
+		Exponents:       []int{1, 1, 1, 1},
 	}
 	mv := symbolic.MonomialVector{m1, m2, m3, m4}
 
@@ -516,12 +516,12 @@ func TestMonomialVector_Plus4(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 	m2 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v2},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 	mv1 := symbolic.MonomialVector{m1, m2}
 	mv2 := symbolic.MonomialVector{m1, m2}
@@ -562,12 +562,12 @@ func TestMonomialVector_Plus5(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 	m2 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v2},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 	mv1 := symbolic.MonomialVector{m1, m2}
 

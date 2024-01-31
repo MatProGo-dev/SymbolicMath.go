@@ -186,7 +186,7 @@ func (c K) ToMonomial() Monomial {
 	return Monomial{
 		Coefficient:     float64(c),
 		VariableFactors: []Variable{},
-		Degrees:         []int{},
+		Exponents:       []int{},
 	}
 }
 

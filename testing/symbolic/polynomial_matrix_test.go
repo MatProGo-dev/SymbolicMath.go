@@ -53,7 +53,7 @@ func TestPolynomialMatrix_Check2(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 	}
 	p1 := symbolic.Polynomial{
 		[]symbolic.Monomial{m1},
@@ -95,7 +95,7 @@ func TestPolynomialMatrix_Check3(t *testing.T) {
 	m2 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 	}
 
 	// Create polynomials

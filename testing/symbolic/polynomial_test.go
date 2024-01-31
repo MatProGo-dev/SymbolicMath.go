@@ -53,7 +53,7 @@ func TestPolynomial_Check2(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 	}
 
 	p1 := symbolic.Polynomial{
@@ -93,7 +93,7 @@ func TestPolynomial_Check3(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 
 	p1 := symbolic.Polynomial{
@@ -124,7 +124,7 @@ func TestPolynomial_Variables1(t *testing.T) {
 			symbolic.Monomial{
 				Coefficient:     3.14,
 				VariableFactors: []symbolic.Variable{},
-				Degrees:         []int{},
+				Exponents:       []int{},
 			},
 		},
 	}
@@ -155,7 +155,7 @@ func TestPolynomial_Variables2(t *testing.T) {
 			symbolic.Monomial{
 				Coefficient:     1.0,
 				VariableFactors: []symbolic.Variable{v1},
-				Degrees:         []int{1},
+				Exponents:       []int{1},
 			},
 		},
 	}
@@ -197,7 +197,7 @@ func TestPolynomial_Variables3(t *testing.T) {
 			symbolic.Monomial{
 				Coefficient:     1.0,
 				VariableFactors: []symbolic.Variable{v1, v2, v3},
-				Degrees:         []int{1, 2, 3},
+				Exponents:       []int{1, 2, 3},
 			},
 		},
 	}
@@ -257,12 +257,12 @@ func TestPolynomial_Variables4(t *testing.T) {
 			symbolic.Monomial{
 				Coefficient:     1.0,
 				VariableFactors: []symbolic.Variable{v1, v2, v3},
-				Degrees:         []int{1, 2, 3},
+				Exponents:       []int{1, 2, 3},
 			},
 			symbolic.Monomial{
 				Coefficient:     1.0,
 				VariableFactors: []symbolic.Variable{v1, v2, v3},
-				Degrees:         []int{5, 6, 7},
+				Exponents:       []int{5, 6, 7},
 			},
 		},
 	}
@@ -319,13 +319,13 @@ func TestPolynomial_Check4(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 
 	m2 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v2},
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 	}
 
 	p1 := symbolic.Polynomial{
@@ -371,17 +371,17 @@ func TestPolynomial_Dims1(t *testing.T) {
 			symbolic.Monomial{
 				Coefficient:     1.0,
 				VariableFactors: []symbolic.Variable{v1},
-				Degrees:         []int{1},
+				Exponents:       []int{1},
 			},
 			symbolic.Monomial{
 				Coefficient:     1.0,
 				VariableFactors: []symbolic.Variable{v2},
-				Degrees:         []int{1},
+				Exponents:       []int{1},
 			},
 			symbolic.Monomial{
 				Coefficient:     1.0,
 				VariableFactors: []symbolic.Variable{v3},
-				Degrees:         []int{1},
+				Exponents:       []int{1},
 			},
 		},
 	}
@@ -411,7 +411,7 @@ func TestPolynomial_Plus1(t *testing.T) {
 			symbolic.Monomial{
 				Coefficient:     3.14,
 				VariableFactors: []symbolic.Variable{},
-				Degrees:         []int{},
+				Exponents:       []int{},
 			},
 		},
 	}
@@ -465,7 +465,7 @@ func TestPolynomial_VariableMonomialIndex1(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1, v2},
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 	}
 
 	p1 := symbolic.Polynomial{
@@ -497,7 +497,7 @@ func TestPolynomial_LinearCoeff1(t *testing.T) {
 			symbolic.Monomial{
 				Coefficient:     3.14,
 				VariableFactors: []symbolic.Variable{},
-				Degrees:         []int{},
+				Exponents:       []int{},
 			},
 		},
 	}
@@ -550,10 +550,10 @@ func TestPolynomial_LinearCoeff2(t *testing.T) {
 
 	p1 := symbolic.Polynomial{
 		Monomials: []symbolic.Monomial{
-			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v1}, Degrees: []int{2}},
-			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v2}, Degrees: []int{2}},
-			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v1, v3}, Degrees: []int{1, 1}},
-			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v2, v3}, Degrees: []int{1, 1}},
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v1}, Exponents: []int{2}},
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v2}, Exponents: []int{2}},
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v1, v3}, Exponents: []int{1, 1}},
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v2, v3}, Exponents: []int{1, 1}},
 		},
 	}
 

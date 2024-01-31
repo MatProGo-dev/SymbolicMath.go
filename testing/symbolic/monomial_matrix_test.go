@@ -51,7 +51,7 @@ func TestMonomialMatrix_Check2(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 	}
 	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
 		{m1, m1},
@@ -90,7 +90,7 @@ func TestMonomialMatrix_Check3(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 	}
 	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
 		{m1},
@@ -125,7 +125,7 @@ func TestMonomialMatrix_Check4(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{3},
+		Exponents:       []int{3},
 	}
 	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
 		{m1, m1},
@@ -156,7 +156,7 @@ func TestMonomialMatrix_Variables1(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{3},
+		Exponents:       []int{3},
 	}
 	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
 		{m1, m1},
@@ -194,12 +194,12 @@ func TestMonomialMatrix_Variables2(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{3},
+		Exponents:       []int{3},
 	}
 	m2 := symbolic.Monomial{
 		Coefficient:     10.0,
 		VariableFactors: []symbolic.Variable{v1, v2, v3},
-		Degrees:         []int{3, 5, 9},
+		Exponents:       []int{3, 5, 9},
 	}
 	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
 		{m1, m1},
@@ -257,7 +257,7 @@ func TestMonomialMatrix_Dims1(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{3},
+		Exponents:       []int{3},
 	}
 	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
 		{m1, m1},
@@ -308,7 +308,7 @@ func TestMonomialMatrix_Plus1(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 	}
 	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
 		{m1, m1},

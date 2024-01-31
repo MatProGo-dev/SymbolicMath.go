@@ -296,8 +296,8 @@ func TestPolynomialVector_Variables2(t *testing.T) {
 
 	var pv symbolic.PolynomialVector = []symbolic.Polynomial{
 		k1.ToMonomial().ToPolynomial(),
-		symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3}, Degrees: []int{1, 2}}.ToPolynomial(),
-		symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3, v4}, Degrees: []int{3, 5, 11}}.ToPolynomial(),
+		symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3}, Exponents: []int{1, 2}}.ToPolynomial(),
+		symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3, v4}, Exponents: []int{3, 5, 11}}.ToPolynomial(),
 	}
 
 	// Check that there are 3 variables in pv
@@ -325,8 +325,8 @@ func TestPolynomialVector_Variables3(t *testing.T) {
 
 	var pv symbolic.PolynomialVector = []symbolic.Polynomial{
 		k1.ToMonomial().ToPolynomial(),
-		symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3}, Degrees: []int{1, 2}}.ToPolynomial(),
-		symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v4}, Degrees: []int{3, 11}}.ToPolynomial(),
+		symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v3}, Exponents: []int{1, 2}}.ToPolynomial(),
+		symbolic.Monomial{VariableFactors: []symbolic.Variable{v2, v4}, Exponents: []int{3, 11}}.ToPolynomial(),
 	}
 
 	// Check that there are 3 variables in pv
@@ -541,7 +541,7 @@ func TestPolynomialVector_LinearCoeff3(t *testing.T) {
 		vII := symbolic.NewVariable()
 		pv[ii] = symbolic.Monomial{
 			VariableFactors: []symbolic.Variable{vII},
-			Degrees:         []int{2},
+			Exponents:       []int{2},
 		}.ToPolynomial()
 	}
 
@@ -579,7 +579,7 @@ func TestPolynomialVector_LinearCoeff4(t *testing.T) {
 		pv[ii] = symbolic.Monomial{
 			Coefficient:     float64(ii),
 			VariableFactors: []symbolic.Variable{vII},
-			Degrees:         []int{1},
+			Exponents:       []int{1},
 		}.ToPolynomial()
 	}
 

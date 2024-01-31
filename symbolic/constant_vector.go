@@ -139,6 +139,12 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 	case VariableVector:
 		return right.Plus(kv)
 
+	case MonomialVector:
+		return right.Plus(kv)
+
+	case PolynomialVector:
+		return right.Plus(kv)
+
 	default:
 		errString := fmt.Sprintf("Unrecognized expression type %T for addition of KVector kv.Plus(%v)!", right, right)
 		panic(fmt.Errorf(errString))
