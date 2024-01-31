@@ -204,17 +204,6 @@ func (kv KVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint 
 
 	switch rhsConverted := rightIn.(type) {
 	case KVector:
-		// Check Lengths
-		if kv.Len() != rhsConverted.Len() {
-			panic(
-				fmt.Errorf(
-					"The left hand side's dimension (%v) and the left hand side's dimension (%v) do not match!",
-					kv.Len(),
-					rhsConverted.Len(),
-				),
-			)
-		}
-
 		// Return constraint
 		return VectorConstraint{
 			LeftHandSide:  kv,
