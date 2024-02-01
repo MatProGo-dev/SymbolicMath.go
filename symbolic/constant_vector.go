@@ -1,6 +1,9 @@
 package symbolic
 
-import "gonum.org/v1/gonum/mat"
+import (
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"gonum.org/v1/gonum/mat"
+)
 
 /*
 vector_constant_test.go
@@ -211,17 +214,29 @@ func (kv KVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint 
 			Sense:         sense,
 		}
 
+	case mat.VecDense:
+		// Use KVector's Comparison method
+		return kv.Comparison(VecDenseToKVector(rhsConverted), sense)
+
+	case *mat.VecDense:
+		// Use KVector's Comparison method
+		return kv.Comparison(VecDenseToKVector(*rhsConverted), sense)
+
 	case VariableVector:
 		// Return constraint
-		return rhsConverted.Comparison(kv, sense)
+		return VectorConstraint{
+			LeftHandSide:  kv,
+			RightHandSide: rhsConverted,
+			Sense:         sense,
+		}
 
 	default:
 		// Return an error
 		panic(
-			fmt.Errorf(
-				"The input to KVector's '%v' comparison (%v) has unexpected type: %T",
-				sense, rightIn, rightIn,
-			),
+			smErrors.UnsupportedInputError{
+				FunctionName: "KVector.Comparison",
+				Input:        rightIn,
+			},
 		)
 
 	}
@@ -287,10 +302,12 @@ func (kv KVector) Multiply(rightIn interface{}) Expression {
 		))
 
 	default:
-		panic(fmt.Errorf(
-			"The input to KVectorTranspose's Multiply method (%v) has unexpected type: %T",
-			right, right,
-		))
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "KVector.Multiply",
+				Input:        right,
+			},
+		)
 
 	}
 }

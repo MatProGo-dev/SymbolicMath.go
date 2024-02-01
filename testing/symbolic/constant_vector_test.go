@@ -565,3 +565,174 @@ func TestConstantVector_LessEq1(t *testing.T) {
 
 	kv1.LessEq(kv2)
 }
+
+/*
+TestConstantVector_GreaterEq1
+Description:
+
+	Verifies that the GreaterEq method produces
+	the correct constraint when given a well-defined
+	KVector and vector of Variables (VariableVector).
+*/
+func TestConstantVector_GreaterEq1(t *testing.T) {
+	// Constants
+	N := 5
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	vv2 := symbolic.NewVariableVector(N)
+
+	// Test
+	constraint := kv1.GreaterEq(vv2)
+
+	// Verify that the left hand side is of type KVector
+	if _, tf := constraint.Left().(symbolic.KVector); !tf {
+		t.Errorf(
+			"Expected constraint.LeftHandSide to be of type KVector; received %v",
+			constraint.Left(),
+		)
+	}
+
+	// Verify that the right hand side is of type VariableVector
+	if _, tf := constraint.Right().(symbolic.VariableVector); !tf {
+		t.Errorf(
+			"Expected constraint.RightHandSide to be of type VariableVector; received %v",
+			constraint.Right(),
+		)
+	}
+
+	// Verify that the sense of the constraint is GreaterThanEqual
+	if constraint.ConstrSense() != symbolic.SenseGreaterThanEqual {
+		t.Errorf(
+			"Expected constraint.Sense to be GreaterThanEqual; received %v",
+			constraint.ConstrSense(),
+		)
+	}
+}
+
+/*
+TestConstantVector_Eq1
+Description:
+
+	Verifies that the Eq method produces
+	the correct constraint when given a well-defined
+	KVector and mat.VecDense.
+*/
+func TestConstantVector_Eq1(t *testing.T) {
+	// Constants
+	N := 5
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	vd2 := mat.NewVecDense(N, []float64{1, 1, 1, 1, 1})
+
+	// Test
+	constraint := kv1.Eq(vd2)
+
+	// Verify that the left hand side is of type KVector
+	if _, tf := constraint.Left().(symbolic.KVector); !tf {
+		t.Errorf(
+			"Expected constraint.LeftHandSide to be of type KVector; received %v",
+			constraint.Left(),
+		)
+	}
+
+	// Verify that the right hand side is of type KVector
+	if _, tf := constraint.Right().(symbolic.KVector); !tf {
+		t.Errorf(
+			"Expected constraint.RightHandSide to be of type KVector; received %v",
+			constraint.Right(),
+		)
+	}
+
+	// Verify that the sense of the constraint is Equal
+	if constraint.ConstrSense() != symbolic.SenseEqual {
+		t.Errorf(
+			"Expected constraint.Sense to be Equal; received %v",
+			constraint.ConstrSense(),
+		)
+	}
+}
+
+/*
+TestConstantVector_Comparison1
+Description:
+
+	Verifies that the Comparison method panics when a KVector
+	is compared with an invalid object (a string).
+*/
+func TestConstantVector_Comparison1(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	var input string = "This is a test string."
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Comparison() did not panic when given an unsupported input (string).")
+		}
+
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		// Check that the error is the UnsupportedInputError
+		expectedError := smErrors.UnsupportedInputError{
+			Input:        input,
+			FunctionName: "KVector.Comparison",
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected r to be a UnsupportedInputError; received %v",
+				r,
+			)
+		}
+	}()
+
+	// Run function
+	kv1.Comparison(input, symbolic.SenseEqual)
+}
+
+/*
+TestConstantVector_Multiply1
+Description:
+
+	Verifies that the Multiply method panics when given an unsupported input (string).
+*/
+func TestConstantVector_Multiply1(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	var input string = "This is a test string."
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Multiply() did not panic when given an unsupported input (string).")
+		}
+
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		// Check that the error is the UnsupportedInputError
+		expectedError := smErrors.UnsupportedInputError{
+			Input:        input,
+			FunctionName: "KVector.Multiply",
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected r to be a UnsupportedInputError; received %v",
+				r,
+			)
+		}
+	}()
+
+	// Run function
+	kv1.Multiply(input)
+}
