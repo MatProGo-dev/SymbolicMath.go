@@ -10,6 +10,7 @@ Description:
 type Constraint interface {
 	Left() Expression
 	Right() Expression
+	ConstrSense() ConstrSense
 }
 
 func IsConstraint(c interface{}) bool {

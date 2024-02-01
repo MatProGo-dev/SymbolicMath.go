@@ -90,3 +90,13 @@ func (vc VectorConstraint) Left() Expression {
 func (vc VectorConstraint) Right() Expression {
 	return vc.RightHandSide
 }
+
+/*
+ConstrSense
+Description:
+
+	Returns the sense of the constraint.
+*/
+func (vc VectorConstraint) ConstrSense() ConstrSense {
+	return vc.Sense
+}

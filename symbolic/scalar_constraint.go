@@ -59,3 +59,13 @@ func (sc ScalarConstraint) Simplify() (ScalarConstraint, error) {
 	}
 
 }
+
+/*
+ConstrSense
+Description:
+
+	Returns the sense of the constraint.
+*/
+func (sc ScalarConstraint) ConstrSense() ConstrSense {
+	return sc.Sense
+}

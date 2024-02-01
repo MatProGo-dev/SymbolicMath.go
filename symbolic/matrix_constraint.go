@@ -26,6 +26,16 @@ func (mc MatrixConstraint) Right() Expression {
 }
 
 /*
+ConstrSense
+Description:
+
+	Returns the sense of the constraint.
+*/
+func (mc MatrixConstraint) ConstrSense() ConstrSense {
+	return mc.Sense
+}
+
+/*
 Check
 Description:
 
