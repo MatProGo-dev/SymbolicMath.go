@@ -3,6 +3,7 @@ package symbolic
 import (
 	"fmt"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"gonum.org/v1/gonum/mat"
 )
 
 /*
@@ -260,4 +261,178 @@ Description:
 
 	This function compares the variable matrix to another expression.
 */
-// TODO: Complete the rest of the comparison methods.
+func (vm VariableMatrix) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
+	// Input Processing
+	err := vm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(rightIn) {
+		// Convert e to an expression
+		rightAsE, _ := rightIn.(Expression)
+		err = rightAsE.Check()
+		if err != nil {
+			panic(
+				fmt.Errorf("error in second argument to VariableMatrix.Comparison: %v", err),
+			)
+		}
+
+		err := CheckDimensionsInComparison(vm, rightAsE, sense)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	// Algorithm
+	switch right := rightIn.(type) {
+	case float64:
+		// Use K case
+		return vm.Comparison(K(right), sense)
+	case K:
+		// Create a new matrix of polynomials.
+		onesMat := OnesMatrix(vm.Dims()[0], vm.Dims()[1])
+		var KAsDense mat.Dense
+		KAsDense.Scale(float64(right), &onesMat)
+
+		return MatrixConstraint{
+			LeftHandSide:  vm,
+			RightHandSide: DenseToKMatrix(KAsDense),
+			Sense:         sense,
+		}
+	}
+
+	// If the type is not recognized, panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "VariableMatrix.Comparison",
+			Input:        rightIn,
+		},
+	)
+}
+
+/*
+LessEq
+Description:
+
+	Returns a less than or equal to (<=) constraint between
+	the VariableMatrix and another expression.
+*/
+func (vm VariableMatrix) LessEq(rightIn interface{}) Constraint {
+	return vm.Comparison(rightIn, SenseLessThanEqual)
+}
+
+/*
+GreaterEq
+Description:
+
+	Returns a greater than or equal to (>=) constraint between
+	the VariableMatrix and another expression.
+*/
+func (vm VariableMatrix) GreaterEq(rightIn interface{}) Constraint {
+	return vm.Comparison(rightIn, SenseGreaterThanEqual)
+}
+
+/*
+Eq
+Description:
+
+	Returns an equality (==) constraint between
+	the VariableMatrix and another expression.
+*/
+func (vm VariableMatrix) Eq(rightIn interface{}) Constraint {
+	return vm.Comparison(rightIn, SenseEqual)
+}
+
+/*
+DerivativeWrt
+Description:
+
+	This function returns the derivative of the variable matrix
+	with respect to a given variable.
+*/
+func (vm VariableMatrix) DerivativeWrt(v Variable) Expression {
+	// Input Processing
+	err := vm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	kmOut := DenseToKMatrix(
+		ZerosMatrix(vm.Dims()[0], vm.Dims()[1]),
+	)
+
+	// Iterate through matrix and if there is one
+	// element that is equal to the variable, set the
+	// corresponding element in the output matrix to 1.
+	for ii, vmRow := range vm {
+		for jj, vmElt := range vmRow {
+			if vmElt.ID == v.ID {
+				kmOut[ii][jj] = K(1)
+			}
+		}
+	}
+
+	return kmOut
+}
+
+/*
+At
+Description:
+
+	This function returns the element of the variable matrix at the given indices.
+*/
+func (vm VariableMatrix) At(ii, jj int) ScalarExpression {
+	// Input Processing
+	err := vm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	return vm[ii][jj]
+}
+
+/*
+Constant
+Description:
+
+	This function returns the constant value in the variable matrix.
+	this should always be zero.
+*/
+func (vm VariableMatrix) Constant() mat.Dense {
+	return ZerosMatrix(vm.Dims()[0], vm.Dims()[1])
+}
+
+/*
+String
+Description:
+
+	This function returns a string representation of the variable matrix.
+*/
+func (vm VariableMatrix) String() string {
+	// Input Processing
+	err := vm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var out string = "["
+	for ii, vmRow := range vm {
+		out += "["
+		for jj, v := range vmRow {
+			out += v.String()
+			if jj < len(vmRow)-1 {
+				out += ", "
+			}
+		}
+		out += "]"
+		if ii < len(vm)-1 {
+			out += ", "
+		}
+	}
+	out += "]"
+	return out
+}
