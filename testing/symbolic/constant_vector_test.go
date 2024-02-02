@@ -736,3 +736,49 @@ func TestConstantVector_Multiply1(t *testing.T) {
 	// Run function
 	kv1.Multiply(input)
 }
+
+/*
+TestConstantVector_Multiply2
+Description:
+
+	Verifies that the Multiply method correctly panics when a
+	KVector is multiplied by a VariableVector with an incompatible
+	size.
+*/
+func TestConstantVector_Multiply2(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	vv2 := symbolic.NewVariableVector(4)
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Multiply() did not panic when given an unsupported input (string).")
+		}
+
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		// Check that the error is the DimensionError
+		expectedError := smErrors.DimensionError{
+			Operation: "Multiply",
+			Arg1:      kv1,
+			Arg2:      vv2,
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected r to be a DimensionError; received %v",
+				r,
+			)
+		}
+	}()
+
+	// Run function
+	kv1.Multiply(vv2)
+}
