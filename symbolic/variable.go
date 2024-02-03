@@ -11,6 +11,7 @@ type Variable struct {
 	Lower float64
 	Upper float64
 	Type  VarType
+	Name  string
 }
 
 /*
@@ -68,7 +69,7 @@ func (v Variable) Plus(rightIn interface{}) Expression {
 					Monomial{
 						Coefficient:     2.0,
 						VariableFactors: []Variable{v},
-						Degrees:         []int{1},
+						Exponents:       []int{1},
 					},
 				},
 			}
@@ -240,7 +241,7 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 		monomialOut := Monomial{
 			Coefficient:     float64(right),
 			VariableFactors: []Variable{v},
-			Degrees:         []int{1},
+			Exponents:       []int{1},
 		}
 		return monomialOut
 	case Variable:
@@ -249,13 +250,13 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 			monomialOut = Monomial{
 				Coefficient:     1.0,
 				VariableFactors: []Variable{v},
-				Degrees:         []int{2},
+				Exponents:       []int{2},
 			}
 		} else {
 			monomialOut = Monomial{
 				Coefficient:     1.0,
 				VariableFactors: []Variable{v, right},
-				Degrees:         []int{1, 1},
+				Exponents:       []int{1, 1},
 			}
 		}
 		return monomialOut
@@ -333,6 +334,7 @@ func NewContinuousVariable(envs ...*Environment) Variable {
 		Lower: float64(-Infinity),
 		Upper: float64(+Infinity),
 		Type:  Continuous,
+		Name:  fmt.Sprintf("x_%v", nextIdx),
 	}
 
 	// Update environment
@@ -369,6 +371,7 @@ func NewBinaryVariable(envs ...Environment) Variable {
 		Lower: 0.0,
 		Upper: 1.0,
 		Type:  Binary,
+		Name:  fmt.Sprintf("x_%v", nextIdx),
 	}
 
 	// Update env
@@ -388,7 +391,7 @@ func (v Variable) ToMonomial() Monomial {
 	return Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []Variable{v},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 }
 
@@ -440,4 +443,14 @@ Description:
 */
 func (v Variable) IsLinear() bool {
 	return true
+}
+
+/*
+String
+Description:
+
+	This method returns a string representation of the variable.
+*/
+func (v Variable) String() string {
+	return v.Name
 }

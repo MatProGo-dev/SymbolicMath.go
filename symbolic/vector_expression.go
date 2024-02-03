@@ -73,6 +73,9 @@ type VectorExpression interface {
 
 	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
 	DerivativeWrt(vIn Variable) Expression
+
+	// String returns a string representation of the expression
+	String() string
 }
 
 ///*
@@ -136,7 +139,7 @@ Description:
 func ToVectorExpression(e interface{}) (VectorExpression, error) {
 	// Input Processing
 	if !IsVectorExpression(e) {
-		return KVector(OnesVector(1)), fmt.Errorf(
+		return VecDenseToKVector(OnesVector(1)), fmt.Errorf(
 			"the input interface is of type %T, which is not recognized as a VectorExpression.",
 			e,
 		)
@@ -147,13 +150,13 @@ func ToVectorExpression(e interface{}) (VectorExpression, error) {
 	case KVector:
 		return e2, nil
 	case mat.VecDense:
-		return KVector(e2), nil
+		return VecDenseToKVector(e2), nil
 	case VariableVector:
 		return e2, nil
 	case PolynomialVector:
 		return e2, nil
 	default:
-		return KVector(OnesVector(1)), fmt.Errorf(
+		return VecDenseToKVector(OnesVector(1)), fmt.Errorf(
 			"unexpected vector expression conversion requested for type %T!",
 			e,
 		)

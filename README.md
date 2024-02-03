@@ -18,12 +18,24 @@ import (
 )
 
 func main() {
-	v1 := symbolic.NewVariable()
-	v2 := symbolic.NewVariable()
+	// Constants
+	N := 2
+	x := symbolic.NewVariableVector(N)
+	Q := getKMatrix.From(
+		[][]float64{
+			{1, 0},
+			{0, 2.0},
+		})
 	
-	sum := v1.Plus(v2)
+	// Create the quadratic polynomial
+	quadPoly := x.Transpose().Multiply(Q).Multiply(x)
+
+	// Print the polynomial
+	fmt.Println(quadPoly.String())
 	
 	/* Other stuff... */
 }
 
 ```
+
+Further examples can be found in the `examples` directory.

@@ -26,3 +26,22 @@ func (cs ConstrSense) String() string {
 		panic(fmt.Errorf("unexpected constraint sense!"))
 	}
 }
+
+/*
+Check
+Description:
+
+	This method checks if the receiver is one of the allowed types of sense.
+*/
+func (cs ConstrSense) Check() error {
+	switch cs {
+	case SenseEqual:
+		return nil
+	case SenseLessThanEqual:
+		return nil
+	case SenseGreaterThanEqual:
+		return nil
+	default:
+		return fmt.Errorf("unexpected constraint sense: %v!", cs)
+	}
+}

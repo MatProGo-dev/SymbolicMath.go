@@ -1,6 +1,9 @@
 package symbolic
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+)
 
 /*
 vector_constraint.go
@@ -15,31 +18,47 @@ type VectorConstraint struct {
 }
 
 /*
+Dims
+Description:
+
+	The dimension of the vector constraint (ideally this should be the same as the dimensions
+	of the left and right hand sides).
+*/
+func (vc VectorConstraint) Dims() []int {
+	err := vc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Dimensions of right and left should be the same.
+	return vc.LeftHandSide.Dims()
+
+}
+
+/*
 AtVec
 Description:
 
 	Retrieves the constraint formed by one element of the "vector" constraint.
 */
-func (vc VectorConstraint) AtVec(i int) (ScalarConstraint, error) {
+func (vc VectorConstraint) AtVec(i int) ScalarConstraint {
 	// Input Processing
-	if vc.Check() != nil {
-		return ScalarConstraint{}, vc.Check()
+	err := vc.Check()
+	if err != nil {
+		panic(err)
 	}
 
-	vcLen := vc.LeftHandSide.Len()
-	if i >= vcLen {
-		return ScalarConstraint{},
-			fmt.Errorf(
-				"Cannot extract VectorConstraint element at %v; VectorConstraint has length %v.",
-				i, vcLen,
-			)
+	// Check to see whether or not the index is valid.
+	err = smErrors.CheckIndexOnVector(i, vc)
+	if err != nil {
+		panic(err)
 	}
 
 	// Algorithm
 	lhsAtI := vc.LeftHandSide.AtVec(i)
 	rhsAtI := vc.RightHandSide.AtVec(i)
 
-	return ScalarConstraint{lhsAtI, rhsAtI, vc.Sense}, nil
+	return ScalarConstraint{lhsAtI, rhsAtI, vc.Sense}
 }
 
 /*
@@ -70,4 +89,14 @@ func (vc VectorConstraint) Left() Expression {
 
 func (vc VectorConstraint) Right() Expression {
 	return vc.RightHandSide
+}
+
+/*
+ConstrSense
+Description:
+
+	Returns the sense of the constraint.
+*/
+func (vc VectorConstraint) ConstrSense() ConstrSense {
+	return vc.Sense
 }

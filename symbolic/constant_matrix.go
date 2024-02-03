@@ -11,7 +11,7 @@ Description:
 	Defines all methods related to the constant matrix type.
 */
 
-type KMatrix mat.Dense
+type KMatrix [][]K
 
 /*
 Check
@@ -23,6 +23,34 @@ Description:
 */
 func (km KMatrix) Check() error {
 	return nil
+}
+
+/*
+ToDense
+Description:
+
+	Converts the constant matrix to a dense matrix.
+*/
+func (km KMatrix) ToDense() mat.Dense {
+	// Input Checking
+	err := km.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Constants
+	nR, nC := km.Dims()[0], km.Dims()[1]
+
+	// Construct Dense
+	kmAsDense := mat.NewDense(nR, nC, make([]float64, nR*nC))
+	for rIndex := 0; rIndex < nR; rIndex++ {
+		for cIndex := 0; cIndex < nC; cIndex++ {
+			kmAsDense.Set(rIndex, cIndex, float64(km[rIndex][cIndex]))
+		}
+	}
+
+	// Return
+	return *kmAsDense
 }
 
 /*
@@ -42,11 +70,12 @@ Description:
 	The dimensions of the given matrix.
 */
 func (km KMatrix) Dims() []int {
-	kmAsDense := mat.Dense(km)
-
-	nR, nC := kmAsDense.Dims()
-
-	return []int{nR, nC}
+	// Input Checking
+	err := km.Check()
+	if err != nil {
+		panic(err)
+	}
+	return []int{len(km), len(km[0])}
 }
 
 /*
@@ -88,16 +117,19 @@ func (km KMatrix) Plus(e interface{}) Expression {
 		rightAsDense.Scale(right, &ones)
 
 		// Create copy of km as a dense matrix
-		kmAsDense := mat.Dense(km)
+		kmAsDense := km.ToDense()
 
 		// Compute sum
 		var sumAsDense mat.Dense
 		sumAsDense.Add(&rightAsDense, &kmAsDense)
 
-		return KMatrix(sumAsDense)
+		return DenseToKMatrix(sumAsDense)
 
 	case K:
 		return km.Plus(float64(right)) // Reuse float64 case
+
+	case PolynomialMatrix:
+		return right.Plus(km) // Reuse PolynomialMatrix case
 
 	default:
 		panic(
@@ -141,11 +173,11 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 	switch right := e.(type) {
 	case float64:
 		// Use gonum's built-in scale function
-		kmAsDense := mat.Dense(km)
+		kmAsDense := km.ToDense()
 		var product mat.Dense
 		product.Scale(right, &kmAsDense)
 
-		return KMatrix(product)
+		return DenseToKMatrix(product)
 
 	case K:
 		return km.Multiply(float64(right)) // Reuse float64 case
@@ -171,7 +203,7 @@ func (km KMatrix) Transpose() Expression {
 	// Constants
 
 	// Transpose KM after converting it to dense
-	kmAsDense := mat.Dense(km)
+	kmAsDense := km.ToDense()
 	kmDTransposed := kmAsDense.T()
 
 	// Copy
@@ -185,7 +217,7 @@ func (km KMatrix) Transpose() Expression {
 	}
 
 	// Return
-	return KMatrix(kmT)
+	return DenseToKMatrix(kmT)
 
 }
 
@@ -247,7 +279,7 @@ Description:
 	Retrieves element at the specified indices.
 */
 func (km KMatrix) At(i, j int) ScalarExpression {
-	kmAsD := mat.Dense(km)
+	kmAsD := km.ToDense()
 	return K(kmAsD.At(i, j))
 }
 
@@ -258,7 +290,7 @@ Description:
 	Retrieves the constant component.
 */
 func (km KMatrix) Constant() mat.Dense {
-	return mat.Dense(km)
+	return km.ToDense()
 }
 
 // Other Functions
@@ -326,5 +358,64 @@ Description:
 	v. For a constant matrix, this should create a matrix of all zeros (ZerosMatrix).
 */
 func (km KMatrix) DerivativeWrt(vIn Variable) Expression {
-	return KMatrix(ZerosMatrix(km.Dims()[0], km.Dims()[1]))
+	return DenseToKMatrix(ZerosMatrix(km.Dims()[0], km.Dims()[1]))
+}
+
+/*
+String
+Description:
+
+	Returns a string representation of the constant matrix.
+*/
+func (km KMatrix) String() string {
+	// Constants
+	nR, nC := km.Dims()[0], km.Dims()[1]
+
+	// Construct String
+	out := "["
+	for ii, row := range km {
+		out += "["
+		for jj, tempK := range row {
+			out += fmt.Sprintf("%v", tempK)
+			if jj != nC-1 {
+				out += ","
+			}
+		}
+		// Add "]," and newline if not last row
+		out += "]"
+		if ii != nR-1 {
+			out += ",\n ["
+		} else {
+			out += "]\n"
+		}
+
+	}
+
+	// Return string
+	return out
+}
+
+/*
+DenseToKMatrix
+Description:
+
+	Converts a dense matrix to a KMatrix.
+*/
+func DenseToKMatrix(denseIn mat.Dense) KMatrix {
+	// Constants
+	nR, nC := denseIn.Dims()
+
+	// Create KMatrix
+	var km KMatrix = make([][]K, nR)
+
+	// Populate
+	for rIndex := 0; rIndex < nR; rIndex++ {
+		km[rIndex] = make([]K, nC)
+		for cIndex := 0; cIndex < nC; cIndex++ {
+			km[rIndex][cIndex] = K(denseIn.At(rIndex, cIndex))
+		}
+	}
+
+	// Return
+	return km
 }

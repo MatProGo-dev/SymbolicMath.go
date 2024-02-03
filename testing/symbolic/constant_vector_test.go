@@ -8,6 +8,8 @@ Description:
 
 import (
 	"fmt"
+	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"gonum.org/v1/gonum/mat"
 	"strings"
@@ -42,7 +44,7 @@ Description:
 func TestConstantVector_Len2(t *testing.T) {
 	// Constants
 	N := 101
-	kv := symbolic.KVector(symbolic.OnesVector(N))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 
 	// Test
 	if kv.Len() != N {
@@ -62,7 +64,7 @@ Description:
 */
 func TestConstantVector_Check1(t *testing.T) {
 	// Constants
-	kv := symbolic.KVector(symbolic.OnesVector(3))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
 
 	// Test
 	if kv.Check() != nil {
@@ -82,7 +84,7 @@ Description:
 */
 func TestConstantVector_AtVec1(t *testing.T) {
 	// Constants
-	kv := symbolic.KVector(symbolic.OnesVector(3))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
 
 	// Test
 	if float64(kv.AtVec(0).(symbolic.K)) != 1 {
@@ -101,7 +103,7 @@ Description:
 */
 func TestConstantVector_AtVec2(t *testing.T) {
 	// Constants
-	kv := symbolic.KVector(symbolic.OnesVector(3))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
 
 	// Test
 	defer func() {
@@ -125,7 +127,7 @@ Description:
 */
 func TestConstantVector_Variables1(t *testing.T) {
 	// Constants
-	kv := symbolic.KVector(symbolic.OnesVector(3))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
 
 	// Test
 	vars := kv.Variables()
@@ -147,7 +149,7 @@ Description:
 func TestConstantVector_LinearCoeff1(t *testing.T) {
 	// Constants
 	N := 11
-	kv := symbolic.KVector(symbolic.OnesVector(N))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 
 	// Test
 	for ii := 0; ii < N; ii++ {
@@ -173,7 +175,7 @@ Description:
 func TestConstantVector_Constant1(t *testing.T) {
 	// Constants
 	N := 11
-	kv := symbolic.KVector(symbolic.OnesVector(N))
+	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 
 	// Test
 	for ii := 0; ii < N; ii++ {
@@ -196,8 +198,8 @@ Description:
 */
 func TestConstantVector_Plus1(t *testing.T) {
 	// Constants
-	kv1 := symbolic.KVector(symbolic.OnesVector(3))
-	kv2 := symbolic.KVector(symbolic.OnesVector(4))
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	kv2 := symbolic.VecDenseToKVector(symbolic.OnesVector(4))
 
 	// Test
 	defer func() {
@@ -217,7 +219,7 @@ func TestConstantVector_Plus1(t *testing.T) {
 			)
 		}
 
-		if rAsError.Error() != (symbolic.DimensionError{
+		if rAsError.Error() != (smErrors.DimensionError{
 			Operation: "Plus",
 			Arg1:      kv1,
 			Arg2:      kv2,
@@ -242,9 +244,9 @@ Description:
 func TestConstantVector_Plus2(t *testing.T) {
 	// Constants
 	N := 3
-	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	vv2 := symbolic.NewVariableVector(N)
-	vv2.Elements[0] = symbolic.Variable{
+	vv2[0] = symbolic.Variable{
 		ID:    1001,
 		Lower: 0.0,
 		Upper: -1.0,
@@ -292,7 +294,7 @@ Description:
 func TestConstantVector_Plus3(t *testing.T) {
 	// Constants
 	N := 3
-	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	f2 := 3.14
 
 	// Test
@@ -320,7 +322,7 @@ Description:
 func TestConstantVector_Plus4(t *testing.T) {
 	// Constants
 	N := 3
-	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	k2 := symbolic.K(3.14)
 
 	// Test
@@ -347,7 +349,7 @@ Description:
 func TestConstantVector_Plus5(t *testing.T) {
 	// Constants
 	N := 3
-	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	vd2 := mat.NewVecDense(N, []float64{3.14, 2.71, 1.41})
 
 	// Test
@@ -374,9 +376,9 @@ Description:
 func TestConstantVector_Plus6(t *testing.T) {
 	// Constants
 	N := 3
-	kv1 := symbolic.KVector(symbolic.OnesVector(N))
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 	vd2 := mat.NewVecDense(N, []float64{3.14, 2.71, 1.41})
-	kv2 := symbolic.KVector(*vd2)
+	kv2 := symbolic.VecDenseToKVector(*vd2)
 
 	// Test
 	kv3 := kv1.Plus(vd2)
@@ -390,4 +392,393 @@ func TestConstantVector_Plus6(t *testing.T) {
 			)
 		}
 	}
+}
+
+/*
+TestConstantVector_Plus7
+Description:
+
+	Tests that the Plus() method correctly computes the sum of a
+	KVector and a MonomialVector.
+*/
+func TestConstantVector_Plus7(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := getKVector.From(symbolic.OnesVector(N))
+	kv2 := getKVector.From([]float64{3.14, 2.71, 1.41})
+	mv2 := kv2.ToMonomialVector()
+
+	// Test
+	kv3 := kv1.Plus(mv2)
+
+	// Check that the sum is of type Kvector
+	if _, tf := kv3.(symbolic.KVector); !tf {
+		t.Errorf(
+			"Expected kv3 to be of type MonomialVector; received %v",
+			kv3,
+		)
+	}
+
+	// Check that the sum is correct
+	for ii := 0; ii < N; ii++ {
+		if float64(kv3.(symbolic.KVector).AtVec(ii).(symbolic.K)) != float64(kv1.AtVec(ii).(symbolic.K))+float64(kv2.AtVec(ii).(symbolic.K)) {
+			t.Errorf(
+				"Expected kv3.AtVec(%v) to be %v; received %v",
+				ii,
+				kv3.(symbolic.KVector).AtVec(ii),
+				float64(kv1.AtVec(ii).(symbolic.K))+float64(kv2.AtVec(ii).(symbolic.K)),
+			)
+		}
+	}
+}
+
+/*
+TestConstantVector_Plus8
+Description:
+
+	Tests that the Plus() method correctly computes the sum of a
+	KVector and a vector of Polynomials (PolynomialVector).
+*/
+func TestConstantVector_Plus8(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := getKVector.From(symbolic.OnesVector(N))
+	pv2 := symbolic.PolynomialVector{
+		symbolic.Polynomial{
+			Monomials: []symbolic.Monomial{
+				symbolic.Monomial{
+					Coefficient:     3.14,
+					VariableFactors: []symbolic.Variable{symbolic.NewVariable()},
+					Exponents:       []int{1},
+				},
+			},
+		},
+		symbolic.Polynomial{
+			Monomials: []symbolic.Monomial{
+				symbolic.Monomial{
+					Coefficient:     2.71,
+					VariableFactors: []symbolic.Variable{symbolic.NewVariable()},
+					Exponents:       []int{1},
+				},
+			},
+		},
+		symbolic.Polynomial{
+			Monomials: []symbolic.Monomial{
+				symbolic.Monomial{
+					Coefficient:     1.41,
+					VariableFactors: []symbolic.Variable{symbolic.NewVariable()},
+					Exponents:       []int{1},
+				},
+			},
+		},
+	}
+
+	// Test
+	sum := kv1.Plus(pv2)
+
+	// Check that the sum is of type polynomial vector
+	if _, tf := sum.(symbolic.PolynomialVector); !tf {
+		t.Errorf(
+			"Expected sum to be of type MonomialVector; received %v",
+			sum,
+		)
+	}
+
+	// Check that the sum contains two monomials in every
+	// polynomial.
+	for ii := 0; ii < N; ii++ {
+		if len(sum.(symbolic.PolynomialVector)[ii].Monomials) != 2 {
+			t.Errorf(
+				"Expected len(sum[%v].Monomials) to be 2; received %v",
+				ii,
+				len(sum.(symbolic.PolynomialVector)[ii].Monomials),
+			)
+		}
+	}
+}
+
+/*
+TestConstantVector_Plus9
+Description:
+
+	Tests that the Plus() method properly panics
+	when given an unsupported input (string).
+*/
+func TestConstantVector_Plus9(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	var input string = "This is a test string."
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Plus() did not panic when given an unsupported input (string).")
+		}
+	}()
+
+	// Run function
+	kv1.Plus(input)
+}
+
+/*
+TestConstantVector_LessEq1
+Description:
+
+	Verifies that the LessEq method panics when two vectors are compared with
+	different lengths.
+*/
+func TestConstantVector_LessEq1(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	kv2 := symbolic.VecDenseToKVector(symbolic.OnesVector(4))
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected kv1.LessEq(kv2) to panic; received %v",
+				kv1.LessEq(kv2),
+			)
+		}
+
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		var sense0 symbolic.ConstrSense = symbolic.SenseLessThanEqual
+		if rAsError.Error() != (smErrors.DimensionError{
+			Operation: "Comparison (" + sense0.String() + ")",
+			Arg1:      kv1,
+			Arg2:      kv2,
+		}).Error() {
+			t.Errorf(
+				"Expected r to be a DimensionError; received %v",
+				r,
+			)
+		}
+	}()
+
+	kv1.LessEq(kv2)
+}
+
+/*
+TestConstantVector_GreaterEq1
+Description:
+
+	Verifies that the GreaterEq method produces
+	the correct constraint when given a well-defined
+	KVector and vector of Variables (VariableVector).
+*/
+func TestConstantVector_GreaterEq1(t *testing.T) {
+	// Constants
+	N := 5
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	vv2 := symbolic.NewVariableVector(N)
+
+	// Test
+	constraint := kv1.GreaterEq(vv2)
+
+	// Verify that the left hand side is of type KVector
+	if _, tf := constraint.Left().(symbolic.KVector); !tf {
+		t.Errorf(
+			"Expected constraint.LeftHandSide to be of type KVector; received %v",
+			constraint.Left(),
+		)
+	}
+
+	// Verify that the right hand side is of type VariableVector
+	if _, tf := constraint.Right().(symbolic.VariableVector); !tf {
+		t.Errorf(
+			"Expected constraint.RightHandSide to be of type VariableVector; received %v",
+			constraint.Right(),
+		)
+	}
+
+	// Verify that the sense of the constraint is GreaterThanEqual
+	if constraint.ConstrSense() != symbolic.SenseGreaterThanEqual {
+		t.Errorf(
+			"Expected constraint.Sense to be GreaterThanEqual; received %v",
+			constraint.ConstrSense(),
+		)
+	}
+}
+
+/*
+TestConstantVector_Eq1
+Description:
+
+	Verifies that the Eq method produces
+	the correct constraint when given a well-defined
+	KVector and mat.VecDense.
+*/
+func TestConstantVector_Eq1(t *testing.T) {
+	// Constants
+	N := 5
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	vd2 := mat.NewVecDense(N, []float64{1, 1, 1, 1, 1})
+
+	// Test
+	constraint := kv1.Eq(vd2)
+
+	// Verify that the left hand side is of type KVector
+	if _, tf := constraint.Left().(symbolic.KVector); !tf {
+		t.Errorf(
+			"Expected constraint.LeftHandSide to be of type KVector; received %v",
+			constraint.Left(),
+		)
+	}
+
+	// Verify that the right hand side is of type KVector
+	if _, tf := constraint.Right().(symbolic.KVector); !tf {
+		t.Errorf(
+			"Expected constraint.RightHandSide to be of type KVector; received %v",
+			constraint.Right(),
+		)
+	}
+
+	// Verify that the sense of the constraint is Equal
+	if constraint.ConstrSense() != symbolic.SenseEqual {
+		t.Errorf(
+			"Expected constraint.Sense to be Equal; received %v",
+			constraint.ConstrSense(),
+		)
+	}
+}
+
+/*
+TestConstantVector_Comparison1
+Description:
+
+	Verifies that the Comparison method panics when a KVector
+	is compared with an invalid object (a string).
+*/
+func TestConstantVector_Comparison1(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	var input string = "This is a test string."
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Comparison() did not panic when given an unsupported input (string).")
+		}
+
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		// Check that the error is the UnsupportedInputError
+		expectedError := smErrors.UnsupportedInputError{
+			Input:        input,
+			FunctionName: "KVector.Comparison",
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected r to be a UnsupportedInputError; received %v",
+				r,
+			)
+		}
+	}()
+
+	// Run function
+	kv1.Comparison(input, symbolic.SenseEqual)
+}
+
+/*
+TestConstantVector_Multiply1
+Description:
+
+	Verifies that the Multiply method panics when given an unsupported input (string).
+*/
+func TestConstantVector_Multiply1(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	var input string = "This is a test string."
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Multiply() did not panic when given an unsupported input (string).")
+		}
+
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		// Check that the error is the UnsupportedInputError
+		expectedError := smErrors.UnsupportedInputError{
+			Input:        input,
+			FunctionName: "KVector.Multiply",
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected r to be a UnsupportedInputError; received %v",
+				r,
+			)
+		}
+	}()
+
+	// Run function
+	kv1.Multiply(input)
+}
+
+/*
+TestConstantVector_Multiply2
+Description:
+
+	Verifies that the Multiply method correctly panics when a
+	KVector is multiplied by a VariableVector with an incompatible
+	size.
+*/
+func TestConstantVector_Multiply2(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	vv2 := symbolic.NewVariableVector(4)
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Multiply() did not panic when given an unsupported input (string).")
+		}
+
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		// Check that the error is the DimensionError
+		expectedError := smErrors.DimensionError{
+			Operation: "Multiply",
+			Arg1:      kv1,
+			Arg2:      vv2,
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected r to be a DimensionError; received %v",
+				r,
+			)
+		}
+	}()
+
+	// Run function
+	kv1.Multiply(vv2)
 }

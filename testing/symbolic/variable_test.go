@@ -2,6 +2,7 @@ package symbolic_test
 
 import (
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"strings"
 	"testing"
 )
 
@@ -194,6 +195,33 @@ func TestVariable_Plus4(t *testing.T) {
 			x,
 			x,
 			len(sumAsPoly.Monomials),
+		)
+	}
+}
+
+/*
+TestVariable_Plus5
+Description:
+
+
+*/
+
+/*
+TestVariable_String1
+Description:
+
+	Tests that the String() method works properly.
+*/
+func TestVariable_String1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	if !strings.Contains(x.String(), "x_") {
+		t.Errorf(
+			"expected %v to be \"x\"; received %v",
+			x,
+			x.String(),
 		)
 	}
 }

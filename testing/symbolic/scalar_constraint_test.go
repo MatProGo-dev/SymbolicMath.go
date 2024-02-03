@@ -25,7 +25,7 @@ func TestScalarConstraint_Left1(t *testing.T) {
 	y := symbolic.NewVariable()
 	m := symbolic.Monomial{
 		Coefficient:     1,
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 		VariableFactors: []symbolic.Variable{x, y},
 	}
 
@@ -65,7 +65,7 @@ func TestScalarConstraint_Right1(t *testing.T) {
 	y := symbolic.NewVariable()
 	m := symbolic.Monomial{
 		Coefficient:     1,
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 		VariableFactors: []symbolic.Variable{x, y},
 	}
 
@@ -127,7 +127,7 @@ func TestScalarConstraint_IsLinear2(t *testing.T) {
 	y := symbolic.NewVariable()
 	m := symbolic.Monomial{
 		Coefficient:     1,
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 		VariableFactors: []symbolic.Variable{x, y},
 	}
 	c2 := symbolic.K(3.14)

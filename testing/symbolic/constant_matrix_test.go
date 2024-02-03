@@ -7,6 +7,7 @@ Description:
 */
 
 import (
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"testing"
 )
@@ -20,7 +21,7 @@ Description:
 func TestConstantMatrix_Variables1(t *testing.T) {
 	// Constants
 	eye1 := symbolic.Identity(3)
-	km1 := symbolic.KMatrix(eye1)
+	km1 := symbolic.DenseToKMatrix(eye1)
 
 	// Test that variables returns empty list
 	if len(km1.Variables()) != 0 {
@@ -41,7 +42,7 @@ Description:
 func TestConstantMatrix_Plus1(t *testing.T) {
 	// Constants
 	eye1 := symbolic.Identity(3)
-	km1 := symbolic.KMatrix(eye1)
+	km1 := symbolic.DenseToKMatrix(eye1)
 
 	eye2 := symbolic.Identity(4)
 
@@ -57,10 +58,10 @@ func TestConstantMatrix_Plus1(t *testing.T) {
 			t.Errorf("Expected recovered value to be an error; received %T", recoveredVal)
 		}
 
-		expectedError := symbolic.DimensionError{
+		expectedError := smErrors.DimensionError{
 			Operation: "Plus",
 			Arg1:      km1,
-			Arg2:      symbolic.KMatrix(eye2),
+			Arg2:      symbolic.DenseToKMatrix(eye2),
 		}
 		if err.Error() != expectedError.Error() {
 			t.Errorf("unexpected error: %v", err)
@@ -83,7 +84,7 @@ Description:
 func TestConstantMatrix_Plus2(t *testing.T) {
 	// Constants
 	eye1 := symbolic.Identity(3)
-	km1 := symbolic.KMatrix(eye1)
+	km1 := symbolic.DenseToKMatrix(eye1)
 
 	// Test
 	km2 := km1.Plus(3.14)
@@ -123,7 +124,7 @@ Description:
 func TestConstantMatrix_Plus3(t *testing.T) {
 	// Constants
 	eye1 := symbolic.Identity(3)
-	km1 := symbolic.KMatrix(eye1)
+	km1 := symbolic.DenseToKMatrix(eye1)
 
 	// Test
 	km2 := km1.Plus(symbolic.K(3.14))
@@ -164,7 +165,7 @@ Description:
 func TestKMatrix_Multiply1(t *testing.T) {
 	// Constants
 	eye1 := symbolic.Identity(3)
-	km1 := symbolic.KMatrix(eye1)
+	km1 := symbolic.DenseToKMatrix(eye1)
 
 	monom2 := symbolic.Monomial{
 		VariableFactors: []symbolic.Variable{symbolic.NewVariable(), symbolic.NewVariable()},
@@ -204,10 +205,10 @@ Description:
 func TestKMatrix_Multiply2(t *testing.T) {
 	// Constants
 	eye1 := symbolic.Identity(3)
-	km1 := symbolic.KMatrix(eye1)
+	km1 := symbolic.DenseToKMatrix(eye1)
 
 	ones2 := symbolic.OnesMatrix(2, 4)
-	km2 := symbolic.KMatrix(ones2)
+	km2 := symbolic.DenseToKMatrix(ones2)
 
 	// Define Test Handler
 	defer func() {
@@ -221,7 +222,7 @@ func TestKMatrix_Multiply2(t *testing.T) {
 			t.Errorf("Expected recovered value to be an error; received %T", recoveredVal)
 		}
 
-		err2 := symbolic.DimensionError{
+		err2 := smErrors.DimensionError{
 			Operation: "Multiply",
 			Arg1:      km1,
 			Arg2:      km2,
@@ -246,7 +247,7 @@ Description:
 func TestKMatrix_Multiply3(t *testing.T) {
 	// Constants
 	eye1 := symbolic.Identity(3)
-	km1 := symbolic.KMatrix(eye1)
+	km1 := symbolic.DenseToKMatrix(eye1)
 
 	// Test
 	km2 := km1.Multiply(3.14)
@@ -285,7 +286,7 @@ Description:
 func TestKMatrix_Multiply4(t *testing.T) {
 	// Constants
 	eye1 := symbolic.Identity(3)
-	km1 := symbolic.KMatrix(eye1)
+	km1 := symbolic.DenseToKMatrix(eye1)
 
 	// Test
 	km2 := km1.Multiply(symbolic.K(3.14))

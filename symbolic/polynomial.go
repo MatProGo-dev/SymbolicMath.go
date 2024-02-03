@@ -95,7 +95,10 @@ func (p Polynomial) Plus(e interface{}) Expression {
 	case float64:
 		return p.Plus(K(right))
 	case K:
-		pCopy := p
+		pCopy := Polynomial{
+			Monomials: make([]Monomial, len(p.Monomials)),
+		}
+		copy(pCopy.Monomials, p.Monomials)
 
 		// Algorithm
 		constantIndex := pCopy.ConstantMonomialIndex()
@@ -114,11 +117,14 @@ func (p Polynomial) Plus(e interface{}) Expression {
 		return pCopy
 
 	case Variable:
-		pCopy := p
+		pCopy := Polynomial{
+			Monomials: make([]Monomial, len(p.Monomials)),
+		}
+		copy(pCopy.Monomials, p.Monomials)
 
 		// Check to see if the variable is already in the polynomial
 		variableIndex := pCopy.VariableMonomialIndex(right)
-		if variableIndex != -1 {
+		if variableIndex == -1 {
 			// Monomial does not contain the variable,
 			// so add a new monomial.
 			rightAsMonom := right.ToMonomial()
@@ -131,8 +137,16 @@ func (p Polynomial) Plus(e interface{}) Expression {
 			pCopy.Monomials[variableIndex] = newMonomial
 		}
 
+		return pCopy
+
+	case Monomial:
+		return p.Plus(right.ToPolynomial())
+
 	case Polynomial:
-		pCopy := p
+		pCopy := Polynomial{
+			Monomials: make([]Monomial, len(p.Monomials)),
+		}
+		copy(pCopy.Monomials, p.Monomials)
 
 		// Combine the list of monomials.
 		pCopy.Monomials = append(pCopy.Monomials, right.Monomials...)
@@ -143,7 +157,10 @@ func (p Polynomial) Plus(e interface{}) Expression {
 
 	// Unrecognized response is a panic
 	panic(
-		fmt.Errorf("Unexpected type of right in the Plus() method: %T (%v)", e, e),
+		smErrors.UnsupportedInputError{
+			FunctionName: "Polynomial.Plus",
+			Input:        e,
+		},
 	)
 }
 
@@ -385,7 +402,7 @@ Simplify
 Description:
 
 	This function simplifies the number of monomials in the polynomial,
-	by finding the matching terms (i.e., monomials with matching Variables and Degrees)
+	by finding the matching terms (i.e., monomials with matching Variables and Exponents)
 	and combining them.
 */
 func (p Polynomial) Simplify() Polynomial {
@@ -395,15 +412,33 @@ func (p Polynomial) Simplify() Polynomial {
 		panic(err)
 	}
 
-	// Algorithm
+	// Find first element that has nonzero coefficient
+	firstNonZeroIndex := -1
+	for ii, monomial := range p.Monomials {
+		if monomial.Coefficient != 0.0 {
+			firstNonZeroIndex = ii
+			break
+		}
+	}
+
+	if len(p.Monomials) == 0 || firstNonZeroIndex == -1 {
+		// If there is only a single, zero monomial, then return the zero polynomial
+		return p
+	}
 
 	// Copy the first element of the polynomial into the new polynomial
 	pCopy := Polynomial{
-		Monomials: []Monomial{p.Monomials[0]},
+		Monomials: []Monomial{p.Monomials[firstNonZeroIndex]},
 	}
 
 	// Loop through the rest of the monomials
-	for ii := 1; ii < len(p.Monomials); ii++ {
+	for ii := firstNonZeroIndex + 1; ii < len(p.Monomials); ii++ {
+		// Check to see if the monomials coefficient is zero
+		if p.Monomials[ii].Coefficient == 0.0 {
+			// Don't add it.
+			continue
+		}
+
 		// Check to see if the monomial is already in the polynomial
 		monomialIndex := pCopy.MonomialIndex(p.Monomials[ii])
 		if monomialIndex == -1 {
@@ -550,4 +585,33 @@ func (p Polynomial) IsConstant() bool {
 
 	// Algorithm
 	return len(p.Variables()) == 0
+}
+
+/*
+String
+Description:
+
+	This method returns a string representation of the polynomial.
+*/
+func (p Polynomial) String() string {
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	// Create string
+	polynomialString := ""
+
+	// Add monomials
+	for ii, monomial := range p.Monomials {
+		if ii != 0 {
+			polynomialString += " + "
+		}
+		polynomialString += monomial.String()
+	}
+
+	// Return
+	return polynomialString
 }

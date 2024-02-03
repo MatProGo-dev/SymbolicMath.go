@@ -26,14 +26,14 @@ func TestMonomial_Check1(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     1.0,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 	}
 
 	// Test
 	err := m1.Check()
 	if err.Error() != fmt.Errorf(
 		"the number of degrees (%v) does not match the number of variables (%v)",
-		len(m1.Degrees),
+		len(m1.Exponents),
 		len(m1.VariableFactors),
 	).Error() {
 		t.Errorf(
@@ -55,7 +55,7 @@ func TestMonomial_Check2(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     3.14,
 		VariableFactors: []symbolic.Variable{},
-		Degrees:         []int{},
+		Exponents:       []int{},
 	}
 
 	// Test
@@ -82,7 +82,7 @@ func TestMonomial_Check3(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     3.14,
 		VariableFactors: []symbolic.Variable{v1, v2},
-		Degrees:         []int{1, 2},
+		Exponents:       []int{1, 2},
 	}
 
 	// Test
@@ -106,7 +106,7 @@ func TestMonomial_Plus1(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     3.14,
 		VariableFactors: []symbolic.Variable{},
-		Degrees:         []int{},
+		Exponents:       []int{},
 	}
 	f1 := 3.14
 
@@ -114,19 +114,11 @@ func TestMonomial_Plus1(t *testing.T) {
 	sum := m1.Plus(f1)
 
 	// Verify that the sum is a monomial
-	sumAsM, tf := sum.(symbolic.Monomial)
+	_, tf := sum.(symbolic.K)
 	if !tf {
 		t.Errorf(
-			"expected sum to be a monomial; received %T",
+			"expected sum to be a K; received %T",
 			sum,
-		)
-	}
-
-	// Test that the sum is a constant
-	if !sumAsM.IsConstant() {
-		t.Errorf(
-			"expected sum to be a constant; received %v",
-			sumAsM,
 		)
 	}
 
@@ -146,7 +138,7 @@ func TestMonomial_Plus2(t *testing.T) {
 	m1 := symbolic.Monomial{
 		Coefficient:     3.14,
 		VariableFactors: []symbolic.Variable{v1, v2},
-		Degrees:         []int{1, 7},
+		Exponents:       []int{1, 7},
 	}
 	f1 := 3.14
 
@@ -193,7 +185,7 @@ func TestMonomial_Plus3(t *testing.T) {
 	m2 := symbolic.Monomial{
 		Coefficient:     3.14,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 
 	// Compute Sum
@@ -239,7 +231,7 @@ func TestMonomial_Plus4(t *testing.T) {
 	m2 := symbolic.Monomial{
 		Coefficient:     3.14,
 		VariableFactors: []symbolic.Variable{v1},
-		Degrees:         []int{1},
+		Exponents:       []int{1},
 	}
 
 	// Compute Sum

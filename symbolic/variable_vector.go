@@ -18,9 +18,7 @@ Description:
 
 	Represnts a variable in a optimization problem. The variable is
 */
-type VariableVector struct {
-	Elements []Variable
-}
+type VariableVector []Variable
 
 // =========
 // Functions
@@ -33,7 +31,7 @@ Description:
 	Returns the length of the vector of optimization variables.
 */
 func (vv VariableVector) Length() int {
-	return len(vv.Elements)
+	return len(vv)
 }
 
 /*
@@ -56,7 +54,7 @@ func (vv VariableVector) AtVec(idx int) ScalarExpression {
 	// Constants
 
 	// Algorithm
-	return vv.Elements[idx]
+	return vv[idx]
 }
 
 /*
@@ -66,7 +64,7 @@ Description:
 	Returns the slice of all variables in the vector.
 */
 func (vv VariableVector) Variables() []Variable {
-	return vv.Elements
+	return UniqueVars(vv)
 }
 
 /*
@@ -125,10 +123,10 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 	switch right := rightIn.(type) {
 	case *mat.VecDense:
 		// Use KVector's method
-		return vv.Plus(KVector(*right))
+		return vv.Plus(VecDenseToKVector(*right))
 	case mat.VecDense:
 		// Use KVector's method
-		return vv.Plus(KVector(right))
+		return vv.Plus(VecDenseToKVector(right))
 	case KVector:
 		// Create a polynomial vector
 		var pv PolynomialVector
@@ -140,10 +138,10 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 			}
 			tempPolynomial.Monomials = append(
 				tempPolynomial.Monomials,
-				vv.Elements[ii].ToMonomial(),
+				vv[ii].ToMonomial(),
 			)
 			// Create next polynomial.
-			pv.Elements = append(pv.Elements, tempPolynomial)
+			pv = append(pv, tempPolynomial)
 		}
 		return pv
 	default:
@@ -274,7 +272,7 @@ func (vv VariableVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 		}
 		return VectorConstraint{vv, rhsConverted, sense}
 	case mat.VecDense:
-		rhsAsKVector := KVector(rhsConverted)
+		rhsAsKVector := VecDenseToKVector(rhsConverted)
 
 		return vv.Comparison(rhsAsKVector, sense)
 
@@ -302,13 +300,13 @@ func (vv VariableVector) Copy() VariableVector {
 	// Constants
 
 	// Algorithm
-	newVarSlice := []Variable{}
+	var newVarSlice VariableVector
 	for varIndex := 0; varIndex < vv.Len(); varIndex++ {
 		// Append to newVar Slice
-		newVarSlice = append(newVarSlice, vv.Elements[varIndex])
+		newVarSlice = append(newVarSlice, vv[varIndex])
 	}
 
-	return VariableVector{newVarSlice}
+	return newVarSlice
 
 }
 
@@ -319,8 +317,10 @@ Description:
 	This method creates the transpose of the current vector and returns it.
 */
 func (vv VariableVector) Transpose() Expression {
-	//vvCopy := vv.Copy()
-	return vv //VarVectorTranspose(vvCopy) // TODO: Fix This.
+	// Create a matrix representing the transpose
+	var vmOut VariableMatrix
+	vmOut = append(vmOut, vv.Copy())
+	return vmOut
 }
 
 /*
@@ -341,7 +341,7 @@ Description:
 */
 func (vv VariableVector) Check() error {
 	// Check that each variable is properly defined
-	for ii, element := range vv.Elements {
+	for ii, element := range vv {
 		err := element.Check()
 		if err != nil {
 			return fmt.Errorf(
@@ -380,13 +380,13 @@ func (vv VariableVector) DerivativeWrt(vIn Variable) Expression {
 	vecOut := ZerosVector(vv.Len())
 
 	// Algorithm
-	for ii, element := range vv.Elements {
+	for ii, element := range vv {
 		if element.ID == vIn.ID {
 			vecOut.SetVec(ii, 1)
 		}
 	}
 
-	return KVector(vecOut)
+	return VecDenseToKVector(vecOut)
 }
 
 /*
@@ -408,9 +408,59 @@ func NewVariableVector(N int, envs ...*Environment) VariableVector {
 	// Algorithm
 	var varVectorOut VariableVector
 	for ii := 0; ii < N; ii++ {
-		varVectorOut.Elements = append(varVectorOut.Elements, NewVariable(currentEnv))
+		varVectorOut = append(varVectorOut, NewVariable(currentEnv))
 	}
 
 	return varVectorOut
 
+}
+
+/*
+String
+Description:
+
+	Returns a string representation of the VariableVector.
+*/
+func (vv VariableVector) String() string {
+	// Input Processing
+	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Constants
+	var output string = "VariableVector = ["
+	for ii, variable := range vv {
+		output += variable.String()
+		if ii != len(vv)-1 {
+			output += ", "
+		}
+	}
+	output += "]"
+
+	return output
+}
+
+/*
+ToMonomialVector
+Description:
+
+	This function converts the input expression to a monomial vector.
+*/
+func (vv VariableVector) ToMonomialVector() MonomialVector {
+	// Input Processing
+	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Constants
+	var out MonomialVector
+
+	// Algorithm
+	for _, variable := range vv {
+		out = append(out, variable.ToMonomial())
+	}
+
+	return out
 }

@@ -214,9 +214,9 @@ func TestVariableVector_Plus2(t *testing.T) {
 	var vv1 symbolic.VariableVector
 	for ii := 0; ii < N; ii++ {
 		if ii != 100 {
-			vv1.Elements = append(vv1.Elements, symbolic.NewVariable())
+			vv1 = append(vv1, symbolic.NewVariable())
 		} else {
-			vv1.Elements = append(vv1.Elements, symbolic.Variable{})
+			vv1 = append(vv1, symbolic.Variable{})
 		}
 	}
 
@@ -266,9 +266,9 @@ func TestVariableVector_Plus3(t *testing.T) {
 	var vv2 symbolic.VariableVector
 	for ii := 0; ii < N; ii++ {
 		if ii != 100 {
-			vv2.Elements = append(vv2.Elements, symbolic.NewVariable())
+			vv2 = append(vv2, symbolic.NewVariable())
 		} else {
-			vv2.Elements = append(vv2.Elements, symbolic.Variable{})
+			vv2 = append(vv2, symbolic.Variable{})
 		}
 	}
 
@@ -315,7 +315,7 @@ func TestVariableVector_Plus4(t *testing.T) {
 	// Constants
 	N := 111
 	vv1 := symbolic.NewVariableVector(N)
-	kv2 := symbolic.KVector(symbolic.OnesVector(N))
+	kv2 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
 
 	// Test
 	r := vv1.Plus(kv2)
@@ -363,9 +363,9 @@ func TestVariableVector_Multiply1(t *testing.T) {
 	var vv1 symbolic.VariableVector
 	for ii := 0; ii < N; ii++ {
 		if ii != 100 {
-			vv1.Elements = append(vv1.Elements, symbolic.NewVariable())
+			vv1 = append(vv1, symbolic.NewVariable())
 		} else {
-			vv1.Elements = append(vv1.Elements, symbolic.Variable{})
+			vv1 = append(vv1, symbolic.Variable{})
 		}
 	}
 	k2 := symbolic.K(3.14)
@@ -414,7 +414,7 @@ func TestVariableVector_Multiply2(t *testing.T) {
 	N := 111
 	vv1 := symbolic.NewVariableVector(N)
 	var vv2 symbolic.VariableVector
-	vv2.Elements = append(vv2.Elements, symbolic.Variable{})
+	vv2 = append(vv2, symbolic.Variable{})
 
 	// Test
 	defer func() {
@@ -507,9 +507,9 @@ func TestVariableVector_Comparison1(t *testing.T) {
 	var vv1 symbolic.VariableVector
 	for ii := 0; ii < N; ii++ {
 		if ii != 100 {
-			vv1.Elements = append(vv1.Elements, symbolic.NewVariable())
+			vv1 = append(vv1, symbolic.NewVariable())
 		} else {
-			vv1.Elements = append(vv1.Elements, symbolic.Variable{})
+			vv1 = append(vv1, symbolic.Variable{})
 		}
 	}
 	k2 := symbolic.K(3.14)
@@ -558,7 +558,7 @@ func TestVariableVector_Comparison2(t *testing.T) {
 	N := 111
 	vv1 := symbolic.NewVariableVector(N)
 	var vv2 symbolic.VariableVector
-	vv2.Elements = append(vv2.Elements, symbolic.Variable{})
+	vv2 = append(vv2, symbolic.Variable{})
 
 	// Test
 	defer func() {
