@@ -547,3 +547,138 @@ func TestVariableMatrix_Multiply4(t *testing.T) {
 		}
 	}
 }
+
+/*
+TestVariableMatrix_Multiply5
+Description:
+
+	Tests the Multiply method for a VariableMatrix object that is well-defined
+	being multiplied by a float64.
+	Checks that the result is a MonomialMatrix.
+*/
+func TestVariableMatrix_Multiply5(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+
+	// Test
+	result := vm.Multiply(2.0)
+
+	// Check that object is a MonomialMatrix
+	if _, ok := result.(symbolic.MonomialMatrix); !ok {
+		t.Errorf("Expected Multiply to return a MonomialMatrix; received %T", result)
+	}
+
+	// Check that each monomial in the result contains one variable factor
+	// and a coefficient of 2.0
+	mm := result.(symbolic.MonomialMatrix)
+	for _, mmRow := range mm {
+		for _, m := range mmRow {
+			if len(m.VariableFactors) != 1 {
+				t.Errorf("Expected each monomial to contain 1 factor; received %v", len(m.VariableFactors))
+			}
+
+			if m.Coefficient != 2.0 {
+				t.Errorf("Expected each monomial to contain a coefficient of 2.0; received %v", m.Coefficient)
+			}
+		}
+	}
+}
+
+/*
+TestVariableMatrix_Multiply6
+Description:
+
+	Tests the Multiply method for a VariableMatrix object that is well-defined
+	being multiplied by a non-expression (a string).
+	Checks that the method panics.
+*/
+func TestVariableMatrix_Multiply6(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Expected Multiply to panic; received nil")
+		}
+	}()
+
+	vm.Multiply("hello")
+}
+
+/*
+TestVariableMatrix_Transpose1
+Description:
+
+	Tests the Transpose method for a VariableMatrix object that is empty.
+	A panic should be thrown.
+*/
+func TestVariableMatrix_Transpose1(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{}
+
+	// Panic handling
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Expected Transpose to panic; received nil")
+		}
+	}()
+
+	// Test
+	vm.Transpose()
+}
+
+/*
+TestVariableMatrix_Transpose2
+Description:
+
+	Tests the Transpose method for a VariableMatrix object that is well-defined.
+	Checks that the result is a VariableMatrix with the correct dimensions.
+*/
+func TestVariableMatrix_Transpose2(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+
+	// Test
+	result := vm.Transpose()
+
+	// Check that the result is a VariableMatrix
+	if _, ok := result.(symbolic.VariableMatrix); !ok {
+		t.Errorf("Expected Transpose to return a VariableMatrix; received %T", result)
+	}
+
+	// Check that the dimensions are correct
+	dims := result.Dims()
+	if dims[0] != vm.Dims()[1] || dims[1] != vm.Dims()[0] {
+		t.Errorf(
+			"Expected Transpose to return a VariableMatrix with dimensions (%v, %v); received (%v, %v)",
+			vm.Dims()[1],
+			vm.Dims()[0],
+			dims[0],
+			dims[1],
+		)
+	}
+
+	// Check that the result is the transpose of the input
+	result2 := result.(symbolic.VariableMatrix)
+	for i := 0; i < vm.Dims()[0]; i++ {
+		for j := 0; j < vm.Dims()[1]; j++ {
+			if vm[i][j].ID != result2[j][i].ID {
+				t.Errorf(
+					"Expected the result to be the transpose of the input; received %v",
+					result,
+				)
+			}
+		}
+	}
+}

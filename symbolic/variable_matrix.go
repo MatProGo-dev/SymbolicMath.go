@@ -194,7 +194,7 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 
 	if IsExpression(e) {
 		// Convert e to an expression
-		eAsE, _ := e.(Expression)
+		eAsE, _ := ToExpression(e)
 		err = eAsE.Check()
 		if err != nil {
 			panic(
@@ -223,6 +223,8 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 			}
 			mmOut = append(mmOut, mmRow)
 		}
+		return mmOut
+
 	case KMatrix:
 		// Collect dimensions of right
 		nResultRows, nResultCols := vm.Dims()[0], right.Dims()[1]
@@ -240,7 +242,7 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 			return result
 		case nResultCols == 1:
 			// Vector result
-			var result PolynomialVector = VecDenseToKVector(ZerosVector(nResultRows)).ToMonomialVector().ToPolynomialVector()
+			var result PolynomialVector = VecDenseToKVector(ZerosVector(nResultRows)).ToPolynomialVector()
 
 			for ii, vmRow := range vm {
 				for jj, vIJ := range vmRow {

@@ -462,3 +462,13 @@ func (kv KVector) ToMonomialVector() MonomialVector {
 	// Return
 	return mvOut
 }
+
+/*
+ToPolynomialVector
+Description:
+
+	This function converts the input expression to a polynomial vector.
+*/
+func (kv KVector) ToPolynomialVector() PolynomialVector {
+	return kv.ToMonomialVector().ToPolynomialVector()
+}
