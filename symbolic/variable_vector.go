@@ -317,8 +317,10 @@ Description:
 	This method creates the transpose of the current vector and returns it.
 */
 func (vv VariableVector) Transpose() Expression {
-	//vvCopy := vv.Copy()
-	return vv //VarVectorTranspose(vvCopy) // TODO: Fix This.
+	// Create a matrix representing the transpose
+	var vmOut VariableMatrix
+	vmOut = append(vmOut, vv.Copy())
+	return vmOut
 }
 
 /*

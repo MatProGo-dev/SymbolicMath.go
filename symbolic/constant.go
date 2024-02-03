@@ -191,6 +191,18 @@ func (c K) ToMonomial() Monomial {
 }
 
 /*
+ToPolynomial
+Description:
+
+	Converts the constant into a polynomial.
+*/
+func (c K) ToPolynomial() Polynomial {
+	return Polynomial{
+		Monomials: []Monomial{c.ToMonomial()},
+	}
+}
+
+/*
 DerivativeWrt
 Description:
 

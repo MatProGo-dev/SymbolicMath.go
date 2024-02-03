@@ -249,6 +249,38 @@ func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 			product = append(product, productRow)
 		}
 		return product
+	case VariableVector:
+		// Identify output dimensions
+		nResultRows := pm.Dims()[0]
+
+		// Create product based on the number of Resulting rows
+		if nResultRows == 1 {
+			// Create container
+			var product Polynomial = K(0).ToPolynomial()
+			for ii, tempPolynomial := range pm[0] {
+				product = product.Plus(
+					tempPolynomial.Multiply(right[ii]).(Polynomial),
+				).(Polynomial)
+			}
+			return product
+		} else {
+			// Create container
+			var product PolynomialVector = VecDenseToKVector(
+				ZerosVector(nResultRows),
+			).ToPolynomialVector()
+
+			// Fill container
+			for ii := 0; ii < nResultRows; ii++ {
+				// Construct the ii-th element of the product
+				for jj, polynomial := range pm[ii] {
+					product[ii] = product[ii].Plus(
+						polynomial.Multiply(right[jj]).(Polynomial),
+					).(Polynomial)
+				}
+			}
+			return product
+		}
+
 	default:
 		panic(
 			smErrors.UnsupportedInputError{
