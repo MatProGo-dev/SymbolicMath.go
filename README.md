@@ -14,6 +14,7 @@ package main
 
 import (
     "fmt"
+	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
     "github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 )
 
