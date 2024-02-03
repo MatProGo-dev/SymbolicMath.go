@@ -412,15 +412,33 @@ func (p Polynomial) Simplify() Polynomial {
 		panic(err)
 	}
 
-	// Algorithm
+	// Find first element that has nonzero coefficient
+	firstNonZeroIndex := -1
+	for ii, monomial := range p.Monomials {
+		if monomial.Coefficient != 0.0 {
+			firstNonZeroIndex = ii
+			break
+		}
+	}
+
+	if len(p.Monomials) == 0 || firstNonZeroIndex == -1 {
+		// If there is only a single, zero monomial, then return the zero polynomial
+		return p
+	}
 
 	// Copy the first element of the polynomial into the new polynomial
 	pCopy := Polynomial{
-		Monomials: []Monomial{p.Monomials[0]},
+		Monomials: []Monomial{p.Monomials[firstNonZeroIndex]},
 	}
 
 	// Loop through the rest of the monomials
-	for ii := 1; ii < len(p.Monomials); ii++ {
+	for ii := firstNonZeroIndex + 1; ii < len(p.Monomials); ii++ {
+		// Check to see if the monomials coefficient is zero
+		if p.Monomials[ii].Coefficient == 0.0 {
+			// Don't add it.
+			continue
+		}
+
 		// Check to see if the monomial is already in the polynomial
 		monomialIndex := pCopy.MonomialIndex(p.Monomials[ii])
 		if monomialIndex == -1 {
