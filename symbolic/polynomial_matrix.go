@@ -364,9 +364,15 @@ func (pm PolynomialMatrix) Comparison(e interface{}, sense ConstrSense) Constrai
 		var KAsDense mat.Dense
 		KAsDense.Scale(float64(right), &onesMat)
 
+		return pm.Comparison(KAsDense, sense)
+	case mat.Dense:
+		return pm.Comparison(DenseToKMatrix(right), sense)
+	case *mat.Dense:
+		return pm.Comparison(DenseToKMatrix(*right), sense)
+	case KMatrix:
 		return MatrixConstraint{
 			LeftHandSide:  pm,
-			RightHandSide: DenseToKMatrix(KAsDense),
+			RightHandSide: right,
 			Sense:         sense,
 		}
 	default:

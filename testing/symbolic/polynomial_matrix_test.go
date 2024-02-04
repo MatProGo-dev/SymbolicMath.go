@@ -561,6 +561,98 @@ func TestPolynomialMatrix_Plus7(t *testing.T) {
 }
 
 /*
+TestPolynomialMatrix_Plus8
+Description:
+
+	Tests that the Plus() method properly panics
+	when a valid polynomial matrix is added to an
+	invalid expression (in this case, a variable).
+*/
+func TestPolynomialMatrix_Plus8(t *testing.T) {
+	// Constants
+	v1 := symbolic.Variable{}
+	p1 := symbolic.NewVariable().ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1, p1},
+		{p1, p1},
+		{p1, p1},
+	}
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm1.Plus(v1) to panic; received %v",
+				pm1.Plus(v1),
+			)
+		}
+
+		// Check that the panic includes a Check() error
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		expectedError := v1.Check()
+		if expectedError == nil {
+			t.Errorf(
+				"expected v1.Check() to return an error; received nil",
+			)
+			return
+		}
+
+		if !strings.Contains(
+			rAsError.Error(),
+			v1.Check().Error(),
+		) {
+			t.Errorf(
+				"expected r to be a Check() error; received %v",
+				r,
+			)
+		}
+	}()
+
+	// Test
+	pm1.Plus(v1)
+}
+
+/*
+TestPolynomialMatrix_Plus9
+Description:
+
+	Tests that the Plus() method properly panics
+	when a valid polynomial matrix is added to an
+	invalid object (a string).
+*/
+func TestPolynomialMatrix_Plus9(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1, p1},
+		{p1, p1},
+		{p1, p1},
+	}
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm1.Plus(\"hi\") to panic; received %v",
+				pm1.Plus("hi"),
+			)
+		}
+	}()
+
+	// Test
+	pm1.Plus("hi")
+}
+
+/*
 TestPolynomialMatrix_Multiply1
 Description:
 
@@ -740,4 +832,328 @@ func TestPolynomialMatrix_Multiply4(t *testing.T) {
 			}
 		}
 	}
+}
+
+/*
+TestPolynomialMatrix_Multiply5
+Description:
+
+	Tests that the Multiply() method properly multiplies a polynomial matrix
+	(1 x 3) with a vector of variables (VariableVector).
+	The output should be a Polynomial. It should have three terms.
+*/
+func TestPolynomialMatrix_Multiply5(t *testing.T) {
+	// Constants
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	N := 3
+	vv1 := symbolic.NewVariableVector(N)
+
+	// Test
+	p2 := pm1.Multiply(vv1)
+
+	p2AsP, tf := p2.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected p2 to be a Polynomial; received %v",
+			p2,
+		)
+	}
+
+	if len(p2AsP.Monomials) != 3 {
+		t.Errorf(
+			"expected len(p2.Monomials) to be 3; received %v",
+			len(p2AsP.Monomials),
+		)
+	}
+
+	// Check each monomial and verify that each monomial has
+	// - 2 variable factors
+	// - 2 indices (each are 1)
+	for _, m := range p2AsP.Monomials {
+		// 2 VariableFactors
+		if len(m.VariableFactors) != 2 {
+			t.Errorf(
+				"expected len(m.VariableFactors) to be 2; received %v",
+				len(m.VariableFactors),
+			)
+		}
+		// 2 indices (both are 1)
+		if m.Exponents[0] != 1 || m.Exponents[1] != 1 {
+			t.Errorf(
+				"expected m.Exponents to be [1,1]; received %v",
+				m.Exponents,
+			)
+		}
+	}
+}
+
+/*
+TestPolynomialMatrix_Multiply6
+Description:
+
+	Tests that the Multiply() method properly multiplies a polynomial matrix
+	(2 x 3) with a vector of variables (VariableVector).
+	The output should be a PolynomialVector.
+	It should have two rows and each row should contain three monomials.
+*/
+func TestPolynomialMatrix_Multiply6(t *testing.T) {
+	// Constants
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	N := 3
+	vv1 := symbolic.NewVariableVector(N)
+
+	// Test
+	pv2 := pm1.Multiply(vv1)
+
+	pv2AsPV, tf := pv2.(symbolic.PolynomialVector)
+	if !tf {
+		t.Errorf(
+			"expected pv2 to be a PolynomialVector; received %v",
+			pv2,
+		)
+	}
+
+	if len(pv2AsPV) != 2 {
+		t.Errorf(
+			"expected len(pv2) to be 2; received %v",
+			len(pv2AsPV),
+		)
+	}
+
+	for _, p := range pv2AsPV {
+		if len(p.Monomials) != 3 {
+			t.Errorf(
+				"expected len(p.Monomials) to be 3; received %v",
+				len(p.Monomials),
+			)
+		}
+	}
+}
+
+/*
+TestPolynomialMatrix_Multiply7
+Description:
+
+	Tests that the Multiply() method properly panics when a
+	well-defined polynomial matrix is multiplied by an invalid
+	object (in this case, a string).
+*/
+func TestPolynomialMatrix_Multiply7(t *testing.T) {
+	// Constants
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm1.Multiply(\"hi\") to panic; received %v",
+				pm1.Multiply("hi"),
+			)
+		}
+	}()
+
+	// Test
+	pm1.Multiply("hi")
+}
+
+/*
+TestPolynomialMatrix_Transpose1
+Description:
+
+	Tests that the Transpose() method properly transposes a 3 x 2
+	polynomial matrix into a 2 x 3 polynomial matrix.
+	We'll also check the unique elements of each of these
+	matrices to ensure that the transpose was done properly.
+*/
+func TestPolynomialMatrix_Transpose1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{v1.Plus(1.0).(symbolic.Polynomial), v1.Plus(2.0).(symbolic.Polynomial)},
+		{v1.Plus(3.0).(symbolic.Polynomial), v1.Plus(4.0).(symbolic.Polynomial)},
+		{v1.Plus(5.0).(symbolic.Polynomial), v1.Plus(6.0).(symbolic.Polynomial)},
+	}
+
+	// Test
+	pm2 := pm1.Transpose()
+
+	// Verify that pm2 is a PolynomialMatrix
+	pm2AsPM, tf := pm2.(symbolic.PolynomialMatrix)
+	if !tf {
+		t.Errorf(
+			"expected pm2 to be a PolynomialMatrix; received %v",
+			pm2,
+		)
+	}
+
+	// Verify that the dimensions are correct
+	if pm2AsPM.Dims()[0] != 2 || pm2AsPM.Dims()[1] != 3 {
+		t.Errorf(
+			"expected pm2.Dims() to be [2,3]; received %v",
+			pm2AsPM.Dims(),
+		)
+	}
+
+	// Verify that the each element is correct
+	for ii, pmRow := range pm2AsPM {
+		for jj, p := range pmRow {
+			expectedConstant := float64(ii + 2*jj + 1)
+			if p.Constant() != expectedConstant {
+				t.Errorf(
+					"expected p.Constant() to be %v; received %v",
+					expectedConstant,
+					p.Constant(),
+				)
+			}
+		}
+	}
+}
+
+/*
+TestPolynomialMatrix_Transpose2
+Description:
+
+	Tests that the Transpose() method properly panics when an improperly
+	initialized matrix of polynomials is used to call it.
+*/
+func TestPolynomialMatrix_Transpose2(t *testing.T) {
+	// Constants
+	var pm symbolic.PolynomialMatrix
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm.Transpose() to panic; received %v",
+				pm.Transpose(),
+			)
+		}
+	}()
+
+	pm.Transpose()
+}
+
+/*
+TestPolynomialMatrix_LessEq1
+Description:
+
+	Tests that the LessEq() method panics
+	when an improperly initialized matrix of polynomials is used to call it.
+*/
+func TestPolynomialMatrix_LessEq1(t *testing.T) {
+	// Constants
+	var pm symbolic.PolynomialMatrix
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm.LessEq(pm) to panic; received %v",
+				pm.LessEq(pm),
+			)
+		}
+	}()
+
+	pm.LessEq(pm)
+}
+
+/*
+TestPolynomialMatrix_GreaterEq1
+Description:
+
+	Tests that the GreaterEq() method properly returns
+	a MatrixConstraint when a valid polynomial matrix is used to call it
+	with a constant matrix.
+*/
+func TestPolynomialMatrix_GreaterEq1(t *testing.T) {
+	// Constants
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	// Test
+	mc := pm1.GreaterEq(getKMatrix.From(symbolic.ZerosMatrix(2, 2)))
+
+	// Check the type of mc
+	_, tf := mc.(symbolic.MatrixConstraint)
+	if !tf {
+		t.Errorf(
+			"expected mc to be a MatrixConstraint; received %v",
+			mc,
+		)
+	}
+}
+
+/*
+TestPolynomialMatrix_GreaterEq2
+Description:
+
+	Tests that the GreaterEq() method properly panics
+	when a well-defined PolynomialMatrix is compared
+	with an improperly-defined expression (in this case,
+	a VariableMatrix).
+*/
+func TestPolynomialMatrix_GreaterEq2(t *testing.T) {
+	// Constants
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	var vm2 symbolic.VariableMatrix
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm1.GreaterEq(pm1) to panic; received %v",
+				pm1.GreaterEq(pm1),
+			)
+		}
+	}()
+
+	// Test
+	pm1.GreaterEq(vm2)
 }
