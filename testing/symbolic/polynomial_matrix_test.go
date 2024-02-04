@@ -5,6 +5,7 @@ import (
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"gonum.org/v1/gonum/mat"
 	"strings"
 	"testing"
 )
@@ -1156,4 +1157,176 @@ func TestPolynomialMatrix_GreaterEq2(t *testing.T) {
 
 	// Test
 	pm1.GreaterEq(vm2)
+}
+
+/*
+TestPolynomialMatrix_Eq1
+Description:
+
+	Tests that the Eq() method properly returns a
+	MatrixConstraint when a valid polynomial matrix is used to call it
+	with a *mat.Dense object.
+*/
+func TestPolynomialMatrix_Eq1(t *testing.T) {
+	// Constants
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	d2 := mat.NewDense(
+		2, 2,
+		[]float64{1, 2, 3, 4},
+	)
+
+	// Test
+	mc := pm1.Eq(d2)
+
+	// Check the type of mc
+	_, tf := mc.(symbolic.MatrixConstraint)
+	if !tf {
+		t.Errorf(
+			"expected mc to be a MatrixConstraint; received %v",
+			mc,
+		)
+	}
+
+	// Verify that the type of the right hand side of mc
+	// is of type KMatrix
+	mcAsMC := mc.(symbolic.MatrixConstraint)
+	_, tf = mcAsMC.RightHandSide.(symbolic.KMatrix)
+	if !tf {
+		t.Errorf(
+			"expected mc.Right to be a KMatrix; received %v",
+			mcAsMC.RightHandSide,
+		)
+	}
+}
+
+/*
+TestPolynomialMatrix_Eq2
+Description:
+
+	Tests that the Eq() method properly panics
+	when a well-defined PolynomialMatrix is compared
+	with a well-defined matrix of constants when
+	the dimensions do not match.
+*/
+func TestPolynomialMatrix_Eq2(t *testing.T) {
+	// Constants
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	d2 := mat.NewDense(
+		3, 2,
+		[]float64{1, 2, 3, 4, 5, 6},
+	)
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm1.Eq(d2) to panic; received %v",
+				pm1.Eq(d2),
+			)
+		}
+	}()
+
+	// Test
+	pm1.Eq(d2)
+}
+
+/*
+TestPolynomialMatrix_Eq3
+Description:
+
+	Tests that the Eq() method properly panics
+	when a well-defined PolynomialMatrix is compared
+	with an invalid object (in this case a string)
+*/
+func TestPolynomialMatrix_Eq3(t *testing.T) {
+	// Constants
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm1.Eq(\"hi\") to panic; received %v",
+				pm1.Eq("hi"),
+			)
+		}
+	}()
+
+	// Test
+	pm1.Eq("hi")
+}
+
+/*
+TestPolynomialMatrix_Comparison1
+Description:
+
+	Tests that the Comparison() method properly returns
+	a MatrixConstraint when a valid polynomial matrix is used to call it
+	with a float64.
+*/
+func TestPolynomialMatrix_Comparison1(t *testing.T) {
+	// Constants
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	// Test
+	mc := pm1.Comparison(3.14, symbolic.SenseLessThanEqual)
+
+	// Check the type of mc
+	_, tf := mc.(symbolic.MatrixConstraint)
+	if !tf {
+		t.Errorf(
+			"expected mc to be a MatrixConstraint; received %v",
+			mc,
+		)
+	}
+
+	// Verifies that the right hand side of mc is a KMatrix
+	mcAsMC := mc.(symbolic.MatrixConstraint)
+	_, tf = mcAsMC.RightHandSide.(symbolic.KMatrix)
+	if !tf {
+		t.Errorf(
+			"expected mc.Right to be a KMatrix; received %v",
+			mcAsMC.RightHandSide,
+		)
+	}
 }

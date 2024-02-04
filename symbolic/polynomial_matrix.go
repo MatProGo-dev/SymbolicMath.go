@@ -368,7 +368,7 @@ func (pm PolynomialMatrix) Comparison(e interface{}, sense ConstrSense) Constrai
 	case mat.Dense:
 		return pm.Comparison(DenseToKMatrix(right), sense)
 	case *mat.Dense:
-		return pm.Comparison(DenseToKMatrix(*right), sense)
+		return pm.Comparison(*right, sense)
 	case KMatrix:
 		return MatrixConstraint{
 			LeftHandSide:  pm,
