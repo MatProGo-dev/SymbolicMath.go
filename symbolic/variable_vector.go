@@ -181,13 +181,25 @@ func (vv VariableVector) Multiply(rightIn interface{}) Expression {
 	}
 
 	switch right := rightIn.(type) {
-
-	default:
-		panic(fmt.Errorf(
-			"The input to VariableVector's Multiply() method (%v) has unexpected type: %T",
-			right, rightIn,
-		))
+	case float64:
+		// Use K method
+		return vv.Multiply(K(right))
+	case K:
+		// Create a new vector of polynomials.
+		var mvOut MonomialVector
+		for _, v := range vv {
+			mvOut = append(mvOut, v.Multiply(right).(Monomial))
+		}
+		return mvOut
 	}
+
+	// Otherwise, panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "VariableVector.Multiply",
+			Input:        rightIn,
+		},
+	)
 }
 
 /*
@@ -220,9 +232,6 @@ Description:
 	input rhs as the right hand side if it is valid.
 */
 func (vv VariableVector) Eq(rightIn interface{}) Constraint {
-	// Constants
-
-	// Algorithm
 	return vv.Comparison(rightIn, SenseEqual)
 
 }
@@ -259,17 +268,6 @@ func (vv VariableVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 	// Algorithm
 	switch rhsConverted := rightIn.(type) {
 	case KVector:
-		// Check length of input and output.
-		if vv.Len() != rhsConverted.Len() {
-			panic(
-				fmt.Errorf(
-					"The two inputs to comparison '%v' must have the same dimension, but #1 has dimension %v and #2 has dimension %v!",
-					sense,
-					vv.Len(),
-					rhsConverted.Len(),
-				),
-			)
-		}
 		return VectorConstraint{vv, rhsConverted, sense}
 	case mat.VecDense:
 		rhsAsKVector := VecDenseToKVector(rhsConverted)
@@ -277,23 +275,20 @@ func (vv VariableVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 		return vv.Comparison(rhsAsKVector, sense)
 
 	case VariableVector:
-		// Check length of input and output.
-		if vv.Len() != rhsConverted.Len() {
-			panic(
-				fmt.Errorf(
-					"The two inputs to comparison '%v' must have the same dimension, but #1 has dimension %v and #2 has dimension %v!",
-					sense,
-					vv.Len(),
-					rhsConverted.Len(),
-				),
-			)
-		}
-		// Do Computation
+		return VectorConstraint{vv, rhsConverted, sense}
+	case MonomialVector:
+		return VectorConstraint{vv, rhsConverted, sense}
+	case PolynomialVector:
 		return VectorConstraint{vv, rhsConverted, sense}
 	}
 
 	// Default option is to panic
-	panic(fmt.Errorf("The Eq() method for VariableVector is not implemented yet for type %T!", rightIn))
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "VariableVector.Comparison",
+			Input:        rightIn,
+		},
+	)
 }
 
 func (vv VariableVector) Copy() VariableVector {
