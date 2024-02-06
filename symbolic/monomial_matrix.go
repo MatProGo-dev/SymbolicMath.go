@@ -289,19 +289,21 @@ func (mm MonomialMatrix) Multiply(e interface{}) Expression {
 					).(Polynomial)
 				}
 				product = append(product, product_ii)
+				product = product.Simplify()
 			}
 
 			return product
 
 		}
-	default:
-		panic(
-			smErrors.UnsupportedInputError{
-				FunctionName: "MonomialVector.Multiply",
-				Input:        right,
-			},
-		)
 	}
+
+	// Unrecognized response is a panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "MonomialVector.Multiply",
+			Input:        e,
+		},
+	)
 }
 
 /*
