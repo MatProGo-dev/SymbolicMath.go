@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
 	"testing"
@@ -500,5 +501,329 @@ func TestConstant_Plus10(t *testing.T) {
 				p_ii,
 			)
 		}
+	}
+}
+
+/*
+TestConstant_Plus11
+Description:
+
+	Tests that the plus method panics when a constant is added
+	to an unsupported type (a string).
+*/
+func TestConstant_Plus11(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	s1 := "hello"
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Plus() to panic when given a bad string; received nothing",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.UnsupportedInputError{
+			FunctionName: "K.Plus",
+			Input:        s1,
+		}
+		if !strings.Contains(
+			rAsError.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"expected Plus() to panic with error \"%v\"; received %v",
+				expectedError,
+				rAsError,
+			)
+		}
+
+	}()
+
+	k1.Plus(s1)
+}
+
+/*
+TestConstant_LessEq1
+Description:
+
+	Tests that the LessEq() method properly compares a constant with a
+	well-defined variable.
+*/
+func TestConstant_LessEq1(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	v1 := symbolic.NewVariable()
+
+	// Test
+	le := k1.LessEq(v1)
+
+	// Check that the constraint is a scalar constraint
+	leAsSC, tf := le.(symbolic.ScalarConstraint)
+	if !tf {
+		t.Errorf(
+			"expected LessEq() to return a ScalarConstraint; received %T",
+			le,
+		)
+	}
+
+	// Check that the sense is SenseLessThanEqual
+	if leAsSC.Sense != symbolic.SenseLessThanEqual {
+		t.Errorf(
+			"expected LessEq() to return a ScalarConstraint with sense LessEq; received %v",
+			leAsSC.Sense,
+		)
+	}
+
+	// Check that the left hand side is the constant
+	if float64(leAsSC.Left().(symbolic.K)) != float64(k1) {
+		t.Errorf(
+			"expected LessEq() to return a ScalarConstraint with left hand side %v; received %v",
+			k1,
+			leAsSC.Left(),
+		)
+	}
+
+	// Check that the right hand side is the variable
+	if leAsSC.Right() != v1 {
+		t.Errorf(
+			"expected LessEq() to return a ScalarConstraint with right hand side %v; received %v",
+			v1,
+			leAsSC.Right(),
+		)
+	}
+}
+
+/*
+TestConstant_LessEq2
+Description:
+
+	Tests that the LessEq() method properly panics
+	when a constant is compared to a variable that is not
+	well-defined.
+*/
+func TestConstant_LessEq2(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	v1 := symbolic.Variable{
+		Lower: 1,
+		Upper: 0,
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected LessEq() to panic when given a bad symbolic.Variable; received nothing",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := fmt.Errorf("lower bound (%v) of variable must be less than upper bound (%v)", v1.Lower, v1.Upper)
+		if !strings.Contains(
+			rAsError.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"expected LessEq() to panic with error \"%v\"; received %v",
+				expectedError,
+				rAsError,
+			)
+		}
+
+	}()
+
+	k1.LessEq(v1)
+}
+
+/*
+TestConstant_GreaterEq1
+Description:
+
+	Tests that the GreaterEq() method properly compares a constant with a
+	mat.VecDense object.
+	The result should be a vector constraint, not a scalar constraint.
+*/
+func TestConstant_GreaterEq1(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	v1 := symbolic.OnesVector(4)
+
+	// Test
+	ge := k1.GreaterEq(v1)
+
+	// Check that the constraint is a vector constraint
+	geAsVC, tf := ge.(symbolic.VectorConstraint)
+	if !tf {
+		t.Errorf(
+			"expected GreaterEq() to return a VectorConstraint; received %T",
+			ge,
+		)
+	}
+
+	// Check that the sense is SenseGreaterThanEqual
+	if geAsVC.Sense != symbolic.SenseGreaterThanEqual {
+		t.Errorf(
+			"expected GreaterEq() to return a VectorConstraint with sense GreaterEq; received %v",
+			geAsVC.Sense,
+		)
+	}
+
+	// Check that the left hand side is a constant vector
+	if _, tf := geAsVC.Left().(symbolic.KVector); !tf {
+		t.Errorf(
+			"expected GreaterEq() to return a VectorConstraint with left hand side a KVector; received %T",
+			geAsVC.Left(),
+		)
+
+	}
+	if float64(geAsVC.Left().(symbolic.KVector)[1]) != float64(k1) {
+		t.Errorf(
+			"expected GreaterEq() to return a VectorConstraint with left hand side %v; received %v",
+			k1,
+			geAsVC.Left(),
+		)
+	}
+
+	// Check that the right hand side is also a KVector
+	if _, tf := geAsVC.Right().(symbolic.KVector); !tf {
+		t.Errorf(
+			"expected GreaterEq() to return a VectorConstraint with right hand side a KVector; received %T",
+			geAsVC.Right(),
+		)
+	}
+
+}
+
+/*
+TestConstant_GreaterEq2
+Description:
+
+	Tests that the GreaterEq() method properly compares a constant with a
+	mat.VecDense object.
+	The result should be a vector constraint, not a scalar constraint.
+*/
+func TestConstant_GreaterEq2(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	v1 := symbolic.NewVariableVector(4)
+
+	// Test
+	ge := k1.GreaterEq(v1)
+
+	// Check that the constraint is a vector constraint
+	geAsVC, tf := ge.(symbolic.VectorConstraint)
+	if !tf {
+		t.Errorf(
+			"expected GreaterEq() to return a VectorConstraint; received %T",
+			ge,
+		)
+	}
+
+	// Check that the sense is SenseGreaterThanEqual
+	if geAsVC.Sense != symbolic.SenseGreaterThanEqual {
+		t.Errorf(
+			"expected GreaterEq() to return a VectorConstraint with sense GreaterEq; received %v",
+			geAsVC.Sense,
+		)
+	}
+
+	// Check that the left hand side is a constant vector
+	if _, tf := geAsVC.Left().(symbolic.KVector); !tf {
+		t.Errorf(
+			"expected GreaterEq() to return a VectorConstraint with left hand side a KVector; received %T",
+			geAsVC.Left(),
+		)
+
+	}
+	if float64(geAsVC.Left().(symbolic.KVector)[1]) != float64(k1) {
+		t.Errorf(
+			"expected GreaterEq() to return a VectorConstraint with left hand side %v; received %v",
+			k1,
+			geAsVC.Left(),
+		)
+	}
+
+	// Check that the right hand side is a variableVector
+	if _, tf := geAsVC.Right().(symbolic.VariableVector); !tf {
+		t.Errorf(
+			"expected GreaterEq() to return a VectorConstraint with right hand side a VariableVector; received %T",
+			geAsVC.Right(),
+		)
+	}
+
+	if geAsVC.Right().(symbolic.VariableVector)[0] != v1[0] {
+		t.Errorf(
+			"expected GreaterEq() to return a VectorConstraint with right hand side %v; received %v",
+			v1,
+			geAsVC.Right(),
+		)
+	}
+}
+
+/*
+TestConstant_Eq1
+Description:
+
+	Tests that the Eq() method properly compares a constant with a
+	a well-defined monomial.
+	A ScalarConstraint should be returned.
+*/
+func TestConstant_Eq1(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	m1 := symbolic.Monomial{
+		Coefficient:     2.71,
+		VariableFactors: []symbolic.Variable{},
+		Exponents:       []int{},
+	}
+
+	// Test
+	eq := k1.Eq(m1)
+
+	// Check that the constraint is a scalar constraint
+	eqAsSC, tf := eq.(symbolic.ScalarConstraint)
+	if !tf {
+		t.Errorf(
+			"expected Eq() to return a ScalarConstraint; received %T",
+			eq,
+		)
+	}
+
+	// Check that the sense is SenseEqual
+	if eqAsSC.Sense != symbolic.SenseEqual {
+		t.Errorf(
+			"expected Eq() to return a ScalarConstraint with sense Eq; received %v",
+			eqAsSC.Sense,
+		)
+	}
+
+	// Check that the left hand side is the constant
+	if float64(eqAsSC.Left().(symbolic.K)) != float64(k1) {
+		t.Errorf(
+			"expected Eq() to return a ScalarConstraint with left hand side %v; received %v",
+			k1,
+			eqAsSC.Left(),
+		)
+	}
+
+	// Check that the right hand side is the monomial
+	if _, tf := eqAsSC.Right().(symbolic.Monomial); !tf {
+		t.Errorf(
+			"expected Eq() to return a ScalarConstraint with right hand side a Monomial; received %T",
+			eqAsSC.Right(),
+		)
+	}
+
+	if eqAsSC.Right().(symbolic.Monomial).Coefficient != m1.Coefficient {
+		t.Errorf(
+			"expected Eq() to return a ScalarConstraint with right hand side %v; received %v",
+			m1,
+			eqAsSC.Right(),
+		)
 	}
 }

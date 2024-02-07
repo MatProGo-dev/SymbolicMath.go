@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -92,7 +93,10 @@ func (c K) Plus(rightIn interface{}) Expression {
 
 	// Default response is a panic
 	panic(
-		fmt.Errorf("Unexpected type in K.Plus() for constant %v: %T", rightIn, rightIn),
+		smErrors.UnsupportedInputError{
+			FunctionName: "K.Plus",
+			Input:        rightIn,
+		},
 	)
 }
 
@@ -122,15 +126,73 @@ Description:
 */
 func (c K) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	// InputProcessing
-	rhs, err := ToScalarExpression(rhsIn)
-	if err != nil {
-		panic(err)
+	if IsExpression(rhsIn) {
+		rhs, _ := ToExpression(rhsIn)
+		err := rhs.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Normally, we would check the dimensions here, but since K is a scalar, we don't need to.
 	}
 
 	// Constants
 
 	// Algorithm
-	return ScalarConstraint{c, rhs, sense}
+	switch right := rhsIn.(type) {
+	case float64:
+		// Use the version of Comparison for K
+		return c.Comparison(K(right), sense)
+	case K:
+		return ScalarConstraint{c, right, sense}
+	case Variable:
+		return ScalarConstraint{c, right, sense}
+	case Monomial:
+		return ScalarConstraint{c, right, sense}
+	case Polynomial:
+		return ScalarConstraint{c, right, sense}
+	case mat.VecDense:
+		// Convert to KVector
+		return c.Comparison(VecDenseToKVector(right), sense)
+	case *mat.VecDense:
+		// Convert to KVector
+		return c.Comparison(VecDenseToKVector(*right), sense)
+	case KVector:
+		// Transform right into a KVector as well
+		var kAsKVector KVector
+		for ii := 0; ii < len(right); ii++ {
+			kAsKVector = append(kAsKVector, c)
+		}
+
+		// Create vector comparison
+		return VectorConstraint{
+			LeftHandSide:  kAsKVector,
+			RightHandSide: right,
+			Sense:         sense,
+		}
+	case VariableVector:
+		// Transform right into a KVector as well
+		var kAsKVector KVector
+		for ii := 0; ii < len(right); ii++ {
+			kAsKVector = append(kAsKVector, c)
+		}
+
+		// Create vector comparison
+		return VectorConstraint{
+			LeftHandSide:  kAsKVector,
+			RightHandSide: right,
+			Sense:         sense,
+		}
+	}
+
+	// Panic if the input is not recognized
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "K.Comparison",
+			Input:        rhsIn,
+		},
+	)
+
 }
 
 /*
