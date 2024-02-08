@@ -160,28 +160,6 @@ func (v Variable) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	)
 }
 
-/*
-// ID returns the ID of the variable
-func (v *Variable) ID() uint64 {
-	return v.ID
-}
-
-// Lower returns the lower value limit of the variable
-func (v *Variable) Lower() float64 {
-	return v.Lower
-}
-
-// Upper returns the upper value limit of the variable
-func (v *Variable) Upper() float64 {
-	return v.Upper
-}
-
-// Type returns the type of variable (continuous, binary, integer, etc)
-func (v *Variable) Type() VarType {
-	return v.Type
-}
-*/
-
 // VarType represents the type of the variable (continuous, binary,
 // integer, etc) and uses Gurobi's encoding.
 type VarType byte

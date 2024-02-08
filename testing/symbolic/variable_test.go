@@ -485,6 +485,75 @@ func TestVariable_GreaterEq2(t *testing.T) {
 }
 
 /*
+TestVariable_Eq1
+Description:
+
+	Tests that the Eq() method works properly when comparing a variable to a
+	well-defined variable.
+*/
+func TestVariable_Eq1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+
+	// Create comparison
+	eq := x.Eq(y)
+
+	// Verify that the constraints sense is SenseEqual
+	if eq.ConstrSense() != symbolic.SenseEqual {
+		t.Errorf(
+			"expected %v == %v to have a sense of Equal; received %v",
+			x,
+			y,
+			eq.ConstrSense(),
+		)
+	}
+
+	// Get Left side and verify that it is a variable object
+	left := eq.Left()
+	if _, tf := left.(symbolic.Variable); !tf {
+		t.Errorf(
+			"expected %v == %v to have a variable component; received %T",
+			x,
+			y,
+			left,
+		)
+	}
+
+	// Get Right side and verify that it is a variable object
+	right := eq.Right()
+	if _, tf := right.(symbolic.Variable); !tf {
+		t.Errorf(
+			"expected %v == %v to have a variable component on RHS; received %T",
+			x,
+			y,
+			right,
+		)
+	}
+}
+
+/*
+TestVariable_Eq2
+Description:
+
+	Tests that the Eq() method properly panics
+	if the second input is not a valid object
+	(in this case, it's a string).
+*/
+func TestVariable_Eq2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+	x.Eq("hello")
+}
+
+/*
 TestVariable_Comparison1
 Description:
 
@@ -531,6 +600,127 @@ func TestVariable_Comparison1(t *testing.T) {
 			x,
 			p,
 			right,
+		)
+	}
+}
+
+/*
+TestVariable_Multiply1
+Description:
+
+	Tests that the Multiply() method works properly
+	panics when the variable used to call it is not
+	well-defined.
+*/
+func TestVariable_Multiply1(t *testing.T) {
+	// Constants
+	var x symbolic.Variable
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+	x.Multiply(3.14)
+}
+
+/*
+TestVariable_Multiply2
+Description:
+
+	Tests that the Multiply() method works properly
+	when a variable multiplies THE SAME variable.
+	We will check that the output is a monomial
+	with one variable factor and an exponent of 2.
+*/
+func TestVariable_Multiply2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	prod := x.Multiply(x)
+	mon, tf := prod.(symbolic.Monomial)
+	if !tf {
+		t.Errorf(
+			"expected %v * %v to be a monomial; received %T",
+			x,
+			x,
+			prod,
+		)
+	}
+
+	if mon.Exponents[0] != 2 {
+		t.Errorf(
+			"expected %v * %v to have an exponent of 2; received %v",
+			x,
+			x,
+			mon.Exponents[0],
+		)
+	}
+
+	if mon.Coefficient != 1.0 {
+		t.Errorf(
+			"expected %v * %v to have a coefficient of 1.0; received %v",
+			x,
+			x,
+			mon.Coefficient,
+		)
+	}
+
+}
+
+/*
+TestVariable_Multiply3
+Description:
+
+	Tests that the Multiply() method works properly
+	when a variable multiplies a DIFFERENT variable.
+	We will check that the output is a monomial
+	with two variable factors and an exponent of 1
+	on each.
+*/
+func TestVariable_Multiply3(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+
+	// Test
+	prod := x.Multiply(y)
+	mon, tf := prod.(symbolic.Monomial)
+	if !tf {
+		t.Errorf(
+			"expected %v * %v to be a monomial; received %T",
+			x,
+			y,
+			prod,
+		)
+	}
+
+	if mon.Exponents[0] != 1 {
+		t.Errorf(
+			"expected %v * %v to have an exponent of 1; received %v",
+			x,
+			y,
+			mon.Exponents[0],
+		)
+	}
+
+	if mon.Exponents[1] != 1 {
+		t.Errorf(
+			"expected %v * %v to have an exponent of 1; received %v",
+			x,
+			y,
+			mon.Exponents[1],
+		)
+	}
+
+	if mon.Coefficient != 1.0 {
+		t.Errorf(
+			"expected %v * %v to have a coefficient of 1.0; received %v",
+			x,
+			y,
+			mon.Coefficient,
 		)
 	}
 }
