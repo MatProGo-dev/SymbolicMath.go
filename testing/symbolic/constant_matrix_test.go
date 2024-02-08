@@ -7,6 +7,7 @@ Description:
 */
 
 import (
+	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"testing"
@@ -153,6 +154,173 @@ func TestConstantMatrix_Plus3(t *testing.T) {
 
 	}
 
+}
+
+/*
+TestConstantMatrix_Plus4
+Description:
+
+	Tests that the Plus() method properly panics
+	when called with a valid KMatrix and a not well-defined
+	expression (in this case, a Monomial).
+*/
+func TestConstantMatrix_Plus4(t *testing.T) {
+	// Constants
+	eye1 := symbolic.Identity(3)
+	km1 := symbolic.DenseToKMatrix(eye1)
+
+	monom2 := symbolic.Monomial{
+		VariableFactors: []symbolic.Variable{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+
+	// Define Test Handler
+	defer func() {
+		recoveredVal := recover()
+		if recoveredVal == nil {
+			t.Errorf("Expected constant matrix addition to panic when dimensions are not equal; did not panic")
+		}
+
+		err, ok := recoveredVal.(error)
+		if !ok {
+			t.Errorf("Expected recovered value to be an error; received %T", recoveredVal)
+		}
+
+		err2 := monom2.Check()
+		if err.Error() != err2.Error() {
+			t.Errorf("unexpected error: %v", err)
+		}
+	}()
+
+	// Test
+	km1.Plus(monom2)
+
+	t.Errorf("TestConstantMatrix_Plus4 did not panic as expected")
+}
+
+/*
+TestConstantMatrix_Plus5
+Description:
+
+	Tests that the Plus() method properly adds a KMatrix to
+	a polynomial matrix. The result should be a polynomial matrix.
+*/
+func TestConstantMatrix_Plus5(t *testing.T) {
+	// Constants
+	eye1 := symbolic.Identity(3)
+	km1 := symbolic.DenseToKMatrix(eye1)
+
+	ones2 := symbolic.OnesMatrix(3, 3)
+	pm2 := getKMatrix.From(ones2).ToPolynomialMatrix()
+
+	// Test
+	pm3 := km1.Plus(pm2)
+
+	// Verify that the result is a polynomial matrix
+	if _, ok := pm3.(symbolic.PolynomialMatrix); !ok {
+		t.Errorf(
+			"Expected pm3 to be a symbolic.PolynomialMatrix; received %T",
+			pm3,
+		)
+	}
+
+	// Verify that the elements of the result is the correct value
+	nR, nC := eye1.Dims()
+	for rowIndex := 0; rowIndex < nR; rowIndex++ {
+		for colIndex := 0; colIndex < nC; colIndex++ {
+			pm3_ii_jj := pm3.(symbolic.PolynomialMatrix).At(rowIndex, colIndex)
+			elt := pm3_ii_jj.(symbolic.Polynomial)
+			if len(elt.Monomials) != 1 {
+				t.Errorf(
+					"Expected pm3.At(0,0) to be a degree 0 polynomial; received %v",
+					pm3.(symbolic.PolynomialMatrix).At(0, 0),
+				)
+			}
+		}
+
+	}
+}
+
+/*
+TestConstantMatrix_Plus6
+Description:
+
+	Tests that the Plus() method properly adds a KMatrix to
+	a variable. The result should be a matrix of polynomials.
+*/
+func TestConstantMatrix_Plus6(t *testing.T) {
+	// Constants
+	eye1 := symbolic.Identity(3)
+	km1 := symbolic.DenseToKMatrix(eye1)
+
+	x2 := symbolic.NewVariable()
+
+	// Test
+	pm3 := km1.Plus(x2)
+
+	// Verify that the result is a polynomial matrix
+	if _, ok := pm3.(symbolic.PolynomialMatrix); !ok {
+		t.Errorf(
+			"Expected pm3 to be a symbolic.PolynomialMatrix; received %T",
+			pm3,
+		)
+	}
+
+	// Verify that the elements of the result is the correct value
+	nR, nC := eye1.Dims()
+	for rowIndex := 0; rowIndex < nR; rowIndex++ {
+		for colIndex := 0; colIndex < nC; colIndex++ {
+			pm3_ii_jj := pm3.(symbolic.PolynomialMatrix).At(rowIndex, colIndex)
+			elt := pm3_ii_jj.(symbolic.Polynomial)
+			if len(elt.Monomials) != 2 {
+				t.Errorf(
+					"Expected pm3.At(0,0) to be a polynomial with 2 monomials; received %v",
+					pm3.(symbolic.PolynomialMatrix).At(0, 0),
+				)
+			}
+		}
+
+	}
+}
+
+/*
+TestKMatrix_Plus7
+Description:
+
+	Tests that the Plus() method properly panics
+	when the a well-defined KMatrix is added to
+	an unsupported input (in this case, a string).
+*/
+func TestKMatrix_Plus7(t *testing.T) {
+	// Constants
+	eye1 := symbolic.Identity(3)
+	km1 := symbolic.DenseToKMatrix(eye1)
+
+	// Define Test Handler
+	defer func() {
+		recoveredVal := recover()
+		if recoveredVal == nil {
+			t.Errorf("Expected constant matrix addition to panic when dimensions are not equal; did not panic")
+		}
+
+		err, ok := recoveredVal.(error)
+		if !ok {
+			t.Errorf("Expected recovered value to be an error; received %T", recoveredVal)
+		}
+
+		// Check that error is the UnsupportedInputError error defined in KMatrix.Plus()
+		expectedError := smErrors.UnsupportedInputError{
+			FunctionName: "KMatrix.Plus",
+			Input:        "test",
+		}
+		if err.Error() != expectedError.Error() {
+			t.Errorf("unexpected error: %v", err)
+		}
+	}()
+
+	// Test
+	km1.Plus("test")
+
+	t.Errorf("TestKMatrix_Plus7 did not panic as expected")
 }
 
 /*
