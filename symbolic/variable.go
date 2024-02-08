@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 )
 
 // Var represnts a variable in a optimization problem. The variable is
@@ -22,12 +23,6 @@ Description:
 */
 func (v Variable) Variables() []Variable {
 	return []Variable{v}
-}
-
-// Vars returns a slice of the Var ids in the expression. For a variable, it
-// always returns a singleton slice with the given variable ID.
-func (v Variable) IDs() []uint64 {
-	return []uint64{v.ID}
 }
 
 // Coeffs returns a slice of the coefficients in the expression. For a variable,
@@ -92,28 +87,6 @@ func (v Variable) Plus(rightIn interface{}) Expression {
 	)
 }
 
-//// Mult multiplies the current expression to another and returns the
-//// resulting expression
-//func (v Variable) Mult(m float64) (ScalarExpression, error) {
-//	// Constants
-//	// switch m.(type) {
-//	// case float64:
-//
-//	vars := []Variable{v}
-//	coeffs := []float64{m * v.Coeffs()[0]}
-//
-//	// Algorithm
-//	newExpr := ScalarLinearExpr{
-//		X: VariableVector{vars},
-//		L: *mat.NewVecDense(1, coeffs),
-//		C: 0,
-//	}
-//	return newExpr, nil
-//	// case *Variable:
-//	// 	return nil
-//	// }
-//}
-
 // LessEq returns a less than or equal to (<=) constraint between the
 // current expression and another
 func (v Variable) LessEq(rhsIn interface{}) Constraint {
@@ -144,15 +117,47 @@ Usage:
 */
 func (v Variable) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
-	rhs, err := ToScalarExpression(rhsIn)
+	err := v.Check()
 	if err != nil {
 		panic(err)
 	}
 
-	// Constants
+	if IsExpression(rhsIn) {
+		rhsAsE, _ := ToExpression(rhsIn)
+		err = rhsAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// No need to check dimensions here, as the comparison is
+		// a scalar and thus valid for any dimension of rhsIn
+	}
 
 	// Algorithm
-	return ScalarConstraint{v, rhs, sense}
+	switch rhs := rhsIn.(type) {
+	case float64:
+		// Use version of comparison for K
+		return v.Comparison(K(rhs), sense)
+	case K:
+		// Create a new constraint
+		return ScalarConstraint{v, rhs, sense}
+	case Variable:
+		// Create a new constraint
+		return ScalarConstraint{v, rhs, sense}
+	case Monomial:
+		// Create a new constraint
+		return ScalarConstraint{v, rhs, sense}
+	case Polynomial:
+		// Create a new constraint
+		return ScalarConstraint{v, rhs, sense}
+	}
+
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "Variable.Comparison",
+			Input:        rhsIn,
+		},
+	)
 }
 
 /*

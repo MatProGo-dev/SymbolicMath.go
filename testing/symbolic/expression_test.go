@@ -67,3 +67,12 @@ Description:
 	Tests the ToExpression function panics if it is given
 	an invalid expression (in this case, a string).
 */
+func TestExpression_ToExpression1(t *testing.T) {
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The ToExpression function should panic when given an invalid expression")
+		}
+	}()
+	symbolic.ToExpression("x")
+}
