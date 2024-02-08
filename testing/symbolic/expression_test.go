@@ -30,3 +30,40 @@ func TestExpression_NumVariables1(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestExpression_VariableIDs1
+Description:
+
+	Tests the variable IDs function for a single variable.
+*/
+func TestExpression_VariableIDs1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	ids := symbolic.VariableIDs(x)
+	if len(ids) != 1 {
+		t.Errorf(
+			"Expected the variable IDs to be 1; received %v",
+			ids,
+		)
+	}
+
+	// Verify that the first element of the ids is the same as x's
+	if ids[0] != x.ID {
+		t.Errorf(
+			"Expected the variable ID to be %v; received %v",
+			x.ID,
+			ids[0],
+		)
+	}
+}
+
+/*
+TestExpression_ToExpression1
+Description:
+
+	Tests the ToExpression function panics if it is given
+	an invalid expression (in this case, a string).
+*/

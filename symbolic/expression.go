@@ -1,6 +1,8 @@
 package symbolic
 
-import "fmt"
+import (
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+)
 
 /*
 Expression
@@ -96,7 +98,13 @@ func ToExpression(e interface{}) (Expression, error) {
 		return ToVectorExpression(e)
 	case IsMatrixExpression(e):
 		return ToMatrixExpression(e)
-	default:
-		return K(Infinity), fmt.Errorf("the input expression is not recognized as a scalar or vector expression.")
 	}
+
+	// If the input is not a valid expression, panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "ToExpression",
+			Input:        e,
+		},
+	)
 }
