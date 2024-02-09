@@ -208,7 +208,7 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 		}
 	}
 
-	// Algorithm
+	// Computation
 	switch right := e.(type) {
 	case float64:
 		// Use K case
@@ -225,10 +225,35 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 		}
 		return mmOut
 
+	case KVector:
+		// Constants
+		nResultRows := vm.Dims()[0]
+
+		// Switch on the dimensions of the result
+		switch nResultRows {
+		case 1:
+			// Scalar result
+			var result Polynomial = K(0).ToMonomial().ToPolynomial()
+			for ii, k := range right {
+				result = result.Plus(vm[0][ii].Multiply(k)).(Polynomial)
+			}
+			return result
+		default:
+			// Create vector result
+			var result PolynomialVector = VecDenseToKVector(ZerosVector(nResultRows)).ToPolynomialVector()
+			for ii, vmRow := range vm {
+				for jj, v := range vmRow {
+					result[ii] = result[ii].Plus(v.Multiply(right[jj])).(Polynomial)
+				}
+			}
+			return result
+		}
+
 	case KMatrix:
-		// Collect dimensions of right
+		// Collect dimensions
 		nResultRows, nResultCols := vm.Dims()[0], right.Dims()[1]
 
+		// Switch on the dimensions of the result
 		switch {
 		case (nResultRows == 1) && (nResultCols == 1):
 			// Scalar result
@@ -333,7 +358,7 @@ func (vm VariableMatrix) Comparison(rightIn interface{}, sense ConstrSense) Cons
 
 	if IsExpression(rightIn) {
 		// Convert e to an expression
-		rightAsE, _ := rightIn.(Expression)
+		rightAsE, _ := ToExpression(rightIn)
 		err = rightAsE.Check()
 		if err != nil {
 			panic(
@@ -358,11 +383,23 @@ func (vm VariableMatrix) Comparison(rightIn interface{}, sense ConstrSense) Cons
 		var KAsDense mat.Dense
 		KAsDense.Scale(float64(right), &onesMat)
 
+		return vm.Comparison(KAsDense, sense)
+	case mat.Dense:
+		// Use the KMatrix case
+		return vm.Comparison(DenseToKMatrix(right), sense)
+	case KMatrix:
 		return MatrixConstraint{
 			LeftHandSide:  vm,
-			RightHandSide: DenseToKMatrix(KAsDense),
+			RightHandSide: right,
 			Sense:         sense,
 		}
+	case MonomialMatrix:
+		return MatrixConstraint{
+			LeftHandSide:  vm,
+			RightHandSide: right,
+			Sense:         sense,
+		}
+
 	}
 
 	// If the type is not recognized, panic

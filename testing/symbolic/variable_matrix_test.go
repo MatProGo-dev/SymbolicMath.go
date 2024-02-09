@@ -613,6 +613,153 @@ func TestVariableMatrix_Multiply6(t *testing.T) {
 }
 
 /*
+TestVariableMatrix_Multiply7
+Description:
+
+	Tests the Multiply method for a VariableMatrix object that is well-defined
+	of a dimension (3, 2) being multiplied by a KMatrix of dimension (2, 1).
+	Checks that the result is a PolynomialVector.
+*/
+func TestVariableMatrix_Multiply7(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	cm := getKMatrix.From(
+		[][]float64{
+			{1},
+			{2},
+		})
+
+	// Test
+	result := vm.Multiply(cm)
+
+	// Check that object is a PolynomialVector
+	if _, ok := result.(symbolic.PolynomialVector); !ok {
+		t.Errorf("Expected Multiply to return a PolynomialVector; received %T", result)
+	}
+
+	// Check that each polynomial in the result contains two monomials.
+	pv := result.(symbolic.PolynomialVector)
+	for i := 0; i < pv.Dims()[0]; i++ {
+		if len(pv[i].Monomials) != 2 {
+			t.Errorf("Expected each polynomial to contain 2 monomials; received %v", len(pv[i].Monomials))
+		}
+	}
+}
+
+/*
+TestVariableMatrix_Multiply8
+Description:
+
+	Tests the Multiply method for a VariableMatrix object that is well-defined
+	of a dimension (1, 3) being multiplied by a KMatrix of dimension (3, 1).
+	Checks that the result is a Polynomial.
+*/
+func TestVariableMatrix_Multiply8(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	cm := getKMatrix.From(
+		[][]float64{
+			{1},
+			{2},
+			{3},
+		})
+
+	// Test
+	result := vm.Multiply(cm)
+
+	// Check that object is a Polynomial
+	if _, ok := result.(symbolic.Polynomial); !ok {
+		t.Errorf("Expected Multiply to return a Polynomial; received %T", result)
+	}
+
+	// Check that the polynomial contains three monomials.
+	p := result.(symbolic.Polynomial)
+	if len(p.Monomials) != 3 {
+		t.Errorf("Expected the polynomial to contain 3 monomials; received %v", len(p.Monomials))
+	}
+}
+
+/*
+TestVariableMatrix_Multiply9
+Description:
+
+	Tests the Multiply method for a VariableMatrix object that is well-defined
+	of a dimension (3, 2) being multiplied by a KVector of dimension (2, 1).
+	The product should be a PolynomialVector of dimension (3, 1)
+	with two monomials in each polynomial.
+*/
+func TestVariableMatrix_Multiply9(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	cv := getKMatrix.From(
+		[][]float64{
+			{1},
+			{2},
+		})
+
+	// Compute Product
+	result := vm.Multiply(cv)
+
+	// Check that object is a PolynomialVector
+	if _, ok := result.(symbolic.PolynomialVector); !ok {
+		t.Errorf("Expected Multiply to return a PolynomialVector; received %T", result)
+	}
+
+	// Check that each polynomial in the result contains two monomials.
+	pv := result.(symbolic.PolynomialVector)
+	for i := 0; i < pv.Dims()[0]; i++ {
+		if len(pv[i].Monomials) != 2 {
+			t.Errorf("Expected each polynomial to contain 2 monomials; received %v", len(pv[i].Monomials))
+		}
+	}
+}
+
+/*
+TestVariableMatrix_Multiply10
+Description:
+
+	Tests the Multiply method for a VariableMatrix object that is well-defined
+	of a dimension (1, 3) being multiplied by a KVector of dimension (3, 1).
+	The product should be a Polynomial of dimension (1, 1) with three monomials.
+*/
+func TestVariableMatrix_Multiply10(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	cv := getKMatrix.From(
+		[][]float64{
+			{1},
+			{2},
+			{3},
+		})
+
+	// Compute Product
+	result := vm.Multiply(cv)
+
+	// Check that object is a Polynomial
+	if _, ok := result.(symbolic.Polynomial); !ok {
+		t.Errorf("Expected Multiply to return a Polynomial; received %T", result)
+	}
+
+	// Check that the polynomial contains three monomials.
+	p := result.(symbolic.Polynomial)
+	if len(p.Monomials) != 3 {
+		t.Errorf("Expected the polynomial to contain 3 monomials; received %v", len(p.Monomials))
+	}
+}
+
+/*
 TestVariableMatrix_Transpose1
 Description:
 
@@ -681,4 +828,96 @@ func TestVariableMatrix_Transpose2(t *testing.T) {
 			}
 		}
 	}
+}
+
+/*
+TestVariableMatrix_LessEq1
+Description:
+
+	Tests the LessEq method panics for a variable matrix that is not
+	well-defined.
+*/
+func TestVariableMatrix_LessEq1(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.Variable{}},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Expected LessEq to panic; received nil")
+		}
+	}()
+
+	vm.LessEq(vm)
+}
+
+/*
+TestVariableMatrix_LessEq2
+Description:
+
+	Tests the LessEq method for a VariableMatrix object that is well-defined
+	being compared to a float64.
+	Verifies that the resulting constraint has:
+	- A VariableMatrix on the LeftHandSide
+	- A KMatrix on the RightHandSide
+	- The sense SenseLessThanEqual
+*/
+func TestVariableMatrix_LessEq2(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+
+	// Test
+	constraint := vm.LessEq(2.0)
+
+	// Check that the LeftHandSide is a VariableMatrix
+	if _, ok := constraint.Left().(symbolic.VariableMatrix); !ok {
+		t.Errorf("Expected the LeftHandSide to be a VariableMatrix; received %T", constraint.Left())
+	}
+
+	// Check that the RightHandSide is a KMatrix
+	if _, ok := constraint.Right().(symbolic.KMatrix); !ok {
+		t.Errorf("Expected the RightHandSide to be a KMatrix; received %T", constraint.Right())
+	}
+
+	// Check that the Sense is SenseLessThanEqual
+	if constraint.ConstrSense() != symbolic.SenseLessThanEqual {
+		t.Errorf("Expected the Sense to be SenseLessThanEqual; received %v", constraint.ConstrSense())
+	}
+}
+
+/*
+TestVariableMatrix_GreaterEq1
+Description:
+
+	Tests the GreaterEq method panics
+	for a VariableMatrix object that is well-defined
+	and a monomial matrix of incompatible dimensions.
+	Initial VariableMatrix has dimension (3,2) and the
+	monomial matrix has dimension (2,1).
+*/
+func TestVariableMatrix_GreaterEq1(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	mm := symbolic.MonomialMatrix{
+		{symbolic.NewVariable().ToMonomial()},
+		{symbolic.NewVariable().ToMonomial()},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Expected GreaterEq to panic; received nil")
+		}
+	}()
+
+	vm.GreaterEq(mm)
 }
