@@ -2,6 +2,7 @@ package symbolic_test
 
 import (
 	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
+	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
@@ -701,11 +702,7 @@ func TestVariableMatrix_Multiply9(t *testing.T) {
 		{symbolic.NewVariable(), symbolic.NewVariable()},
 		{symbolic.NewVariable(), symbolic.NewVariable()},
 	}
-	cv := getKMatrix.From(
-		[][]float64{
-			{1},
-			{2},
-		})
+	cv := getKVector.From([]float64{1, 2})
 
 	// Compute Product
 	result := vm.Multiply(cv)
@@ -737,12 +734,7 @@ func TestVariableMatrix_Multiply10(t *testing.T) {
 	vm := symbolic.VariableMatrix{
 		{symbolic.NewVariable(), symbolic.NewVariable(), symbolic.NewVariable()},
 	}
-	cv := getKMatrix.From(
-		[][]float64{
-			{1},
-			{2},
-			{3},
-		})
+	cv := getKVector.From([]float64{1, 2, 3})
 
 	// Compute Product
 	result := vm.Multiply(cv)
