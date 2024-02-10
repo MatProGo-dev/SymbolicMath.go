@@ -529,7 +529,7 @@ func TestMonomialVector_Plus4(t *testing.T) {
 	// Test
 	sum := mv1.Plus(mv2)
 
-	sumAsPV, tf := sum.(symbolic.PolynomialVector)
+	sumAsMV, tf := sum.(symbolic.MonomialVector)
 	if !tf {
 		t.Errorf(
 			"expected sum to be a PolynomialVector; received %T",
@@ -537,14 +537,25 @@ func TestMonomialVector_Plus4(t *testing.T) {
 		)
 	}
 
-	for _, polynomial := range sumAsPV {
-		if len(polynomial.Monomials) != 1 {
+	// Check that each  monomial vector element contains
+	// one variable factor and an exponent of 1
+	for _, monomial := range sumAsMV {
+		if len(monomial.VariableFactors) != 1 {
 			t.Errorf(
-				"expected len(polynomial.Monomials) to be 1; received %v",
-				len(polynomial.Monomials),
+				"expected len(monomial.VariableFactors) to be 1; received %v",
+				len(monomial.VariableFactors),
 			)
 		}
+
+		if monomial.Exponents[0] != 1 {
+			t.Errorf(
+				"expected monomial.Exponents[0] to be 1; received %v",
+				monomial.Exponents[0],
+			)
+		}
+
 	}
+
 }
 
 /*
