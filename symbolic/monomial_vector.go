@@ -138,7 +138,7 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 		}
 
 		// Check dimensions
-		err = CheckDimensionsInAddition(mv, term1AsE)
+		err = smErrors.CheckDimensionsInAddition(mv, term1AsE)
 		if err != nil {
 			panic(err)
 		}
@@ -266,7 +266,7 @@ func (mv MonomialVector) Multiply(term1 interface{}) Expression {
 		}
 
 		// Check dimensions
-		err = CheckDimensionsInMultiplication(mv, term1AsE)
+		err = smErrors.CheckDimensionsInMultiplication(mv, term1AsE)
 		if err != nil {
 			panic(err)
 		}

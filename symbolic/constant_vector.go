@@ -104,7 +104,7 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 
 	if IsExpression(rightIn) {
 		rightAsE, _ := ToExpression(rightIn)
-		err = CheckDimensionsInAddition(kv, rightAsE)
+		err = smErrors.CheckDimensionsInAddition(kv, rightAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -258,7 +258,7 @@ func (kv KVector) Multiply(rightIn interface{}) Expression {
 	if IsExpression(rightIn) {
 		// Check dimensions
 		rightAsE, _ := ToExpression(rightIn)
-		err = CheckDimensionsInMultiplication(kv, rightAsE)
+		err = smErrors.CheckDimensionsInMultiplication(kv, rightAsE)
 		if err != nil {
 			panic(err)
 		}

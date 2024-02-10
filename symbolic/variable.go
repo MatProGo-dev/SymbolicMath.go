@@ -209,7 +209,7 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 
 	if IsExpression(rightIn) {
 		rightAsE, _ := ToExpression(rightIn)
-		err := CheckDimensionsInMultiplication(v, rightAsE)
+		err := smErrors.CheckDimensionsInMultiplication(v, rightAsE)
 		if err != nil {
 			panic(err)
 		}

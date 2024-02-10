@@ -84,7 +84,7 @@ func (p Polynomial) Plus(e interface{}) Expression {
 
 	if IsExpression(e) {
 		eAsE, _ := ToExpression(e)
-		err := CheckDimensionsInAddition(p, eAsE)
+		err := smErrors.CheckDimensionsInAddition(p, eAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -263,7 +263,7 @@ func (p Polynomial) Multiply(e interface{}) Expression {
 
 	if IsExpression(e) {
 		eAsE, _ := ToExpression(e)
-		err := CheckDimensionsInMultiplication(p, eAsE)
+		err := smErrors.CheckDimensionsInMultiplication(p, eAsE)
 		if err != nil {
 			panic(err)
 		}

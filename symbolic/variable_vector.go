@@ -113,7 +113,7 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 			panic(err)
 		}
 
-		err = CheckDimensionsInAddition(vv, rightAsE)
+		err = smErrors.CheckDimensionsInAddition(vv, rightAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -174,7 +174,7 @@ func (vv VariableVector) Multiply(rightIn interface{}) Expression {
 			panic(err)
 		}
 
-		err = CheckDimensionsInMultiplication(vv, rightAsE)
+		err = smErrors.CheckDimensionsInMultiplication(vv, rightAsE)
 		if err != nil {
 			panic(err)
 		}

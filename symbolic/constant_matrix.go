@@ -100,7 +100,7 @@ func (km KMatrix) Plus(e interface{}) Expression {
 			panic(err)
 		}
 		// Check Dimensions
-		err = CheckDimensionsInAddition(km, rightAsE)
+		err = smErrors.CheckDimensionsInAddition(km, rightAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -189,7 +189,7 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 		}
 
 		// Check dimensions
-		err = CheckDimensionsInMultiplication(km, rightAsE)
+		err = smErrors.CheckDimensionsInMultiplication(km, rightAsE)
 		if err != nil {
 			panic(err)
 		}

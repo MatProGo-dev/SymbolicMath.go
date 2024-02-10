@@ -125,7 +125,7 @@ func (mm MonomialMatrix) Plus(e interface{}) Expression {
 			panic(fmt.Errorf("error in second argument to Plus: %v", err))
 		}
 
-		err := CheckDimensionsInAddition(mm, eAsE)
+		err := smErrors.CheckDimensionsInAddition(mm, eAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -245,7 +245,7 @@ func (mm MonomialMatrix) Multiply(e interface{}) Expression {
 			panic(fmt.Errorf("error in second argument to Multiply: %v", err))
 		}
 
-		err := CheckDimensionsInMultiplication(mm, eAsE)
+		err := smErrors.CheckDimensionsInMultiplication(mm, eAsE)
 		if err != nil {
 			panic(err)
 		}

@@ -52,3 +52,53 @@ func (de DimensionError) ArgDimsAsStrings() []string {
 	return []string{arg1DimsAsString, arg2DimsAsString}
 
 }
+
+func CheckDimensionsInAddition(left, right MatrixLike) error {
+	// Check that the size of columns in left and right agree
+	dimsAreMatched := (left.Dims()[0] == right.Dims()[0]) && (left.Dims()[1] == right.Dims()[1])
+	dimsAreMatched = dimsAreMatched || IsScalarExpression(left)
+	dimsAreMatched = dimsAreMatched || IsScalarExpression(right)
+
+	if !dimsAreMatched {
+		return DimensionError{
+			Operation: "Plus",
+			Arg1:      left,
+			Arg2:      right,
+		}
+	}
+	// If dimensions match, then return nothing.
+	return nil
+}
+
+/*
+CheckDimensionsInMultiplication
+Description:
+
+	This function checks that the dimensions of the left and right expressions
+	are compatible for multiplication.
+	We allow:
+	- Multiplication if Dimensions Match OR
+	- Multiplication if one of the expressions is a scalar
+*/
+func CheckDimensionsInMultiplication(left, right MatrixLike) error {
+	// Check that dimensions match
+	dimsMatch := left.Dims()[1] == right.Dims()[0]
+
+	// Check that one of the expressions is a scalar
+	leftIsScalar := IsScalarExpression(left)
+	rightIsScalar := IsScalarExpression(right)
+
+	multiplicationIsAllowed := dimsMatch || leftIsScalar || rightIsScalar
+
+	// Check that the # of columns in left
+	// matches the # of rows in right
+	if !multiplicationIsAllowed {
+		return DimensionError{
+			Operation: "Multiply",
+			Arg1:      left,
+			Arg2:      right,
+		}
+	}
+	// If dimensions match, then return nothing.
+	return nil
+}

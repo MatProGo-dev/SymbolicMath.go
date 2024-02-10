@@ -138,7 +138,7 @@ func (vm VariableMatrix) Plus(e interface{}) Expression {
 			)
 		}
 
-		err := CheckDimensionsInAddition(vm, eAsE)
+		err := smErrors.CheckDimensionsInAddition(vm, eAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -202,7 +202,7 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 			)
 		}
 
-		err := CheckDimensionsInMultiplication(vm, eAsE)
+		err := smErrors.CheckDimensionsInMultiplication(vm, eAsE)
 		if err != nil {
 			panic(err)
 		}

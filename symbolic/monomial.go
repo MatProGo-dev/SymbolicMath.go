@@ -1,6 +1,9 @@
 package symbolic
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+)
 
 /*
 monomial.go
@@ -77,7 +80,7 @@ func (m Monomial) Plus(e interface{}) Expression {
 			panic(err)
 		}
 		// Check Dimensions
-		err := CheckDimensionsInAddition(m, rightAsE)
+		err := smErrors.CheckDimensionsInAddition(m, rightAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -133,10 +136,21 @@ Description:
 */
 func (m Monomial) Multiply(e interface{}) Expression {
 	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
 	if IsExpression(e) {
-		// Check dimensions
+		// Convert to expression
 		rightAsE, _ := ToExpression(e)
-		err := CheckDimensionsInMultiplication(m, rightAsE)
+		err = rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check dimensions
+		err := smErrors.CheckDimensionsInMultiplication(m, rightAsE)
 		if err != nil {
 			panic(err)
 		}

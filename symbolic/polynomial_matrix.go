@@ -127,7 +127,7 @@ func (pm PolynomialMatrix) Plus(e interface{}) Expression {
 			panic(fmt.Errorf("error in second argument to Plus: %v", err))
 		}
 
-		err = CheckDimensionsInAddition(pm, eAsE)
+		err = smErrors.CheckDimensionsInAddition(pm, eAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -226,7 +226,7 @@ func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 			panic(fmt.Errorf("error in second argument to Multiply: %v", err))
 		}
 
-		err = CheckDimensionsInMultiplication(pm, eAsE)
+		err = smErrors.CheckDimensionsInMultiplication(pm, eAsE)
 		if err != nil {
 			panic(err)
 		}

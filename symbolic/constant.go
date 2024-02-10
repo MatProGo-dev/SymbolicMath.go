@@ -63,7 +63,7 @@ func (c K) Plus(rightIn interface{}) Expression {
 			panic(fmt.Errorf("error in second argument to %v.Plus: %v", c, err))
 		}
 
-		err = CheckDimensionsInAddition(c, rightAsE)
+		err = smErrors.CheckDimensionsInAddition(c, rightAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -208,7 +208,7 @@ func (c K) Multiply(term1 interface{}) Expression {
 	if IsExpression(term1) {
 		// Check dimensions
 		term1AsE, _ := ToExpression(term1)
-		err := CheckDimensionsInMultiplication(c, term1AsE)
+		err := smErrors.CheckDimensionsInMultiplication(c, term1AsE)
 		if err != nil {
 			panic(err)
 		}
