@@ -13,6 +13,10 @@ Some key features include:
 - Simple API for defining constants and variables (e.g., `Q := getKMatrix.From([][]float64{{1, 0}, {0, 2.0}})`)
 - Recognition of [gonum](https://www.gonum.org/) matrices and vectors
   in most operations (e.g., `vv1.Plus(mat.NewVecDense(N, []float64{1, 2, 3}))`)
+- Producing panics instead of errors (i.e., if something strange is written
+in symbolic math, like the multiplication of two mismatched matrices, then the
+program will panic instead of returning an error. This way, you can worry
+about the math and not the error handling.)
 
 Some documentation can be found by clicking the "reference" badge above.
 
