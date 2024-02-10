@@ -9,7 +9,7 @@ express everything from scalar constants to matrices of polynomials.
 
 Some key features include:
 - Composable operations which allow complex mathematics to be expressed
-  in as few lines as you wish
+  in as few lines as you wish (e.g., `x.Transpose().Multiply(Q).Multiply(x)`)
 - Simple API for defining constants and variables
 - Recognition of [gonum](https://www.gonum.org/) matrices and vectors
   in most operations
