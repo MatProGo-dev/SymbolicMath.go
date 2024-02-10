@@ -248,7 +248,12 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 			}
 			return result
 		}
-
+	case *mat.Dense:
+		// Use the mat.Dense case
+		return vm.Multiply(DenseToKMatrix(*right))
+	case mat.Dense:
+		// Use the KMatrix case
+		return vm.Multiply(DenseToKMatrix(right))
 	case KMatrix:
 		// Collect dimensions
 		nResultRows, nResultCols := vm.Dims()[0], right.Dims()[1]

@@ -12,7 +12,7 @@ Some key features include:
   in as few lines as you wish (e.g., `x.Transpose().Multiply(Q).Multiply(x)`)
 - Simple API for defining constants and variables
 - Recognition of [gonum](https://www.gonum.org/) matrices and vectors
-  in most operations
+  in most operations (e.g., `vv1.Plus(mat.NewVecDense(N, []float64{1, 2, 3}))`)
 
 Some documentation can be found by clicking the "reference" badge above.
 
