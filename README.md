@@ -10,7 +10,7 @@ express everything from scalar constants to matrices of polynomials.
 Some key features include:
 - Composable operations which allow complex mathematics to be expressed
   in as few lines as you wish (e.g., `x.Transpose().Multiply(Q).Multiply(x)`)
-- Simple API for defining constants and variables
+- Simple API for defining constants and variables (e.g., `Q := getKMatrix.From([][]float64{{1, 0}, {0, 2.0}})`)
 - Recognition of [gonum](https://www.gonum.org/) matrices and vectors
   in most operations (e.g., `vv1.Plus(mat.NewVecDense(N, []float64{1, 2, 3}))`)
 
@@ -61,6 +61,7 @@ optimization and control theory problems in Go, but symbolic mathematics is a to
 a wide range of applications. If this tool is not useful for your purpose, then you might
 find one of the following projects more helpful:
 While other symbolic math libraries exist for Go, they typically focus on:
-- Simplifying expressions written as strings \[[sm](https://github.com/Konstantin8105/sm)\]
+- Computer Algebra Systems that will help you get a final expression (in text) from
+arbitrary mathematical arbitrations \[[expreduce](https://github.com/corywalker/expreduce),[sm](https://github.com/Konstantin8105/sm)\]
 - Implementing Algorithms from [Domain-Specific Languages of Mathematics](https://github.com/DSLsofMath/DSLsofMath)
   Course \[[gosymbol](https://github.com/victorbrun/gosymbol/tree/main)\]
