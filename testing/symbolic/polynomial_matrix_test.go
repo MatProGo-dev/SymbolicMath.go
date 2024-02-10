@@ -984,6 +984,41 @@ func TestPolynomialMatrix_Multiply7(t *testing.T) {
 }
 
 /*
+TestPolynomialMatrix_Multiply8
+Description:
+
+	Tests that the Multiply() method properly panics when a
+	well-defined polynomial matrix is multiplied by an invalid
+	object (in this case, a VariableMatrix).
+*/
+func TestPolynomialMatrix_Multiply8(t *testing.T) {
+	// Constants
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	var vm1 symbolic.VariableMatrix
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm1.Multiply(vm1) to panic; received %v",
+				pm1.Multiply(vm1),
+			)
+		}
+	}()
+
+	// Test
+	pm1.Multiply(vm1)
+}
+
+/*
 TestPolynomialMatrix_Transpose1
 Description:
 

@@ -190,14 +190,15 @@ func (pm PolynomialMatrix) Plus(e interface{}) Expression {
 		}
 
 		return sum.Simplify()
-	default:
-		panic(
-			smErrors.UnsupportedInputError{
-				FunctionName: "PolynomialMatrix.Plus",
-				Input:        right,
-			},
-		)
 	}
+
+	// If type isn't recognized, then panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "PolynomialMatrix.Plus",
+			Input:        e,
+		},
+	)
 }
 
 /*
@@ -280,15 +281,15 @@ func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 			}
 			return product
 		}
-
-	default:
-		panic(
-			smErrors.UnsupportedInputError{
-				FunctionName: "PolynomialMatrix.Multiply",
-				Input:        right,
-			},
-		)
 	}
+
+	// If type isn't recognized, then panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "PolynomialMatrix.Multiply",
+			Input:        e,
+		},
+	)
 }
 
 /*
