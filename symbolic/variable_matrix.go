@@ -541,3 +541,22 @@ func (vm VariableMatrix) String() string {
 	out += "]"
 	return out
 }
+
+/*
+NewVariableMatrix
+Description:
+
+	This function creates a new variable matrix
+	and properly initializes each element in it.
+*/
+func NewVariableMatrix(nRows, nCols int) VariableMatrix {
+	// Create a new matrix
+	var vmOut VariableMatrix
+	for ii := 0; ii < nRows; ii++ {
+		vmOut = append(vmOut, make([]Variable, nCols))
+		for jj := 0; jj < nCols; jj++ {
+			vmOut[ii][jj] = NewVariable()
+		}
+	}
+	return vmOut
+}
