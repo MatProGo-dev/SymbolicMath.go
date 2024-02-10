@@ -105,6 +105,16 @@ func (m Monomial) Plus(e interface{}) Expression {
 				Monomials: []Monomial{m, right.ToMonomial()},
 			}
 		}
+	case Monomial:
+		if m.MatchesFormOf(right) {
+			monomialOut := m
+			monomialOut.Coefficient += right.Coefficient
+			return monomialOut
+		} else {
+			return Polynomial{
+				Monomials: []Monomial{m, right},
+			}
+		}
 	case Polynomial:
 		return right.Plus(m)
 	}

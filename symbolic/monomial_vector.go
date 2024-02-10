@@ -195,22 +195,54 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 			return pv.Simplify()
 		}
 	case MonomialVector:
-		// Create a polynomial vector
-		var pv PolynomialVector
+		// Check to see if all elements of the monomial vector,
+		// are all monomials like the input monomial.
+		monomialVectorMatches := true
 		for ii, monomial := range mv {
-			var tempPolynomial Polynomial
-			tempPolynomial.Monomials = append(tempPolynomial.Monomials, monomial, mv[ii])
-			pv = append(pv, tempPolynomial.Simplify())
+			if !monomial.MatchesFormOf(right[ii]) {
+				monomialVectorMatches = false
+			}
 		}
-		return pv
+
+		if monomialVectorMatches {
+			// If all elements of the monomial vector are monomials like the input monomial,
+			// then simply add the coefficients. and return a monomial vector.
+			var mvOut MonomialVector
+			for ii, monomial := range mv {
+				mvOut = append(mvOut, monomial.Plus(right[ii]).(Monomial))
+			}
+			return mvOut
+		} else {
+			// Otherwise, create a polynomial vector
+			var pv PolynomialVector
+			for ii, monomial := range mv {
+				sumII := monomial.Plus(right[ii])
+				switch sumII.(type) {
+				case Monomial:
+					pv = append(pv, sumII.(Monomial).ToPolynomial())
+				case Polynomial:
+					pv = append(pv, sumII.(Polynomial))
+				default:
+					panic(
+						fmt.Errorf(
+							"Unexpected type of sumII in the Plus() method: %T (%v)",
+							sumII, sumII,
+						),
+					)
+
+				}
+			}
+			return pv.Simplify()
+		}
 	}
 
 	// Unrecognized response is a panic
-	err = smErrors.UnsupportedInputError{
-		FunctionName: "MonomialVector.Plus",
-		Input:        term1,
-	}
-	panic(err)
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "MonomialVector.Plus",
+			Input:        term1,
+		},
+	)
 }
 
 /*
