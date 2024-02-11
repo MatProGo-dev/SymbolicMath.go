@@ -204,6 +204,8 @@ func (m Monomial) Multiply(e interface{}) Expression {
 		monomialOut.Coefficient = m.Coefficient * right.Coefficient
 
 		return monomialOut
+	case Polynomial:
+		return right.Multiply(m) // Commutative
 	}
 
 	// Unrecornized response is a panic
@@ -219,6 +221,12 @@ Description:
 	Transposes the scalar monomial and returns it. (This is the same as simply copying the monomial.)
 */
 func (m Monomial) Transpose() Expression {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
 	return m
 }
 
@@ -264,13 +272,47 @@ Description:
 */
 func (m Monomial) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
-	rhs, err := ToScalarExpression(rhsIn)
+	err := m.Check()
 	if err != nil {
 		panic(err)
 	}
 
+	if IsExpression(rhsIn) {
+		// Check rhs
+		rhsAsE, _ := ToExpression(rhsIn)
+		err = rhsAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check dimensions
+		// Scalar function, so no need to check dimensions
+		//err = CheckDimensionsInComparison(m, rhsAsE, sense)
+		//if err != nil {
+		//	panic(err)
+		//}
+	}
+
 	// Algorithm
-	return ScalarConstraint{m, rhs, sense}
+	switch right := rhsIn.(type) {
+	case float64:
+		return m.Comparison(K(right), sense)
+	case K:
+		return ScalarConstraint{m, right, sense}
+	case Variable:
+		return ScalarConstraint{m, right, sense}
+	case Monomial:
+		return ScalarConstraint{m, right, sense}
+	case Polynomial:
+		return ScalarConstraint{m, right, sense}
+	}
+
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "Monomial.Comparison (" + sense.String() + ")",
+			Input:        rhsIn,
+		},
+	)
 }
 
 /*
