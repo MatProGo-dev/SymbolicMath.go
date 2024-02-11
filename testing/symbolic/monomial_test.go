@@ -9,6 +9,7 @@ Description:
 import (
 	"fmt"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"strings"
 	"testing"
 )
 
@@ -1065,6 +1066,43 @@ func TestMonomial_DerivativeWrt3(t *testing.T) {
 		t.Errorf(
 			"expected derivative to be a constant; received %v",
 			derivative,
+		)
+	}
+}
+
+/*
+TestMonomial_String1
+Description:
+
+	Verifies that the Monomial.String function returns
+	a string representation of the monomial.
+	Verify that the variable factors in the monomial string contains the strings
+	of the variables.
+*/
+func TestMonomial_String1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1, v2},
+		Exponents:       []int{1, 2},
+	}
+
+	// Test
+	if !strings.Contains(m1.String(), v1.String()) {
+		t.Errorf(
+			"expected string to contain %v; received %v",
+			v1.String(),
+			m1.String(),
+		)
+	}
+
+	if !strings.Contains(m1.String(), v2.String()) {
+		t.Errorf(
+			"expected string to contain %v; received %v",
+			v2.String(),
+			m1.String(),
 		)
 	}
 }
