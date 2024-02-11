@@ -7,6 +7,7 @@ Description:
 */
 
 import (
+	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
@@ -351,6 +352,79 @@ func TestVariableVector_Plus5(t *testing.T) {
 }
 
 /*
+TestVariableVector_Plus6
+Description:
+
+	This test verifies that the sum of a variable vector
+	and a valid *mat.VecDense object is a PolynomialVector object.
+*/
+func TestVariableVector_Plus6(t *testing.T) {
+	// Constants
+	N := 111
+	vv1 := symbolic.NewVariableVector(N)
+	kv2 := symbolic.OnesVector(N)
+
+	// Test
+	r := vv1.Plus(kv2)
+	if _, ok := r.(symbolic.PolynomialVector); !ok {
+		t.Errorf(
+			"Expected vv1.Plus(kv2) to return a PolynomialVector object; received %T",
+			r,
+		)
+	}
+}
+
+/*
+TestVariableVector_Plus7
+Description:
+
+	This test verifies that the Plus() method
+	panics when a well-defined VariableVector is summed with
+	an invalid object (a string).
+*/
+func TestVariableVector_Plus7(t *testing.T) {
+	// Constants
+	N := 111
+	vv1 := symbolic.NewVariableVector(N)
+	s2 := "Hello, World!"
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vv1.Plus(s2) to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected vv1.Plus(s2) to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		expectedError := smErrors.UnsupportedInputError{
+			FunctionName: "VariableVector.Plus",
+			Input:        s2,
+		}
+		if !strings.Contains(
+			rAsE.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"Expected vv1.Plus(s2) to panic with a specific error; instead received %v",
+				r,
+			)
+		}
+	}()
+
+	vv1.Plus(s2)
+}
+
+/*
 TestVariableVector_Multiply1
 Description:
 
@@ -495,6 +569,92 @@ func TestVariableVector_Multiply3(t *testing.T) {
 }
 
 /*
+TestVariableVector_Multiply4
+Description:
+
+	This test verifies that the Multiply method, after multiplying
+	a vector of variables with a constant, returns a vector of
+	vector of monomials.
+*/
+func TestVariableVector_Multiply4(t *testing.T) {
+	// Constants
+	N := 111
+	vv1 := symbolic.NewVariableVector(N)
+	k2 := symbolic.K(3.14)
+
+	// Test
+	r := vv1.Multiply(k2)
+	if _, ok := r.(symbolic.MonomialVector); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(k2) to return a PolynomialVector object; received %T",
+			r,
+		)
+		return
+	}
+
+	// Check that all of the coefficients are equal to k2
+	rAsMV, _ := r.(symbolic.MonomialVector)
+	for ii := 0; ii < N; ii++ {
+		if rAsMV.AtVec(ii).(symbolic.Monomial).Coefficient != float64(k2) {
+			t.Errorf(
+				"Expected r.AtVec(%v) to be k2; received %v",
+				ii,
+				rAsMV.AtVec(ii),
+			)
+		}
+	}
+}
+
+/*
+TestVariableVector_Multiply5
+Description:
+
+	This test verifies that the Multiply method, after multiplying
+	a vector of variables with an invalid object (string), panics.
+*/
+func TestVariableVector_Multiply5(t *testing.T) {
+	// Constants
+	N := 111
+	vv1 := symbolic.NewVariableVector(N)
+	s2 := "Hello, World!"
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vv1.Multiply(s2) to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected vv1.Multiply(s2) to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		expectedError := smErrors.UnsupportedInputError{
+			FunctionName: "VariableVector.Multiply",
+			Input:        s2,
+		}
+		if !strings.Contains(
+			rAsE.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"Expected vv1.Multiply(s2) to panic with a specific error; instead received %v",
+				r,
+			)
+		}
+	}()
+
+	vv1.Multiply(s2)
+}
+
+/*
 TestVariableVector_Comparison1
 Description:
 
@@ -590,4 +750,303 @@ func TestVariableVector_Comparison2(t *testing.T) {
 	}()
 
 	vv1.Comparison(vv2, symbolic.SenseLessThanEqual)
+}
+
+/*
+TestVariableVector_Comparison3
+Description:
+
+	This test verifies that the Comparison method panics when a vector of improper length
+	is provided in the comparison. A DimensionError should be given in the panic.
+*/
+func TestVariableVector_Comparison3(t *testing.T) {
+	// Constants
+	N := 111
+	vv1 := symbolic.NewVariableVector(N)
+	vv2 := symbolic.NewVariableVector(N - 100)
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vv1.Comparison(vv2) to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected vv1.Comparison(vv2) to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		var tempSense symbolic.ConstrSense = symbolic.SenseLessThanEqual
+		if rAsE.Error() != (smErrors.DimensionError{
+			Operation: "Comparison (" + tempSense.String() + ")",
+			Arg1:      vv1,
+			Arg2:      vv2,
+		}).Error() {
+			t.Errorf(
+				"Expected vv1.Comparison(vv2) to panic with a DimensionError; received %v",
+				r,
+			)
+		}
+	}()
+
+	vv1.Comparison(vv2, symbolic.SenseLessThanEqual)
+}
+
+/*
+TestVariableVector_Comparison4
+Description:
+
+	This test verifies that the Comparison method panics when the rightIn is
+	an invalid object (string).
+*/
+func TestVariableVector_Comparison4(t *testing.T) {
+	// Constants
+	N := 111
+	vv1 := symbolic.NewVariableVector(N)
+	s2 := "Hello, World!"
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vv1.Comparison(s2) to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected vv1.Comparison(s2) to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		expectedError := smErrors.UnsupportedInputError{
+			FunctionName: "VariableVector.Comparison",
+			Input:        s2,
+		}
+		if !strings.Contains(
+			rAsE.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"Expected vv1.Comparison(s2) to panic with a specific error; instead received %v",
+				r,
+			)
+		}
+	}()
+
+	vv1.Comparison(s2, symbolic.SenseLessThanEqual)
+}
+
+/*
+TestVariableVector_LessEq1
+Description:
+
+	This test verifies that the LessEq method returns a constraint object.
+	We verify that the constraint:
+	- Has sense SenseLessThanEq
+	- Has the correct left and right hand sides (of type VariableVector and KVector,
+		respectively)
+*/
+func TestVariableVector_LessEq1(t *testing.T) {
+	// Constants
+	N := 111
+	vv1 := symbolic.NewVariableVector(N)
+	kv2 := symbolic.OnesVector(N)
+
+	// Test
+	r := vv1.LessEq(kv2)
+	if r.ConstrSense() != symbolic.SenseLessThanEqual {
+		t.Errorf(
+			"Expected r.Sense() to be SenseLessThanEqual; received %v",
+			r.ConstrSense(),
+		)
+	}
+
+	// Check that the type of the Left() is VariableVector
+	if _, ok := r.Left().(symbolic.VariableVector); !ok {
+		t.Errorf(
+			"Expected r.Left() to be a VariableVector; received %T",
+			r.Left(),
+		)
+
+	}
+
+	// Check that the right hand side is a KVector
+	if _, ok := r.Right().(symbolic.KVector); !ok {
+		t.Errorf(
+			"Expected r.Right() to be a KVector; received %T",
+			r.Right(),
+		)
+	}
+}
+
+/*
+TestVariableVector_GreaterEq1
+Description:
+
+	This test verifies that the GreaterEq method returns a constraint object.
+	We verify that the constraint:
+	- Has sense SenseGreaterThanEq
+	- Has the correct left and right hand sides (of type VariableVector and KVector),
+*/
+func TestVariableVector_GreaterEq1(t *testing.T) {
+	// Constants
+	N := 111
+	vv1 := symbolic.NewVariableVector(N)
+	kv2 := symbolic.OnesVector(N)
+
+	// Test
+	r := vv1.GreaterEq(kv2)
+	if r.ConstrSense() != symbolic.SenseGreaterThanEqual {
+		t.Errorf(
+			"Expected r.Sense() to be SenseGreaterThanEqual; received %v",
+			r.ConstrSense(),
+		)
+	}
+
+	// Check that the type of the Left() is VariableVector
+	if _, ok := r.Left().(symbolic.VariableVector); !ok {
+		t.Errorf(
+			"Expected r.Left() to be a VariableVector; received %T",
+			r.Left(),
+		)
+
+	}
+
+	// Check that the right hand side is a KVector
+	if _, ok := r.Right().(symbolic.KVector); !ok {
+		t.Errorf(
+			"Expected r.Right() to be a KVector; received %T",
+			r.Right(),
+		)
+	}
+}
+
+/*
+TestVariableVector_Eq1
+Description:
+
+	This test verifies that the Eq method returns a constraint object.
+	We verify that the constraint:
+	- Has sense SenseEqual
+	- Has the correct left and right hand sides (of type VariableVector and PolynomialVector),
+*/
+func TestVariableVector_Eq1(t *testing.T) {
+	// Constants
+	N := 111
+	vv1 := symbolic.NewVariableVector(N)
+	kv2 := getKVector.From(symbolic.OnesVector(N))
+	pv3 := kv2.ToPolynomialVector()
+
+	// Test
+	r := vv1.Eq(pv3)
+	if r.ConstrSense() != symbolic.SenseEqual {
+		t.Errorf(
+			"Expected r.Sense() to be SenseEqual; received %v",
+			r.ConstrSense(),
+		)
+	}
+
+	// Check that the type of the Left() is VariableVector
+	if _, ok := r.Left().(symbolic.VariableVector); !ok {
+		t.Errorf(
+			"Expected r.Left() to be a VariableVector; received %T",
+			r.Left(),
+		)
+
+	}
+
+	// Check that the right hand side is a PolynomialVector
+	if _, ok := r.Right().(symbolic.PolynomialVector); !ok {
+		t.Errorf(
+			"Expected r.Right() to be a PolynomialVector; received %T",
+			r.Right(),
+		)
+	}
+}
+
+/*
+TestVariableVector_Copy1
+Description:
+
+	Verifies that the Copy method returns a new VariableVector object.
+*/
+func TestVariableVector_Copy1(t *testing.T) {
+	// Constants
+	N := 111
+	vv := symbolic.NewVariableVector(N)
+
+	// Test
+	vv2 := vv.Copy()
+
+	// Replace v2[10] with a new variable
+	vv2[10] = symbolic.NewVariable()
+
+	// Verify that vv[10] != vv2[10]
+	if vv[10].ID == vv2[10].ID {
+		t.Errorf(
+			"Expected vv[10].ID to not be equal to vv2[10].ID; received %v",
+			vv[10].ID,
+		)
+	}
+}
+
+/*
+TestVariableVector_Transpose1
+Description:
+
+	Verifies that the Transpose method returns a VariableMatrix
+	object with the appropriate size.
+*/
+func TestVariableVector_Transpose1(t *testing.T) {
+	// Constants
+	N := 111
+	vv := symbolic.NewVariableVector(N)
+
+	// Test
+	vm := vv.Transpose()
+	if vm.Dims()[0] != 1 || vm.Dims()[1] != N {
+		t.Errorf(
+			"Expected vm.Rows() to be 1 and vm.Cols() to be %v; received (%v, %v)",
+			N,
+			vm.Dims()[0],
+			vm.Dims()[1],
+		)
+	}
+}
+
+/*
+TestVariableVector_String1
+Description:
+
+	Verifies that the String method returns a string which contains
+	each of the variables in the vector.
+*/
+func TestVariableVector_String1(t *testing.T) {
+	// Constants
+	N := 111
+	vv := symbolic.NewVariableVector(N)
+
+	// Test
+	str := vv.String()
+	for ii := 0; ii < N; ii++ {
+		if !strings.Contains(str, vv[ii].String()) {
+			t.Errorf(
+				"Expected vv.String() to contain \"%v\"; received \"%v\"",
+				vv[ii].String(),
+				str,
+			)
+		}
+	}
 }

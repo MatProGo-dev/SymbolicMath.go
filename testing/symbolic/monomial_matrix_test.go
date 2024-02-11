@@ -749,6 +749,33 @@ func TestMonomialMatrix_Plus8(t *testing.T) {
 }
 
 /*
+TestMonomialMatrix_Plus9
+Description:
+
+	Tests that the Plus() method panics
+	when a valid matrix of Monomials is added to an invalid object
+	(a string).
+*/
+func TestMonomialMatrix_Plus9(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected Plus() to panic; it did not",
+			)
+		}
+	}()
+	mm.Plus("a")
+}
+
+/*
 TestMonomialMatrix_Multiply1
 Description:
 
@@ -997,4 +1024,133 @@ func TestMonomialMatrix_Multiply5(t *testing.T) {
 			}
 		}
 	}
+}
+
+/*
+TestMonomialMatrix_Multiply6
+Description:
+
+	Tests that the Multiply() method properly multiplies a
+	single polynomial when the matrix of monomials is 1 x 3
+	and the variable vector being multiplies is 3 x 1.
+*/
+func TestMonomialMatrix_Multiply6(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	v3 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	m2 := v2.ToMonomial()
+	m3 := v3.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m2, m3},
+	}
+	var variableVector symbolic.VariableVector = []symbolic.Variable{v1, v2, v3}
+
+	// Test
+	product := mm.Multiply(variableVector)
+
+	// Check that the product is of the PolynomialMatrix type
+	out, ok := product.(symbolic.Polynomial)
+	if !ok {
+		t.Errorf(
+			"expected Multiply() to return a PolynomialMatrix; received %v",
+			product,
+		)
+	}
+
+	// Check that all monomials in the polynomial have a single Degree
+	// and its value is 2
+	for _, monomial := range out.Monomials {
+		if len(monomial.Exponents) != 1 || monomial.Exponents[0] != 2 {
+			t.Errorf(
+				"expected Multiply() to return a Polynomial with monomials of degree 2; received %v",
+				monomial,
+			)
+		}
+	}
+}
+
+/*
+TestMonomialMatrix_Multiply7
+Description:
+
+	Tests that the Multiply() method properly panics when
+	a valid matrix of monomials is multiplied by an invalid object
+	(a string).
+*/
+func TestMonomialMatrix_Multiply7(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected Multiply() to panic; it did not",
+			)
+		}
+	}()
+	mm.Multiply("a")
+}
+
+/*
+TestMonomialMatrix_Transpose1
+Description:
+
+	Tests that the Transpose() method properly transposes a
+	matrix of Monomials. (In this case the matrix of monomials
+	is 3 x 2).
+*/
+func TestMonomialMatrix_Transpose1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	v3 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	m2 := v2.ToMonomial()
+	m3 := v3.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m2, m3},
+		{m1, m2, m3},
+	}
+
+	// Test
+	transposed := mm.Transpose()
+
+	// Check that the dimensions of the transposed matrix are (2,3)
+	if dims := transposed.Dims(); dims[0] != mm.Dims()[1] || dims[1] != mm.Dims()[0] {
+		t.Errorf(
+			"expected Transpose() to return a MonomialMatrix with dimensions (%v,%v); received %v",
+			mm.Dims()[1], mm.Dims()[0],
+			dims,
+		)
+	}
+}
+
+/*
+TestMonomialMatrix_Transpose2
+Description:
+
+	Tests that the Transpose() method panics when
+	the given matrix of Monomials is not well formed.
+*/
+func TestMonomialMatrix_Transpose2(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected Transpose() to panic; it did not",
+			)
+		}
+	}()
+
+	mm.Transpose()
 }

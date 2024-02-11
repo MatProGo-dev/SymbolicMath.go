@@ -138,7 +138,7 @@ func (vm VariableMatrix) Plus(e interface{}) Expression {
 			)
 		}
 
-		err := CheckDimensionsInAddition(vm, eAsE)
+		err := smErrors.CheckDimensionsInAddition(vm, eAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -202,13 +202,13 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 			)
 		}
 
-		err := CheckDimensionsInMultiplication(vm, eAsE)
+		err := smErrors.CheckDimensionsInMultiplication(vm, eAsE)
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	// Algorithm
+	// Computation
 	switch right := e.(type) {
 	case float64:
 		// Use K case
@@ -225,10 +225,40 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 		}
 		return mmOut
 
+	case KVector:
+		// Constants
+		nResultRows := vm.Dims()[0]
+
+		// Switch on the dimensions of the result
+		switch nResultRows {
+		case 1:
+			// Scalar result
+			var result Polynomial = K(0).ToMonomial().ToPolynomial()
+			for ii, k := range right {
+				result = result.Plus(vm[0][ii].Multiply(k)).(Polynomial)
+			}
+			return result
+		default:
+			// Create vector result
+			var result PolynomialVector = VecDenseToKVector(ZerosVector(nResultRows)).ToPolynomialVector()
+			for ii, vmRow := range vm {
+				for jj, v := range vmRow {
+					result[ii] = result[ii].Plus(v.Multiply(right[jj])).(Polynomial)
+				}
+			}
+			return result
+		}
+	case *mat.Dense:
+		// Use the mat.Dense case
+		return vm.Multiply(DenseToKMatrix(*right))
+	case mat.Dense:
+		// Use the KMatrix case
+		return vm.Multiply(DenseToKMatrix(right))
 	case KMatrix:
-		// Collect dimensions of right
+		// Collect dimensions
 		nResultRows, nResultCols := vm.Dims()[0], right.Dims()[1]
 
+		// Switch on the dimensions of the result
 		switch {
 		case (nResultRows == 1) && (nResultCols == 1):
 			// Scalar result
@@ -333,7 +363,7 @@ func (vm VariableMatrix) Comparison(rightIn interface{}, sense ConstrSense) Cons
 
 	if IsExpression(rightIn) {
 		// Convert e to an expression
-		rightAsE, _ := rightIn.(Expression)
+		rightAsE, _ := ToExpression(rightIn)
 		err = rightAsE.Check()
 		if err != nil {
 			panic(
@@ -358,11 +388,23 @@ func (vm VariableMatrix) Comparison(rightIn interface{}, sense ConstrSense) Cons
 		var KAsDense mat.Dense
 		KAsDense.Scale(float64(right), &onesMat)
 
+		return vm.Comparison(KAsDense, sense)
+	case mat.Dense:
+		// Use the KMatrix case
+		return vm.Comparison(DenseToKMatrix(right), sense)
+	case KMatrix:
 		return MatrixConstraint{
 			LeftHandSide:  vm,
-			RightHandSide: DenseToKMatrix(KAsDense),
+			RightHandSide: right,
 			Sense:         sense,
 		}
+	case MonomialMatrix:
+		return MatrixConstraint{
+			LeftHandSide:  vm,
+			RightHandSide: right,
+			Sense:         sense,
+		}
+
 	}
 
 	// If the type is not recognized, panic
@@ -498,4 +540,23 @@ func (vm VariableMatrix) String() string {
 	}
 	out += "]"
 	return out
+}
+
+/*
+NewVariableMatrix
+Description:
+
+	This function creates a new variable matrix
+	and properly initializes each element in it.
+*/
+func NewVariableMatrix(nRows, nCols int) VariableMatrix {
+	// Create a new matrix
+	var vmOut VariableMatrix
+	for ii := 0; ii < nRows; ii++ {
+		vmOut = append(vmOut, make([]Variable, nCols))
+		for jj := 0; jj < nCols; jj++ {
+			vmOut[ii][jj] = NewVariable()
+		}
+	}
+	return vmOut
 }

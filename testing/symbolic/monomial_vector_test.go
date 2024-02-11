@@ -529,7 +529,7 @@ func TestMonomialVector_Plus4(t *testing.T) {
 	// Test
 	sum := mv1.Plus(mv2)
 
-	sumAsPV, tf := sum.(symbolic.PolynomialVector)
+	sumAsMV, tf := sum.(symbolic.MonomialVector)
 	if !tf {
 		t.Errorf(
 			"expected sum to be a PolynomialVector; received %T",
@@ -537,14 +537,25 @@ func TestMonomialVector_Plus4(t *testing.T) {
 		)
 	}
 
-	for _, polynomial := range sumAsPV {
-		if len(polynomial.Monomials) != 1 {
+	// Check that each  monomial vector element contains
+	// one variable factor and an exponent of 1
+	for _, monomial := range sumAsMV {
+		if len(monomial.VariableFactors) != 1 {
 			t.Errorf(
-				"expected len(polynomial.Monomials) to be 1; received %v",
-				len(polynomial.Monomials),
+				"expected len(monomial.VariableFactors) to be 1; received %v",
+				len(monomial.VariableFactors),
 			)
 		}
+
+		if monomial.Exponents[0] != 1 {
+			t.Errorf(
+				"expected monomial.Exponents[0] to be 1; received %v",
+				monomial.Exponents[0],
+			)
+		}
+
 	}
+
 }
 
 /*
@@ -670,6 +681,174 @@ func TestMonomialVector_Plus7(t *testing.T) {
 				len(polynomial.Monomials),
 			)
 		}
+	}
+}
+
+/*
+TestMonomialVector_Plus8
+Description:
+
+	This test verifies that the method properly panics when a
+	monomial vector is added to an invalid expression (in this case
+	a string).
+*/
+func TestMonomialVector_Plus8(t *testing.T) {
+	// Constants
+	mv := symbolic.NewVariableVector(10).ToMonomialVector()
+	s2 := "This is a test string."
+
+	// Setup defer function for catching panic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Plus(s2) to panic; received %v",
+				mv.Plus(s2),
+			)
+		}
+	}()
+
+	// Test
+	mv.Plus(s2)
+}
+
+/*
+TestMonomialVector_Plus9
+Description:
+
+	This test verifies that the method properly produces
+	a monomial vector when a monomial vector is added to a
+	monomial vector that matches each monomial in the vector.
+*/
+func TestMonomialVector_Plus9(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+	m2 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{v2},
+		Exponents:       []int{1},
+	}
+	mv1 := symbolic.MonomialVector{m1, m2}
+	mv2 := symbolic.MonomialVector{m1, m2}
+
+	// Test
+	sum := mv1.Plus(mv2)
+
+	// Verify that the sum is a monomial vector
+	if _, tf := sum.(symbolic.MonomialVector); !tf {
+		t.Errorf(
+			"expected sum to be a MonomialVector; received %T",
+			sum,
+		)
+	}
+}
+
+/*
+TestMonomialVector_Plus10
+Description:
+
+	This test verifies that the method properly produces
+	a polynomial vector when a monomial vector is added to a
+	monomial vector that does not match each monomial in the vector.
+*/
+func TestMonomialVector_Plus10(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+	m2 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{v2},
+		Exponents:       []int{1},
+	}
+	mv1 := symbolic.MonomialVector{m1, m2}
+	mv2 := symbolic.MonomialVector{m1, m1}
+
+	// Test
+	sum := mv1.Plus(mv2)
+
+	// Verify that the sum is a polynomial vector
+	if _, tf := sum.(symbolic.PolynomialVector); !tf {
+		t.Errorf(
+			"expected sum to be a PolynomialVector; received %T",
+			sum,
+		)
+	}
+}
+
+/*
+TestMonomialVector_Plus11
+Description:
+
+	This test verifies that the method properly produces
+	a monomial vector when a monomial vector is added to a
+	single monomial that matches each monomial in the vector.
+*/
+func TestMonomialVector_Plus11(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+	mv1 := symbolic.MonomialVector{m1, m1}
+
+	// Test
+	sum := mv1.Plus(m1)
+
+	// Verify that the sum is a monomial vector
+	if _, tf := sum.(symbolic.MonomialVector); !tf {
+		t.Errorf(
+			"expected sum to be a MonomialVector; received %T",
+			sum,
+		)
+	}
+}
+
+/*
+TestMonomialVector_Plus12
+Description:
+
+	This test verifies that the method properly produces
+	a polynomial vector when a monomial vector is added to a
+	single monomial that does not match each monomial in the vector.
+*/
+func TestMonomialVector_Plus12(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+	m2 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{v2},
+		Exponents:       []int{1},
+	}
+	mv1 := symbolic.MonomialVector{m1, m1}
+
+	// Test
+	sum := mv1.Plus(m2)
+
+	// Verify that the sum is a polynomial vector
+	if _, tf := sum.(symbolic.PolynomialVector); !tf {
+		t.Errorf(
+			"expected sum to be a PolynomialVector; received %T",
+			sum,
+		)
 	}
 }
 

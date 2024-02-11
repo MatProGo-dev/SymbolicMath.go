@@ -122,6 +122,8 @@ func IsVectorExpression(e interface{}) bool {
 		return true
 	case VariableVector:
 		return true
+	case MonomialVector:
+		return true
 	case PolynomialVector:
 		return true
 	default:
@@ -152,6 +154,8 @@ func ToVectorExpression(e interface{}) (VectorExpression, error) {
 	case mat.VecDense:
 		return VecDenseToKVector(e2), nil
 	case VariableVector:
+		return e2, nil
+	case MonomialVector:
 		return e2, nil
 	case PolynomialVector:
 		return e2, nil

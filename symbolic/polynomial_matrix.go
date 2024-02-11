@@ -127,7 +127,7 @@ func (pm PolynomialMatrix) Plus(e interface{}) Expression {
 			panic(fmt.Errorf("error in second argument to Plus: %v", err))
 		}
 
-		err = CheckDimensionsInAddition(pm, eAsE)
+		err = smErrors.CheckDimensionsInAddition(pm, eAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -190,14 +190,15 @@ func (pm PolynomialMatrix) Plus(e interface{}) Expression {
 		}
 
 		return sum.Simplify()
-	default:
-		panic(
-			smErrors.UnsupportedInputError{
-				FunctionName: "PolynomialMatrix.Plus",
-				Input:        right,
-			},
-		)
 	}
+
+	// If type isn't recognized, then panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "PolynomialMatrix.Plus",
+			Input:        e,
+		},
+	)
 }
 
 /*
@@ -225,7 +226,7 @@ func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 			panic(fmt.Errorf("error in second argument to Multiply: %v", err))
 		}
 
-		err = CheckDimensionsInMultiplication(pm, eAsE)
+		err = smErrors.CheckDimensionsInMultiplication(pm, eAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -280,15 +281,15 @@ func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 			}
 			return product
 		}
-
-	default:
-		panic(
-			smErrors.UnsupportedInputError{
-				FunctionName: "PolynomialMatrix.Multiply",
-				Input:        right,
-			},
-		)
 	}
+
+	// If type isn't recognized, then panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "PolynomialMatrix.Multiply",
+			Input:        e,
+		},
+	)
 }
 
 /*
@@ -364,9 +365,15 @@ func (pm PolynomialMatrix) Comparison(e interface{}, sense ConstrSense) Constrai
 		var KAsDense mat.Dense
 		KAsDense.Scale(float64(right), &onesMat)
 
+		return pm.Comparison(KAsDense, sense)
+	case mat.Dense:
+		return pm.Comparison(DenseToKMatrix(right), sense)
+	case *mat.Dense:
+		return pm.Comparison(*right, sense)
+	case KMatrix:
 		return MatrixConstraint{
 			LeftHandSide:  pm,
-			RightHandSide: DenseToKMatrix(KAsDense),
+			RightHandSide: right,
 			Sense:         sense,
 		}
 	default:

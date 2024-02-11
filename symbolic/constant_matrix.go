@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -99,7 +100,7 @@ func (km KMatrix) Plus(e interface{}) Expression {
 			panic(err)
 		}
 		// Check Dimensions
-		err = CheckDimensionsInAddition(km, rightAsE)
+		err = smErrors.CheckDimensionsInAddition(km, rightAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -128,17 +129,41 @@ func (km KMatrix) Plus(e interface{}) Expression {
 	case K:
 		return km.Plus(float64(right)) // Reuse float64 case
 
+	case Variable:
+		// Create a matrix of variables where each element has
+		// the value of the variable
+		var rightAsVM VariableMatrix = make([][]Variable, nR)
+		for rIndex := 0; rIndex < nR; rIndex++ {
+			rightAsVM[rIndex] = make([]Variable, nC)
+			for cIndex := 0; cIndex < nC; cIndex++ {
+				rightAsVM[rIndex][cIndex] = right
+			}
+		}
+
+		return km.Plus(rightAsVM) // Reuse VariableMatrix case
+
+	case VariableMatrix:
+		// Create the result matrix
+		var result PolynomialMatrix = make([][]Polynomial, nR)
+		for rIndex := 0; rIndex < nR; rIndex++ {
+			result[rIndex] = make([]Polynomial, nC)
+			for cIndex := 0; cIndex < nC; cIndex++ {
+				result[rIndex][cIndex] = km[rIndex][cIndex].Plus(right[rIndex][cIndex]).(Polynomial)
+				// Each addition should create a polynomial
+			}
+		}
+		return result
 	case PolynomialMatrix:
 		return right.Plus(km) // Reuse PolynomialMatrix case
-
-	default:
-		panic(
-			fmt.Errorf(
-				"The input to KMatrix's Plus() method (%v) has unexpected type: %T",
-				right, right,
-			),
-		)
 	}
+
+	// If we reach this point, the input is not recognized
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "KMatrix.Plus",
+			Input:        e,
+		},
+	)
 }
 
 /*
@@ -164,7 +189,7 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 		}
 
 		// Check dimensions
-		err = CheckDimensionsInMultiplication(km, rightAsE)
+		err = smErrors.CheckDimensionsInMultiplication(km, rightAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -181,15 +206,44 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 
 	case K:
 		return km.Multiply(float64(right)) // Reuse float64 case
+	case *mat.Dense:
+		// Check output dimensions
+		nOutputR := km.Dims()[0]
+		_, nOutputCols := right.Dims()
 
-	default:
-		panic(
-			fmt.Errorf(
-				"The input to KMatrix's Multiply method (%v) has unexpected type: %T",
-				right, right,
-			),
-		)
+		kmAsDense := km.ToDense()
+		var out mat.Dense
+		out.Mul(&kmAsDense, right)
+
+		switch {
+		case nOutputR == 1 && nOutputCols == 1:
+			// If the constant matrix is a scalar, return the scalar
+			return K(out.At(0, 0))
+		case nOutputCols == 1:
+			// If the output is a vector, return a vector
+			var outputVec KVector = make([]K, nOutputR)
+			for rIndex := 0; rIndex < nOutputR; rIndex++ {
+				outputVec[rIndex] = K(out.At(rIndex, 0))
+			}
+			return outputVec
+		default:
+			// If the output is a matrix, return a matrix
+			return DenseToKMatrix(out)
+		}
+	case mat.Dense:
+		// Use *mat.Dense method
+		return km.Multiply(&right) // Reuse *mat.Dense case
+	case KMatrix:
+		return km.Multiply(right.ToDense()) // Reuse *mat.Dense case
 	}
+
+	// If we reach this point, the input is not recognized
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "KMatrix.Multiply",
+			Input:        e,
+		},
+	)
 }
 
 /*
@@ -266,9 +320,63 @@ Description:
 */
 func (km KMatrix) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
+	//err := km.Check()
+	//if err != nil {
+	//	panic(err)
+	//}
+
+	if IsExpression(rightIn) {
+		// Check rightIn
+		rightAsE, _ := ToExpression(rightIn)
+		err := rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check dimensions
+		err = CheckDimensionsInComparison(km, rightAsE, sense)
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	// Algorithm
-	return MatrixConstraint{}
+	switch right := rightIn.(type) {
+	case K:
+		// Create a matrix of all elements with value right
+		ones := OnesMatrix(km.Dims()[0], km.Dims()[1])
+		var rightAsDense *mat.Dense
+		rightAsDense.Scale(float64(right), &ones)
+
+		// Call the *mat.Dense case
+		return km.Comparison(rightAsDense, sense)
+	case *mat.Dense:
+		return km.Comparison(*right, sense) // Call the mat.Dense case
+	case mat.Dense:
+		return km.Comparison(DenseToKMatrix(right), sense) // Call the KMatrix case
+	case KMatrix:
+		// Return constraint
+		return MatrixConstraint{
+			LeftHandSide:  km,
+			RightHandSide: right,
+			Sense:         sense,
+		}
+	case VariableMatrix:
+		// Return constraint
+		return MatrixConstraint{
+			LeftHandSide:  km,
+			RightHandSide: right,
+			Sense:         sense,
+		}
+	}
+
+	// If we reach this point, the input is not recognized
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "KMatrix.Comparison (" + sense.String() + ")",
+			Input:        rightIn,
+		},
+	)
 
 }
 
@@ -418,4 +526,50 @@ func DenseToKMatrix(denseIn mat.Dense) KMatrix {
 
 	// Return
 	return km
+}
+
+/*
+ToMonomialMatrix
+Description:
+
+	Converts the constant matrix to a monomial matrix.
+*/
+func (km KMatrix) ToMonomialMatrix() MonomialMatrix {
+	// Constants
+	nR, nC := km.Dims()[0], km.Dims()[1]
+
+	// Create MonomialMatrix
+	var mm MonomialMatrix = make([][]Monomial, nR)
+	for rIndex := 0; rIndex < nR; rIndex++ {
+		mm[rIndex] = make([]Monomial, nC)
+		for cIndex := 0; cIndex < nC; cIndex++ {
+			mm[rIndex][cIndex] = km[rIndex][cIndex].ToMonomial()
+		}
+	}
+
+	// Return
+	return mm
+}
+
+/*
+ToPolynomialMatrix
+Description:
+
+	Converts the constant matrix to a polynomial matrix.
+*/
+func (km KMatrix) ToPolynomialMatrix() PolynomialMatrix {
+	// Constants
+	nR, nC := km.Dims()[0], km.Dims()[1]
+
+	// Create PolynomialMatrix
+	var pm PolynomialMatrix = make([][]Polynomial, nR)
+	for rIndex := 0; rIndex < nR; rIndex++ {
+		pm[rIndex] = make([]Polynomial, nC)
+		for cIndex := 0; cIndex < nC; cIndex++ {
+			pm[rIndex][cIndex] = km[rIndex][cIndex].ToPolynomial()
+		}
+	}
+
+	// Return
+	return pm
 }
