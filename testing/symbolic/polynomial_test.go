@@ -451,6 +451,101 @@ func TestPolynomial_Plus1(t *testing.T) {
 }
 
 /*
+TestPolynomial_Plus2
+Description:
+
+	Verifies that the Polynomial.Plus method panics
+	when the polynomial used to call it is not well-defined.
+*/
+func TestPolynomial_Plus2(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Plus to panic when called on an undefined polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the Plus method
+	p1.Plus(p1)
+}
+
+/*
+TestPolynomial_Plus3
+Description:
+
+	Verifies that the sum of a well-defined polynomial
+	and a well-defined variable (one that is in the polynomial)
+	returns a polynomial with the same number of monomials.
+*/
+func TestPolynomial_Plus3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{
+				Coefficient:     2.0,
+				VariableFactors: []symbolic.Variable{v1},
+				Exponents:       []int{1},
+			},
+		},
+	}
+
+	// Test
+	sum := p1.Plus(v1)
+	if len(sum.(symbolic.Polynomial).Monomials) != 1 {
+		t.Errorf(
+			"expected %v + %v to have 1 monomial; received %v",
+			p1,
+			v1,
+			len(sum.(symbolic.Polynomial).Monomials),
+		)
+	}
+
+	// Verify that the coefficient of the sum's monomial
+	// is 1.0 more than the original
+	if sum.(symbolic.Polynomial).Monomials[0].Coefficient != 3.0 {
+		t.Errorf(
+			"expected %v + %v to have coefficient 3.0; received %v",
+			p1,
+			v1,
+			sum.(symbolic.Polynomial).Monomials[0].Coefficient,
+		)
+	}
+}
+
+/*
+TestPolynomial_Plus4
+Description:
+
+	Verifies that the sum of a well-defined polynomial
+	and an object that is not an expression (a string) panics.
+*/
+func TestPolynomial_Plus4(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Plus to panic when called with a non-expression; received nil",
+			)
+		}
+	}()
+
+	// Call the Plus method
+	p1.Plus("string")
+}
+
+/*
 TestPolynomial_VariableMonomialIndex1
 Description:
 
@@ -566,5 +661,333 @@ func TestPolynomial_LinearCoeff2(t *testing.T) {
 				coeff,
 			)
 		}
+	}
+}
+
+/*
+TestPolynomial_Multiply1
+Description:
+
+	Verifies that the Polynomial.Multiply method panics when called with an invalid polynomial.
+*/
+func TestPolynomial_Multiply1(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Multiply to panic when called with an invalid polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the Multiply method
+	p1.Multiply(p1)
+}
+
+/*
+TestPolynomial_Multiply2
+Description:
+
+	Verifies that the Polynomial.Multiply method panics when called with a non-expression.
+*/
+func TestPolynomial_Multiply2(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Multiply to panic when called with a non-expression; received nil",
+			)
+		}
+	}()
+
+	// Call the Multiply method
+	p1.Multiply("string")
+}
+
+/*
+TestPolynomial_Multiply3
+Description:
+
+	Verifies that the Polynomial.Multiply method returns a polynomial with the correct number of monomials
+	after multiplying it with a polynomial.
+*/
+func TestPolynomial_Multiply3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v1}, Exponents: []int{1}},
+			symbolic.Monomial{Coefficient: 2, VariableFactors: []symbolic.Variable{v2}, Exponents: []int{2}},
+		},
+	}
+
+	p2 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v2}, Exponents: []int{3}},
+		},
+	}
+
+	// Test
+	product := p1.Multiply(p2)
+	if len(product.(symbolic.Polynomial).Monomials) != len(p1.Monomials)*len(p2.Monomials) {
+		t.Errorf(
+			"expected %v * %v to have %v monomial; received %v",
+			p1,
+			p2,
+			len(p1.Monomials)*len(p2.Monomials),
+			len(product.(symbolic.Polynomial).Monomials),
+		)
+	}
+}
+
+/*
+TestPolynomial_LessEq1
+Description:
+
+	Verifies that the Polynomial.LessEq method panics when called
+	with polynomial that is not well-defined.
+*/
+func TestPolynomial_LessEq1(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected LessEq to panic when called with an invalid polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the LessEq method
+	p1.LessEq(p1)
+}
+
+/*
+TestPolynomial_LessEq2
+Description:
+
+	Verifies that the Polynomial.LessEq method returns a valid
+	ScalarConstraint when called with a valid polynomial
+	and a float64.
+*/
+func TestPolynomial_LessEq2(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	lessEq := p1.LessEq(3.14)
+
+	// Verify that the constraint is a scalar constraint
+	if _, tf := lessEq.(symbolic.ScalarConstraint); !tf {
+		t.Errorf(
+			"expected %v <= %v to return a ScalarConstraint; received %T",
+			p1,
+			3.14,
+			lessEq,
+		)
+	}
+}
+
+/*
+TestPolynomial_GreaterEq1
+Description:
+
+	Verifies that the Polynomial.GreaterEq method panics when called
+	with a well-defined polynomial and a variable that is not well-defined.
+*/
+func TestPolynomial_GreaterEq1(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected GreaterEq to panic when called with a non-expression; received nil",
+			)
+		}
+	}()
+
+	// Call the GreaterEq method
+	p1.GreaterEq(symbolic.Variable{})
+}
+
+/*
+TestPolynomial_GreaterEq2
+Description:
+
+	Verifies that the Polynomial.GreaterEq method returns a valid
+	ScalarConstraint when called with a well-defined polynomial
+	and a well-defined monomial.
+*/
+func TestPolynomial_GreaterEq2(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+	m1 := symbolic.NewVariable().ToMonomial()
+
+	// Test
+	greaterEq := p1.GreaterEq(m1)
+
+	// Verify that the constraint is a scalar constraint
+	if _, tf := greaterEq.(symbolic.ScalarConstraint); !tf {
+		t.Errorf(
+			"expected %v >= %v to return a ScalarConstraint; received %T",
+			p1,
+			m1,
+			greaterEq,
+		)
+	}
+}
+
+/*
+TestPolynomial_Eq1
+Description:
+
+	Verifies that the Polynomial.Eq method panics when called
+	with a well-defined polynomial and a variable that is not
+	an expression (in this case, it's a string).
+*/
+func TestPolynomial_Eq1(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Eq to panic when called with a non-expression; received nil",
+			)
+		}
+	}()
+
+	// Call the Eq method
+	p1.Eq("string")
+}
+
+/*
+TestPolynomial_Eq2
+Description:
+
+	Verifies that the Polynomial.Eq method returns a valid
+	ScalarConstraint when called with a well-defined polynomial
+	and a well-defined polynomial.
+*/
+func TestPolynomial_Eq2(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+	p2 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	eq := p1.Eq(p2)
+
+	// Verify that the constraint is a scalar constraint
+	if _, tf := eq.(symbolic.ScalarConstraint); !tf {
+		t.Errorf(
+			"expected %v == %v to return a ScalarConstraint; received %T",
+			p1,
+			p2,
+			eq,
+		)
+	}
+}
+
+/*
+TestPolynomial_Comparison1
+Description:
+
+	Verifies that the Polynomial.Comparison method
+	returns a valid scalar constraint when a well-defined
+	polynomial is compared to a well-defined symbolic.Variable
+*/
+func TestPolynomial_Comparison1(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+	v1 := symbolic.NewVariable()
+
+	// Test
+	comp := p1.Comparison(v1, symbolic.SenseEqual)
+
+	// Verify that the constraint is a scalar constraint
+	if _, tf := comp.(symbolic.ScalarConstraint); !tf {
+		t.Errorf(
+			"expected %v == %v to return a ScalarConstraint; received %T",
+			p1,
+			v1,
+			comp,
+		)
+	}
+}
+
+/*
+TestPolynomial_Constant1
+Description:
+
+	Verifies that the Polynomial.Constant method returns a valid
+	nonzero constant when a polynomial with two monomials (one of
+	which is a constant) is used.
+*/
+func TestPolynomial_Constant1(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{}, Exponents: []int{}},
+			symbolic.Monomial{Coefficient: 2, VariableFactors: []symbolic.Variable{symbolic.NewVariable()}, Exponents: []int{1}},
+		},
+	}
+
+	// Test
+	constant := p1.Constant()
+	if constant != 1 {
+		t.Errorf(
+			"expected %v to have constant 1; received %v",
+			p1,
+			constant,
+		)
+	}
+}
+
+/*
+TestPolynomial_IsLinear1
+Description:
+
+	Verifies that the Polynomial.IsLinear method returns true
+	when a polynomial is a sum of three variables.
+*/
+func TestPolynomial_IsLinear1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	v3 := symbolic.NewVariable()
+
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v1}, Exponents: []int{1}},
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v2}, Exponents: []int{1}},
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v3}, Exponents: []int{1}},
+		},
+	}
+
+	// Test
+	if !p1.IsLinear() {
+		t.Errorf(
+			"expected %v to be linear; received %v",
+			p1,
+			p1.IsLinear(),
+		)
 	}
 }

@@ -336,13 +336,41 @@ func (p Polynomial) Comparison(rightIn interface{}, sense ConstrSense) Constrain
 		panic(err)
 	}
 
-	right, err := ToScalarExpression(rightIn)
-	if err != nil {
-		panic(err)
+	if IsExpression(rightIn) {
+		// Check right
+		rightAsE, _ := ToExpression(rightIn)
+		err = rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Dimensions don't need to be checked here, because the polynomial is a scalar.
+		//err := smErrors.CheckDimensionsInComparison(p, rightAsE, sense)
+		//if err != nil {
+		//	panic(err)
+		//}
 	}
 
 	// Algorithm
-	return ScalarConstraint{p, right, sense}
+	switch right := rightIn.(type) {
+	case float64:
+		return p.Comparison(K(right), sense)
+	case K:
+		return ScalarConstraint{p, right, sense}
+	case Variable:
+		return ScalarConstraint{p, right, sense}
+	case Monomial:
+		return ScalarConstraint{p, right, sense}
+	case Polynomial:
+		return ScalarConstraint{p, right, sense}
+	}
+
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "Polynomial.Comparison (" + sense.String() + ")",
+			Input:        rightIn,
+		},
+	)
 }
 
 /*
