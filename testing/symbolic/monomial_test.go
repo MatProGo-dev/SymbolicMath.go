@@ -1106,3 +1106,31 @@ func TestMonomial_String1(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestMonomial_String2
+Description:
+
+	Verifies that the Monomial.String function panics
+	when the monomial is not well-defined.
+*/
+func TestMonomial_String2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1, 2},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected String to panic; received nil",
+			)
+		}
+	}()
+
+	m1.String()
+}
