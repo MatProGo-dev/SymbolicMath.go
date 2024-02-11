@@ -103,7 +103,14 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 	}
 
 	if IsExpression(rightIn) {
+		// Check right
 		rightAsE, _ := ToExpression(rightIn)
+		err = rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check dimensions
 		err = smErrors.CheckDimensionsInAddition(kv, rightAsE)
 		if err != nil {
 			panic(err)
@@ -256,8 +263,14 @@ func (kv KVector) Multiply(rightIn interface{}) Expression {
 	}
 
 	if IsExpression(rightIn) {
-		// Check dimensions
+		// Check rightIn
 		rightAsE, _ := ToExpression(rightIn)
+		err = rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check its dimensions
 		err = smErrors.CheckDimensionsInMultiplication(kv, rightAsE)
 		if err != nil {
 			panic(err)
@@ -278,38 +291,38 @@ func (kv KVector) Multiply(rightIn interface{}) Expression {
 		eAsFloat := float64(right)
 
 		return kv.Multiply(eAsFloat)
-
+	case Variable:
+		// Create a new monomial vector
+		var mvOut MonomialVector
+		for _, element := range kv {
+			mvOut = append(mvOut, element.Multiply(right).(Monomial))
+		}
+		return mvOut
+	case *mat.VecDense:
+		return kv.Multiply(*right)
 	case mat.VecDense:
-		// Send warning until we create matrix type.
-		panic(
-			fmt.Errorf(
-				"MatProInterface does not currently support operations that result in matrices! if you want this feature, create an issue!",
-			),
-		)
+		// If the input is a vector, then use KVector method
+		return kv.Multiply(VecDenseToKVector(right))
 
 	case KVector:
-		// Immediately return error.
-		panic(fmt.Errorf(
-			"dimension mismatch! Cannot multiply KVector with a vector of type %T; Try transposing one or the other!",
-			right,
-		))
+		// If the input is a KVector and the dimensions match
+		// then right is a (1x1) vector and can use the scalar method.
+		return kv.Multiply(right[0])
 
 	case VariableVector:
-		// Immediately return error.
-		panic(fmt.Errorf(
-			"dimension mismatch! Cannot multiply KVector with a vector of type %T; Try transposing one or the other!",
-			right,
-		))
-
-	default:
-		panic(
-			smErrors.UnsupportedInputError{
-				FunctionName: "KVector.Multiply",
-				Input:        right,
-			},
-		)
+		// If the input is a KVector and the dimensions match
+		// then right is a (1x1) vector and can use the scalar method.
+		return kv.Multiply(right[0])
 
 	}
+
+	// If none of the above input types match, then panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "KVector.Multiply",
+			Input:        rightIn,
+		},
+	)
 }
 
 /*

@@ -375,19 +375,44 @@ func (mm MonomialMatrix) Comparison(rightIn interface{}, sense ConstrSense) Cons
 		var KAsDense mat.Dense
 		KAsDense.Scale(float64(right), &onesMat)
 
+		return mm.Comparison(DenseToKMatrix(KAsDense), sense)
+
+	case *mat.Dense:
+		return mm.Comparison(DenseToKMatrix(*right), sense)
+	case mat.Dense:
+		return mm.Comparison(DenseToKMatrix(right), sense)
+	case KMatrix:
 		return MatrixConstraint{
 			LeftHandSide:  mm,
-			RightHandSide: DenseToKMatrix(KAsDense),
+			RightHandSide: right,
 			Sense:         sense,
 		}
-	default:
-		panic(
-			smErrors.UnsupportedInputError{
-				FunctionName: "MonomialVector.Comparison",
-				Input:        right,
-			},
-		)
+	case VariableMatrix:
+		return MatrixConstraint{
+			LeftHandSide:  mm,
+			RightHandSide: right,
+			Sense:         sense,
+		}
+	case MonomialMatrix:
+		return MatrixConstraint{
+			LeftHandSide:  mm,
+			RightHandSide: right,
+			Sense:         sense,
+		}
+	case PolynomialMatrix:
+		return MatrixConstraint{
+			LeftHandSide:  mm,
+			RightHandSide: right,
+			Sense:         sense,
+		}
 	}
+
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "MonomialVector.Comparison (" + sense.String() + ")",
+			Input:        rightIn,
+		},
+	)
 }
 
 /*

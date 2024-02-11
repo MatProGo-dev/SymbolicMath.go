@@ -782,3 +782,154 @@ func TestConstantVector_Multiply2(t *testing.T) {
 	// Run function
 	kv1.Multiply(vv2)
 }
+
+/*
+TestConstantVector_Multiply3
+Description:
+
+	Verifies that the Multiply method correctly panics when a
+	KVector is multiplied with a PolynomialVector that is not
+	well-defined.
+*/
+func TestConstantVector_Multiply3(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	pv2 := symbolic.PolynomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Multiply() did not panic when given an unsupported input (string).")
+		}
+	}()
+
+	// Run function
+	kv1.Multiply(pv2)
+}
+
+/*
+TestConstantVector_Multiply4
+Description:
+
+	Verifies that the Multiply method correctly panics when a
+	KVector is multiplied with an object that is not an
+	expression (in this case, a string).
+*/
+func TestConstantVector_Multiply4(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	var input string = "This is a test string."
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Multiply() did not panic when given an unsupported input (string).")
+		}
+	}()
+
+	// Run function
+	kv1.Multiply(input)
+}
+
+/*
+TestConstantVector_Multiply5
+Description:
+
+	Verifies that the Multiply method correctly computes the product
+	of a KVector and a float64 (3.14) by checking all elements
+	of the vector.
+*/
+func TestConstantVector_Multiply5(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	f2 := 3.14
+
+	// Test
+	kv3 := kv1.Multiply(f2)
+	for ii := 0; ii < N; ii++ {
+		if float64(kv3.(symbolic.KVector).AtVec(ii).(symbolic.K)) != float64(kv1.AtVec(ii).(symbolic.K))*f2 {
+			t.Errorf(
+				"Expected kv3.AtVec(%v) to be %v; received %v",
+				ii,
+				kv3.(symbolic.KVector).AtVec(ii),
+				float64(kv1.AtVec(ii).(symbolic.K))*f2,
+			)
+		}
+	}
+}
+
+/*
+TestConstantVector_Multiply6
+Description:
+
+	Verifies that the Multiply method correctly computes the product
+	of a KVector and a mat.VecDense object by checking all elements.
+*/
+func TestConstantVector_Multiply6(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	vd2 := mat.NewVecDense(1, []float64{3.14})
+
+	// Test
+	kv3 := kv1.Multiply(vd2)
+	for ii := 0; ii < N; ii++ {
+		if float64(kv3.(symbolic.KVector).AtVec(ii).(symbolic.K)) != float64(kv1.AtVec(ii).(symbolic.K))*vd2.AtVec(0) {
+			t.Errorf(
+				"Expected kv3.AtVec(%v) to be %v; received %v",
+				ii,
+				float64(kv1.AtVec(ii).(symbolic.K))*vd2.AtVec(0),
+				kv3.(symbolic.KVector).AtVec(ii),
+			)
+		}
+	}
+}
+
+/*
+TestConstantVector_Multiply7
+Description:
+
+	Verifies that the Multiply method correctly computes the product
+	of a KVector and a VariableVector by checking all elements.
+	Each element should be a monomial containing a variable
+	from the variable vector and a coefficient from the KVector.
+*/
+func TestConstantVector_Multiply7(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	vv2 := symbolic.NewVariableVector(1)
+
+	// Test
+	kv3 := kv1.Multiply(vv2)
+	for ii := 0; ii < N; ii++ {
+		if kv3.(symbolic.MonomialVector)[ii].Coefficient != float64(kv1.AtVec(ii).(symbolic.K)) {
+			t.Errorf(
+				"Expected kv3[%v].Coefficient to be %v; received %v",
+				ii,
+				float64(kv1.AtVec(ii).(symbolic.K)),
+				kv3.(symbolic.MonomialVector)[ii].Coefficient,
+			)
+		}
+
+		if len(kv3.(symbolic.MonomialVector)[ii].VariableFactors) != 1 {
+			t.Errorf(
+				"Expected len(kv3[%v].VariableFactors) to be 1; received %v",
+				ii,
+				len(kv3.(symbolic.MonomialVector)[ii].VariableFactors),
+			)
+		}
+
+		if kv3.(symbolic.MonomialVector)[ii].VariableFactors[0] != vv2[0] {
+			t.Errorf(
+				"Expected kv3[%v].VariableFactors[0] to be %v; received %v",
+				ii,
+				vv2[ii],
+				kv3.(symbolic.MonomialVector)[ii].VariableFactors[0],
+			)
+		}
+	}
+}

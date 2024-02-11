@@ -66,6 +66,6 @@ a wide range of applications. If this tool is not useful for your purpose, then 
 find one of the following projects more helpful:
 While other symbolic math libraries exist for Go, they typically focus on:
 - Computer Algebra Systems that will help you get a final expression (in text) from
-arbitrary mathematical arbitrations \[[expreduce](https://github.com/corywalker/expreduce),[sm](https://github.com/Konstantin8105/sm)\]
+arbitrary math input (often in text) \[[expreduce](https://github.com/corywalker/expreduce),[sm](https://github.com/Konstantin8105/sm)\]
 - Implementing Algorithms from [Domain-Specific Languages of Mathematics](https://github.com/DSLsofMath/DSLsofMath)
   Course \[[gosymbol](https://github.com/victorbrun/gosymbol/tree/main)\]
