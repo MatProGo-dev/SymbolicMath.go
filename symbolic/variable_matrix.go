@@ -560,3 +560,53 @@ func NewVariableMatrix(nRows, nCols int) VariableMatrix {
 	}
 	return vmOut
 }
+
+/*
+ToMonomialMatrix
+Description:
+
+	This function converts the variable matrix to a monomial matrix.
+*/
+func (vm VariableMatrix) ToMonomialMatrix() MonomialMatrix {
+	// Input Processing
+	err := vm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var mmOut MonomialMatrix
+	for _, vmRow := range vm {
+		var mmRow []Monomial
+		for _, v := range vmRow {
+			mmRow = append(mmRow, v.ToMonomial())
+		}
+		mmOut = append(mmOut, mmRow)
+	}
+	return mmOut
+}
+
+/*
+ToPolynomialMatrix
+Description:
+
+	This function converts the variable matrix to a polynomial matrix.
+*/
+func (vm VariableMatrix) ToPolynomialMatrix() PolynomialMatrix {
+	// Input Processing
+	err := vm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var pmOut PolynomialMatrix
+	for _, vmRow := range vm {
+		var pmRow []Polynomial
+		for _, v := range vmRow {
+			pmRow = append(pmRow, v.ToPolynomial())
+		}
+		pmOut = append(pmOut, pmRow)
+	}
+	return pmOut
+}

@@ -3,6 +3,7 @@ package symbolic_test
 import (
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"gonum.org/v1/gonum/mat"
 	"strings"
 	"testing"
 )
@@ -1133,6 +1134,302 @@ func TestMonomialMatrix_Transpose1(t *testing.T) {
 }
 
 /*
+TestMonomialMatrix_COmparison1
+Description:
+
+	Tests that the MonomialMatrix.Comparison() method properly
+	panics when given a monomial matrix that is not well-defined.
+*/
+func TestMonomialMatrix_Comparison1(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected Comparison() to panic; it did not",
+			)
+		}
+	}()
+	mm.Comparison(mm, symbolic.SenseEqual)
+
+}
+
+/*
+TestMonomialMatrix_Comparison2
+Description:
+
+	Tests that the MonomialMatrix.Comparison() method properly
+	creates a matrix constraint when called with a well-defined
+	monomial matrix and a *mat.Dense object with the SenseLessThanEqual sense.
+*/
+func TestMonomialMatrix_Comparison2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1},
+		{m1, m1},
+	}
+	d2 := mat.NewDense(2, 2, []float64{1, 2, 3, 4})
+
+	// Test
+	constraint := mm.Comparison(d2, symbolic.SenseLessThanEqual)
+
+	// Check that the constraint is of the *mat.Dense type
+	mConstraint, ok := constraint.(symbolic.MatrixConstraint)
+	if !ok {
+		t.Errorf(
+			"expected Comparison() to return a symbolic.MatrixConstraint; received %v",
+			constraint,
+		)
+	}
+
+	// Check that the dimensions of the constraint are (2,2)
+	if dims := mConstraint.Dims(); dims[0] != 2 || dims[1] != 2 {
+		t.Errorf(
+			"expected Comparison() to return a *mat.Dense with dimensions (2,2); received %v",
+			dims,
+		)
+	}
+}
+
+/*
+TestMonomialMatrix_LessEq1
+Description:
+
+	Tests that the LessEq() method properly panics when
+	called with a well-defined monomial matrix and a
+	VariableVector that is not well-defined.
+*/
+func TestMonomialMatrix_LessEq1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1},
+		{m1, m1},
+	}
+	var vv symbolic.VariableVector
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected LessEq() to panic; it did not",
+			)
+		}
+	}()
+	mm.LessEq(vv)
+}
+
+/*
+TestMonomialMatrix_LessEq2
+Description:
+
+	Tests that the LessEq() method properly creates a matrix constraint
+	with constraint sense (ConstrSense()) SenseLessThanEqual
+	when provided a well-defined monomial matrix and a
+	float64.
+*/
+func TestMonomialMatrix_LessEq2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1},
+		{m1, m1},
+	}
+	f2 := 2.0
+
+	// Test
+	constraint := mm.LessEq(f2)
+
+	// Check that the constraint is of the *mat.Dense type
+	mConstraint, ok := constraint.(symbolic.MatrixConstraint)
+	if !ok {
+		t.Errorf(
+			"expected LessEq() to return a symbolic.MatrixConstraint; received %v",
+			constraint,
+		)
+	}
+
+	// Check that the dimensions of the constraint are (2,2)
+	if dims := mConstraint.Dims(); dims[0] != 2 || dims[1] != 2 {
+		t.Errorf(
+			"expected LessEq() to return a *mat.Dense with dimensions (2,2); received %v",
+			dims,
+		)
+	}
+
+	// Check that the constraint sense (ConstrSense) is SenseLessThanEqual
+	if sense := mConstraint.ConstrSense(); sense != symbolic.SenseLessThanEqual {
+		t.Errorf(
+			"expected LessEq() to return a *mat.Dense with constraint sense SenseLessThanEqual; received %v",
+			sense,
+		)
+
+	}
+
+}
+
+/*
+TestMonomialMatrix_GreaterEq1
+Description:
+
+	Tests that the GreaterEq() method properly panics when
+	called with a well-defined monomial matrix and a well-defined
+	variable matrix that do not have matching dimensions.
+	The monomial matrix is of dimension (3,2) and the variable
+	matrix is of dimension (2,2).
+*/
+func TestMonomialMatrix_GreaterEq1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1},
+		{m1, m1},
+		{m1, m1},
+	}
+	vm := symbolic.NewVariableMatrix(2, 2)
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected GreaterEq() to panic; it did not",
+			)
+		}
+	}()
+	mm.GreaterEq(vm)
+
+}
+
+/*
+TestMonomialMatrix_GreaterEq2
+Description:
+
+	Tests that the GreaterEq() method properly creates a matrix constraint
+	with constraint sense (ConstrSense()) SenseGreaterThanEqual
+	when provided a well-defined monomial matrix and a
+	well-defined VariableMatrix with matching dimensions.
+*/
+func TestMonomialMatrix_GreaterEq2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1},
+		{m1, m1},
+	}
+
+	vm := symbolic.NewVariableMatrix(2, 2)
+
+	// Test
+	constraint := mm.GreaterEq(vm)
+
+	// Check that the constraint is of the MatrixConstraint type
+	mConstraint, ok := constraint.(symbolic.MatrixConstraint)
+	if !ok {
+		t.Errorf(
+			"expected GreaterEq() to return a MatrixConstraint; received %v",
+			constraint,
+		)
+	}
+
+	// Check that the dimensions of the constraint are (2,2)
+	if dims := mConstraint.Dims(); dims[0] != 2 || dims[1] != 2 {
+		t.Errorf(
+			"expected GreaterEq() to return a MatrixConstraint with dimensions (2,2); received %v",
+			dims,
+		)
+	}
+
+	// Check that the constraint sense (ConstrSense) is SenseGreaterThanEqual
+	if sense := mConstraint.ConstrSense(); sense != symbolic.SenseGreaterThanEqual {
+		t.Errorf(
+			"expected GreaterEq() to return a MatrixConstraint with constraint sense SenseGreaterThanEqual; received %v",
+			sense,
+		)
+	}
+
+}
+
+/*
+TestMonomialMatrix_Eq1
+Description:
+
+	Tests that the Eq() method properly panics when
+	called with a well-defined monomial matrix and
+	an object which is not an expression at all (a string).
+*/
+func TestMonomialMatrix_Eq1(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected Eq() to panic; it did not",
+			)
+		}
+	}()
+	mm.Eq("a")
+}
+
+/*
+TestMonomialMatrix_Eq2
+Description:
+
+	Tests that the Eq() method properly creates a matrix constraint
+	with constraint sense (ConstrSense()) SenseEqual
+	when provided a well-defined monomial matrix and a
+	well-defined polynomial matrix.
+*/
+func TestMonomialMatrix_Eq2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1},
+		{m1, m1},
+	}
+
+	pm := symbolic.NewVariableMatrix(2, 2).ToPolynomialMatrix()
+
+	// Test
+	constraint := mm.Eq(pm)
+
+	// Check that the constraint is of the MatrixConstraint type
+	mConstraint, ok := constraint.(symbolic.MatrixConstraint)
+	if !ok {
+		t.Errorf(
+			"expected Eq() to return a MatrixConstraint; received %v",
+			constraint,
+		)
+	}
+
+	// Check that the dimensions of the constraint are (2,2)
+	if dims := mConstraint.Dims(); dims[0] != 2 || dims[1] != 2 {
+		t.Errorf(
+			"expected Eq() to return a MatrixConstraint with dimensions (2,2); received %v",
+			dims,
+		)
+	}
+
+	// Check that the constraint sense (ConstrSense) is SenseEqual
+	if sense := mConstraint.ConstrSense(); sense != symbolic.SenseEqual {
+		t.Errorf(
+			"expected Eq() to return a MatrixConstraint with constraint sense SenseEqual; received %v",
+			sense,
+		)
+	}
+}
+
+/*
 TestMonomialMatrix_Transpose2
 Description:
 
@@ -1153,4 +1450,185 @@ func TestMonomialMatrix_Transpose2(t *testing.T) {
 	}()
 
 	mm.Transpose()
+}
+
+/*
+TestMonomialMatrix_Constant1
+Description:
+
+	Tests that the Constant() method properly returns all zeros
+	when a matrix of monomials is made up of monomials with
+	at least one variable in all of them.
+*/
+func TestMonomialMatrix_Constant1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	v3 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	m2 := v2.ToMonomial()
+	m3 := v3.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m2, m3},
+		{m1, m2, m3},
+	}
+
+	// Test
+	constant := mm.Constant()
+
+	// Check that the constant contains all zeros
+	for ii := 0; ii < constant.RawMatrix().Rows; ii++ {
+		for jj := 0; jj < constant.RawMatrix().Cols; jj++ {
+			if constant.At(ii, jj) != 0 {
+				t.Errorf(
+					"expected Constant() to return a Polynomial with all zeros; received %v",
+					constant,
+				)
+			}
+		}
+	}
+}
+
+/*
+TestMonomialMatrix_Constant2
+Description:
+
+	Tests that the Constant() method properly returns a matrix
+	with ones on the diagonal and zeros elsewhere when a monomial
+	matrix is made up of monomials with no variables on the diagonal
+	but with variables on the off-diagonal.
+*/
+func TestMonomialMatrix_Constant2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	v3 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	m2 := v2.ToMonomial()
+	m3 := v3.ToMonomial()
+	m4 := symbolic.K(1.0).ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m4, m1, m2},
+		{m1, m4, m3},
+		{m2, m3, m4},
+	}
+
+	// Test
+	constant := mm.Constant()
+
+	// Check that the constant contains all zeros
+	for ii := 0; ii < constant.RawMatrix().Rows; ii++ {
+		for jj := 0; jj < constant.RawMatrix().Cols; jj++ {
+			if ii == jj {
+				if constant.At(ii, jj) != 1 {
+					t.Errorf(
+						"expected Constant() to return a Polynomial with ones on the diagonal; received %v",
+						constant,
+					)
+				}
+			} else {
+				if constant.At(ii, jj) != 0 {
+					t.Errorf(
+						"expected Constant() to return a Polynomial with zeros off the diagonal; received %v",
+						constant,
+					)
+				}
+			}
+		}
+	}
+}
+
+/*
+TestMonomialMatrix_Constant3
+Description:
+
+	Tests that the Constant() method properly panics
+	when called with an improperly defined monomial matrix.
+*/
+func TestMonomialMatrix_Constant3(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected Constant() to panic; it did not",
+			)
+		}
+	}()
+
+	mm.Constant()
+}
+
+/*
+TestMonomialMatrix_String1
+Description:
+
+	Tests that the String() method properly returns a string
+	containing ALL individual monomials used to make the matrix.
+*/
+func TestMonomialMatrix_String1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	v3 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	m2 := v2.ToMonomial()
+	m3 := v3.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m2, m3},
+		{m1, m2, m3},
+	}
+
+	// Test
+	mmString := mm.String()
+
+	// Check that the strings of m1, m2 and m3 are in the string
+	if !strings.Contains(mmString, m1.String()) {
+		t.Errorf(
+			"expected String() to return a string containing %v; received %v",
+			m1.String(),
+			mmString,
+		)
+	}
+
+	if !strings.Contains(mmString, m2.String()) {
+		t.Errorf(
+			"expected String() to return a string containing %v; received %v",
+			m2.String(),
+			mmString,
+		)
+	}
+
+	if !strings.Contains(mmString, m3.String()) {
+		t.Errorf(
+			"expected String() to return a string containing %v; received %v",
+			m3.String(),
+			mmString,
+		)
+	}
+}
+
+/*
+TestMonomialMatrix_String2
+Description:
+
+	Tests that the String() method properly panics
+	when called with a monomial matrix that is not well-defined.
+*/
+func TestMonomialMatrix_String2(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected String() to panic; it did not",
+			)
+		}
+	}()
+
+	mm.String()
 }

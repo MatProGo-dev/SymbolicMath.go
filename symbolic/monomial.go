@@ -110,7 +110,7 @@ func (m Monomial) Plus(e interface{}) Expression {
 		}
 	case Monomial:
 		if m.MatchesFormOf(right) {
-			monomialOut := m
+			monomialOut := m.Copy()
 			monomialOut.Coefficient += right.Coefficient
 			return monomialOut
 		} else {
@@ -166,7 +166,7 @@ func (m Monomial) Multiply(e interface{}) Expression {
 		monomialOut.Coefficient *= rightAsFloat64
 		return monomialOut
 	case Variable:
-		monomialOut := m
+		monomialOut := m.Copy()
 
 		if foundIndex, _ := FindInSlice(right, m.VariableFactors); foundIndex == -1 {
 			monomialOut.VariableFactors = append(monomialOut.VariableFactors, right)
@@ -501,13 +501,7 @@ Description:
 */
 func (m Monomial) ToPolynomial() Polynomial {
 	// Copy Values
-	mCopy := Monomial{
-		Coefficient:     m.Coefficient,
-		Exponents:       make([]int, len(m.Exponents)),
-		VariableFactors: make([]Variable, len(m.VariableFactors)),
-	}
-	copy(mCopy.Exponents, m.Exponents)
-	copy(mCopy.VariableFactors, m.VariableFactors)
+	mCopy := m.Copy()
 
 	// Return polynomial with copied monomial
 	return Polynomial{
@@ -545,4 +539,24 @@ func (m Monomial) String() string {
 
 	// Return
 	return monomialString
+}
+
+/*
+Copy
+Description:
+
+	Returns a copy of the monomial.
+*/
+func (m Monomial) Copy() Monomial {
+	// Copy Values
+	mCopy := Monomial{
+		Coefficient:     m.Coefficient,
+		Exponents:       make([]int, len(m.Exponents)),
+		VariableFactors: make([]Variable, len(m.VariableFactors)),
+	}
+	copy(mCopy.Exponents, m.Exponents)
+	copy(mCopy.VariableFactors, m.VariableFactors)
+
+	// Return
+	return mCopy
 }
