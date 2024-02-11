@@ -450,7 +450,8 @@ func (m Monomial) DerivativeWrt(vIn Variable) Expression {
 		// If vIn is in the monomial, then decrease that element's degree in the
 		// monomial.
 		var monomialOut Monomial
-		if monomialOut.Exponents[foundIndex] == 1 {
+
+		if m.Exponents[foundIndex] == 1 {
 			// If the degree of vIn is 1, then remove it from the monomial
 			monomialOut.Coefficient = m.Coefficient
 			for ii, variable := range m.VariableFactors {

@@ -719,6 +719,45 @@ func TestMonomial_Eq1(t *testing.T) {
 }
 
 /*
+TestMonomial_Eq2
+Description:
+
+	Verifies that the Monomial.Eq function returns a valid
+	scalar constraint with the correct sense (SenseEqual)
+	when called using a valid monomial and a second input expression
+	that is also valid (a monomial).
+*/
+func TestMonomial_Eq2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+
+	// Compute Eq
+	eq := m1.Eq(v1.ToMonomial())
+
+	// Verify that the eq is a scalar constraint
+	eqAsS, tf := eq.(symbolic.ScalarConstraint)
+	if !tf {
+		t.Errorf(
+			"expected eq to be a scalar constraint; received %T",
+			eq,
+		)
+	}
+
+	// Verify that the sense is correct
+	if eqAsS.ConstrSense() != symbolic.SenseEqual {
+		t.Errorf(
+			"expected eq to have sense ==; received %v",
+			eqAsS.ConstrSense(),
+		)
+	}
+}
+
+/*
 TestMonomial_Comparison1
 Description:
 
@@ -745,4 +784,287 @@ func TestMonomial_Comparison1(t *testing.T) {
 	}()
 
 	m1.Comparison("x", symbolic.SenseEqual)
+}
+
+/*
+TestMonomial_Constant1
+Description:
+
+	Verifies that the Monomial.Constant function returns
+	zero when the monomial is not a constant.
+*/
+func TestMonomial_Constant1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+
+	// Test
+	if m1.Constant() != 0 {
+		t.Errorf(
+			"expected m1 to be a constant; received %v",
+			m1.Constant(),
+		)
+	}
+}
+
+/*
+TestMonomial_Constant2
+Description:
+
+	Verifies that the Monomial.Constant function returns
+	the coefficient when the monomial is a constant.
+*/
+func TestMonomial_Constant2(t *testing.T) {
+	// Constants
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{},
+		Exponents:       []int{},
+	}
+
+	// Test
+	if m1.Constant() != 3.14 {
+		t.Errorf(
+			"expected m1 to be a constant; received %v",
+			m1.Constant(),
+		)
+	}
+}
+
+/*
+TestMonomial_IsConstant1
+Description:
+
+	Verifies that the Monomial.IsConstant function returns
+	false when the monomial is not a constant.
+*/
+func TestMonomial_IsConstant1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+
+	// Test
+	if m1.IsConstant() {
+		t.Errorf(
+			"expected m1 to be a constant; received %v",
+			m1.IsConstant(),
+		)
+	}
+}
+
+/*
+TestMonomial_IsConstant2
+Description:
+
+	Verifies that the Monomial.IsConstant function
+	panics if the monomial is not well-defined.
+*/
+func TestMonomial_IsConstant2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1, 2},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected IsConstant to panic; received nil",
+			)
+		}
+	}()
+
+	m1.IsConstant()
+}
+
+/*
+TestMonomial_IsVariable1
+Description:
+
+	Verifies that the Monomial.IsVariable function returns
+	false when the monomial is not the same as a separate variable
+	v2.
+*/
+func TestMonomial_IsVariable1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v2},
+		Exponents:       []int{1},
+	}
+
+	// Test
+	if m1.IsVariable(v1) {
+		t.Errorf(
+			"expected m1 to be a variable; received %v",
+			m1.IsVariable(v1),
+		)
+	}
+}
+
+/*
+TestMonomial_IsVariable2
+Description:
+
+	Verifies that the Monomial.IsVariable function
+	panics if the monomial is not well-defined.
+*/
+func TestMonomial_IsVariable2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v2},
+		Exponents:       []int{1, 2},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected IsVariable to panic; received nil",
+			)
+		}
+	}()
+
+	m1.IsVariable(v1)
+}
+
+/*
+TestMonomial_IsVariable3
+Description:
+
+	Verifies that the Monomial.IsVariable function
+	panics if the input variable is not well-defined.
+*/
+func TestMonomial_IsVariable3(t *testing.T) {
+	// Constants
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v2},
+		Exponents:       []int{1},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected IsVariable to panic; received nil",
+			)
+		}
+	}()
+
+	m1.IsVariable(symbolic.Variable{})
+}
+
+/*
+TestMonomial_DerivativeWrt1
+Description:
+
+	Verifies that the Monomial.DerivativeWrt function
+	panics if the monomial is not well-defined.
+*/
+func TestMonomial_DerivativeWrt1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v2},
+		Exponents:       []int{1, 2},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected DerivativeWrt to panic; received nil",
+			)
+		}
+	}()
+
+	m1.DerivativeWrt(v1)
+}
+
+/*
+TestMonomial_DerivativeWrt2
+Description:
+
+	Verifies that the Monomial.DerivativeWrt function
+	returns a valid monomial when the input variable is contained
+	in the monomial.
+*/
+func TestMonomial_DerivativeWrt2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+
+	// Compute DerivativeWrt
+	derivative := m1.DerivativeWrt(v1)
+
+	// Verify that the derivative is a monomial
+	derivativeAsM, tf := derivative.(symbolic.Monomial)
+	if !tf {
+		t.Errorf(
+			"expected derivative to be a monomial; received %T",
+			derivative,
+		)
+	}
+
+	// Verify that the derivative is a constant
+	if derivativeAsM.Coefficient != 3.14 {
+		t.Errorf(
+			"expected derivative to be a constant; received %v",
+			derivativeAsM.Coefficient,
+		)
+	}
+}
+
+/*
+TestMonomial_DerivativeWrt3
+Description:
+
+	Verifies that the Monomial.DerivativeWrt function
+	returns 0 when the monomial does not contain the
+	input variable.
+*/
+func TestMonomial_DerivativeWrt3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v2},
+		Exponents:       []int{1},
+	}
+
+	// Compute DerivativeWrt
+	derivative := m1.DerivativeWrt(v1)
+
+	// Verify that the derivative is a constant
+	if derivative.(symbolic.K) != symbolic.K(0) {
+		t.Errorf(
+			"expected derivative to be a constant; received %v",
+			derivative,
+		)
+	}
 }
