@@ -434,10 +434,10 @@ func (mv MonomialVector) DerivativeWrt(v Variable) Expression {
 
 	// Algorithm
 	var ev []Expression
-	var monomialPresent bool
+	var monomialPresent bool = false
 	for _, monomial := range mv {
 		DmDv := monomial.DerivativeWrt(v)
-		if _, tf := DmDv.(Monomial); !tf {
+		if _, tf := DmDv.(Monomial); tf {
 			monomialPresent = true
 		}
 		ev = append(ev, monomial.DerivativeWrt(v))
@@ -462,7 +462,12 @@ func (mv MonomialVector) DerivativeWrt(v Variable) Expression {
 		}
 		return mv
 	} else {
-		return VecDenseToKVector(OnesVector(mv.Len()))
+		// Collect all coefficients
+		var out KVector
+		for _, element := range ev {
+			out = append(out, element.(K))
+		}
+		return out
 	}
 }
 

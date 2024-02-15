@@ -1305,3 +1305,199 @@ func TestMonomialVector_Comparison2(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestMonomialVector_Derivative1
+Description:
+
+	Verifies that the Derivative() method panics when called with an
+	improperly initialized vector of monomials.
+*/
+func TestMonomialVector_Derivative1(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Derivative() to panic; received %v",
+				mv.DerivativeWrt(symbolic.NewVariable()),
+			)
+		}
+	}()
+
+	mv.DerivativeWrt(symbolic.NewVariable())
+}
+
+/*
+TestMonomialVector_Derivative2
+Description:
+
+	Verifies that the Derivative() method returns the correct value when
+	called with a well-defined vector of monomial, and a variable
+	that is NOT contained in any element of th emonomial.
+	(Result should be all zeros.)
+*/
+func TestMonomialVector_Derivative2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+	m2 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v2},
+		Exponents:       []int{1},
+	}
+	mv := symbolic.MonomialVector{m1, m2}
+
+	// Test
+	derivative := mv.DerivativeWrt(symbolic.NewVariable())
+
+	// Verify that the derivative is a monomial vector
+	if _, tf := derivative.(symbolic.MonomialVector); !tf {
+		t.Errorf(
+			"expected derivative to be a MonomialVector; received %T",
+			derivative,
+		)
+	}
+
+	// Verify that the derivative is all zeros
+	for _, monomial := range derivative.(symbolic.MonomialVector) {
+		if monomial.Coefficient != 0 {
+			t.Errorf(
+				"expected monomial.Coefficient to be 0; received %v",
+				monomial.Coefficient,
+			)
+		}
+	}
+}
+
+/*
+TestMonomialVector_Derivative3
+Description:
+
+	Verifies that the Derivative() method returns the correct value when
+	called with a well-defined vector of monomial, and a variable
+	that is contained in each element of the monomial.
+*/
+func TestMonomialVector_Derivative3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+	m2 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+	mv := symbolic.MonomialVector{m1, m2}
+
+	// Test
+	derivative := mv.DerivativeWrt(v1)
+
+	// Verify that the derivative is a K vector
+	if _, tf := derivative.(symbolic.MonomialVector); !tf {
+		t.Errorf(
+			"expected derivative to be a MonomialVector; received %T",
+			derivative,
+		)
+	}
+
+	// Verify that each element of the derivative is just the coefficient
+	// from the original monomial vector mv
+	for ii, monomial := range derivative.(symbolic.MonomialVector) {
+		// Check that the monomial is a constant
+		if !monomial.IsConstant() {
+			t.Errorf(
+				"expected monomial to be a constant; received %v",
+				monomial,
+			)
+		}
+
+		if monomial.Coefficient != mv[ii].Coefficient {
+			t.Errorf(
+				"expected constant to be %v; received %v",
+				mv[ii].Coefficient,
+				monomial.Coefficient,
+			)
+		}
+	}
+
+}
+
+/*
+TestMonomialVector_Derivative4
+Description:
+
+	Verifies that the Derivative() method returns the correct value when
+	called with a well-defined vector of monomial, and a variable
+	that is contained in some elements of the monomial.
+*/
+func TestMonomialVector_Derivative4(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+	m2 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v2},
+		Exponents:       []int{1},
+	}
+	mv := symbolic.MonomialVector{m1, m2}
+
+	// Test
+	derivative := mv.DerivativeWrt(v1)
+
+	// Verify that the derivative is a K vector
+	d_v1, tf := derivative.(symbolic.MonomialVector)
+	if !tf {
+		t.Errorf(
+			"expected derivative to be a MonomialVector; received %T",
+			derivative,
+		)
+	}
+
+	// Verify that the first element of the derivative is a constant and nonzero
+	if !d_v1[0].IsConstant() {
+		t.Errorf(
+			"expected derivative[0] to be a constant; received %v",
+			d_v1[0],
+		)
+	}
+
+	if d_v1[0].Coefficient != 3.14 {
+		t.Errorf(
+			"expected derivative[0].Coefficient to be 3.14; received %v",
+			d_v1[0].Coefficient,
+		)
+	}
+
+	// Verify that the second element of the derivative is a constant and zero
+	if !d_v1[1].IsConstant() {
+		t.Errorf(
+			"expected derivative[1] to be a constant; received %v",
+			d_v1[1],
+		)
+	}
+
+	if d_v1[1].Coefficient != 0 {
+		t.Errorf(
+			"expected derivative[1].Coefficient to be 0; received %v",
+			d_v1[1].Coefficient,
+		)
+	}
+
+}
