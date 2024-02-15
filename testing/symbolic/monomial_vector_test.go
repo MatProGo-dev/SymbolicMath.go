@@ -1360,7 +1360,7 @@ func TestMonomialVector_Derivative2(t *testing.T) {
 	derivative := mv.DerivativeWrt(symbolic.NewVariable())
 
 	// Verify that the derivative is a monomial vector
-	if _, tf := derivative.(symbolic.MonomialVector); !tf {
+	if _, tf := derivative.(symbolic.KVector); !tf {
 		t.Errorf(
 			"expected derivative to be a MonomialVector; received %T",
 			derivative,
@@ -1368,11 +1368,11 @@ func TestMonomialVector_Derivative2(t *testing.T) {
 	}
 
 	// Verify that the derivative is all zeros
-	for _, monomial := range derivative.(symbolic.MonomialVector) {
-		if monomial.Coefficient != 0 {
+	for _, tempK := range derivative.(symbolic.KVector) {
+		if tempK != symbolic.K(0) {
 			t.Errorf(
 				"expected monomial.Coefficient to be 0; received %v",
-				monomial.Coefficient,
+				tempK,
 			)
 		}
 	}
