@@ -1145,3 +1145,163 @@ func TestMonomial_GreaterEq1(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestMonomial_Eq1
+Description:
+
+	Verifies that the Eq() method panics when called with an improperly
+	initialized vector of monomials.
+*/
+func TestMonomial_Eq1(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Eq(3.14) to panic; received %v",
+				mv.Eq(3.14),
+			)
+		}
+	}()
+
+	mv.Eq(3.14)
+}
+
+/*
+TestMonomialVector_Eq2
+Description:
+
+	Verifies that the Eq() method returns the correct value when
+	compared to a well-defined and appropriately sized VariableVector.
+	We should have a vector constraint with:
+	- The matching dimensions to the MonomialVector
+	- ConstrSense() of SenseEqual
+	- Right hand side of the constraint equal to the VariableVector
+*/
+func TestMonomialVector_Eq2(t *testing.T) {
+	// Constants
+	N := 5
+	vv1 := symbolic.NewVariableVector(N)
+	mv1 := vv1.ToMonomialVector()
+
+	// Create a vector constraint
+	constraint := mv1.Eq(vv1)
+
+	// verify that the cosntraint is a vector constraint
+	vc2, tf := constraint.(symbolic.VectorConstraint)
+	if !tf {
+		t.Errorf("expected constraint to be a VectorConstraint; received %T", constraint)
+	}
+
+	// Verify that the constraint's dimensions are correct
+	if vc2.Dims()[0] != N {
+		t.Errorf(
+			"expected constraint.Dims()[0] to be %v; received %v",
+			N,
+			vc2.Dims()[0],
+		)
+	}
+
+	// Verify that the constraint's sense is correct
+	if vc2.ConstrSense() != symbolic.SenseEqual {
+		t.Errorf(
+			"expected constraint.ConstrSense() to be %v; received %v",
+			symbolic.SenseEqual,
+			vc2.ConstrSense(),
+		)
+	}
+
+	// Verify that the constraint's right hand side is of the
+	// correct type (VariableVector)
+	if _, tf := vc2.Right().(symbolic.VariableVector); !tf {
+		t.Errorf(
+			"expected vc2.RightHandSide() to be a VariableVector; received %T",
+			vc2.Right(),
+		)
+	}
+
+}
+
+/*
+TestMonomialVector_Comparison1
+Description:
+
+	Verifies that the Comparison() method panics
+	when a well-defined monomial is compared to an object
+	that is not an expression (in this case a string).
+*/
+func TestMonomialVector_Comparison1(t *testing.T) {
+	// Constants
+	mv := symbolic.NewVariableVector(10).ToMonomialVector()
+	s2 := "This is a test string."
+
+	// Setup defer function for catching panic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Comparison(s2) to panic; received %v",
+				mv.Comparison(s2, symbolic.SenseLessThanEqual),
+			)
+		}
+	}()
+
+	// Test
+	mv.Comparison(s2, symbolic.SenseLessThanEqual)
+}
+
+/*
+TestMonomialVector_Comparison2
+Description:
+
+	Verifies that the Comparison() method returns the correct value
+	when a well-defined monomial vector is compared with a well-defined
+	monomial vector.
+*/
+func TestMonomialVector_Comparison2(t *testing.T) {
+	// Constants
+	mv1 := symbolic.NewVariableVector(10).ToMonomialVector()
+	mv2 := symbolic.NewVariableVector(10).ToMonomialVector()
+
+	// Test
+	constraint := mv1.Comparison(mv2, symbolic.SenseLessThanEqual)
+
+	// Verify that the constraint is a vector constraint
+	vc2, tf := constraint.(symbolic.VectorConstraint)
+	if !tf {
+		t.Errorf(
+			"expected constraint to be a VectorConstraint; received %T",
+			constraint,
+		)
+	}
+
+	// Verify that the constraint's dimensions are correct
+	if vc2.Dims()[0] != 10 {
+		t.Errorf(
+			"expected constraint.Dims()[0] to be 10; received %v",
+			vc2.Dims()[0],
+		)
+	}
+
+	// Verify that the constraint's sense is correct
+	if vc2.ConstrSense() != symbolic.SenseLessThanEqual {
+		t.Errorf(
+			"expected constraint.ConstrSense() to be %v; received %v",
+			symbolic.SenseLessThanEqual,
+			vc2.ConstrSense(),
+		)
+	}
+
+	// Verify that the constraint's right hand side is of the
+	// correct type (MonomialVector)
+	if _, tf := vc2.Right().(symbolic.MonomialVector); !tf {
+		t.Errorf(
+			"expected vc2.RightHandSide() to be a MonomialVector; received %T",
+			vc2.Right(),
+		)
+	}
+}

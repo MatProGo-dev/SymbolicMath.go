@@ -260,7 +260,8 @@ func (mv MonomialVector) Multiply(term1 interface{}) Expression {
 
 	if IsExpression(term1) {
 		// Convert term1 to expression and check it
-		term1AsE, err := ToExpression(term1)
+		term1AsE, _ := ToExpression(term1)
+		err := term1AsE.Check()
 		if err != nil {
 			panic(err)
 		}
@@ -360,7 +361,8 @@ func (mv MonomialVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 
 	if IsExpression(rightIn) {
 		// Convert rhsIn to expression and check it
-		rhs, err := ToExpression(rightIn)
+		rhs, _ := ToExpression(rightIn)
+		err := rhs.Check()
 		if err != nil {
 			panic(err)
 		}
@@ -394,14 +396,26 @@ func (mv MonomialVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 			RightHandSide: rhs,
 			Sense:         sense,
 		}
-	default:
-		panic(
-			smErrors.UnsupportedInputError{
-				FunctionName: "MonomialVector.Comparison",
-				Input:        rhs,
-			},
-		)
+	case VariableVector:
+		return VectorConstraint{
+			LeftHandSide:  mv,
+			RightHandSide: rhs,
+			Sense:         sense,
+		}
+	case MonomialVector:
+		return VectorConstraint{
+			LeftHandSide:  mv,
+			RightHandSide: rhs,
+			Sense:         sense,
+		}
 	}
+
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "MonomialVector.Comparison (" + sense.String() + ")",
+			Input:        rightIn,
+		},
+	)
 
 }
 
