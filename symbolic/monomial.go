@@ -3,6 +3,7 @@ package symbolic
 import (
 	"fmt"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"gonum.org/v1/gonum/mat"
 )
 
 /*
@@ -328,6 +329,50 @@ func (m Monomial) Constant() float64 {
 	} else {
 		return 0
 	}
+}
+
+/*
+LinearCoeffs
+Description:
+
+	Returns the coefficients of the linear terms in the monomial.
+*/
+func (m Monomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	var wrtVars []Variable = m.Variables()
+	if len(wrt) > 0 {
+		// If the user provided a slice of variables,
+		// use that instead
+		wrtVars = wrt[0]
+	}
+
+	if len(wrtVars) == 0 {
+		// If the user didn't provide any variables, then panic!
+		// We cannot construct zero length vectors in gonum
+		panic(
+			smErrors.EmptyLinearCoeffsError{m},
+		)
+	}
+
+	// Algorithm
+	// Create slice
+	linearCoeffs := ZerosVector(len(m.VariableFactors))
+
+	// Iterate through each variable
+	if m.IsLinear() {
+		// If the monomial is linear,
+		// then find the variable that is present
+		idx, _ := FindInSlice(m.VariableFactors[0], wrtVars)
+		linearCoeffs.SetVec(idx, m.Coefficient)
+	}
+
+	// Return
+	return linearCoeffs
 }
 
 /*

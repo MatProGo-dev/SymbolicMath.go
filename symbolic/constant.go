@@ -69,10 +69,7 @@ func (c K) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 		// If the user didn't provide any variables, then panic!
 		// We cannot construct zero length vectors in gonum
 		panic(
-			fmt.Errorf(
-				"The input to K.LinearCoeff() must be a non-zero length slice of variables (for gonum's sake), received: %v",
-				wrtVars,
-			),
+			smErrors.EmptyLinearCoeffsError{c},
 		)
 	}
 

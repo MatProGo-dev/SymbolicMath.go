@@ -559,7 +559,7 @@ Description:
 	The (ii)th element of the vector is the coefficient of the (ii)th variable in the
 	p.Variables() slice as it appears in the polynomial.
 */
-func (p Polynomial) LinearCoeff(vSlices ...[]Variable) mat.VecDense {
+func (p Polynomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	// Input Processing
 	err := p.Check()
 	if err != nil {
@@ -568,11 +568,11 @@ func (p Polynomial) LinearCoeff(vSlices ...[]Variable) mat.VecDense {
 
 	// Check to see if the user provided a slice of variables
 	var varSlice []Variable
-	switch len(vSlices) {
+	switch len(wrt) {
 	case 0:
 		varSlice = p.Variables()
 	case 1:
-		varSlice = vSlices[0]
+		varSlice = wrt[0]
 	default:
 		panic(fmt.Errorf("Too many inputs provided to LinearCoeff() method."))
 	}
