@@ -665,6 +665,156 @@ func TestPolynomial_LinearCoeff2(t *testing.T) {
 }
 
 /*
+TestPolynomial_LinearCoeff3
+Description:
+
+	Verifies that the Polynomial.LinearCoeff method panics
+	when the underlying polynomial is not well-defined.
+*/
+func TestPolynomial_LinearCoeff3(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected LinearCoeff to panic when called with an invalid polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the LinearCoeff method
+	p1.LinearCoeff()
+}
+
+/*
+TestPolynomial_LinearCoeff4
+Description:
+
+	Verifies that the Polynomial.LinearCoeff method panics
+	when the underlying polynomial is a constant AND
+	there are no inputs provided to LinearCoeff().
+*/
+func TestPolynomial_LinearCoeff4(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{Coefficient: 3.14, VariableFactors: []symbolic.Variable{}, Exponents: []int{}},
+		},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected LinearCoeff to panic when called with a constant polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the LinearCoeff method
+	p1.LinearCoeff()
+}
+
+/*
+TestPolynomial_LinearCoeff5
+Description:
+
+	Verifies that the Polynomial.LinearCoeff method returns the correct
+	linear coefficients (all zeros) when called with a polynomial that
+	is a constant and a slice of variables is provided.
+*/
+func TestPolynomial_LinearCoeff5(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{Coefficient: 3.14, VariableFactors: []symbolic.Variable{}, Exponents: []int{}},
+		},
+	}
+
+	// Test
+	coeff := p1.LinearCoeff([]symbolic.Variable{v1, v2})
+
+	// Tests that the length of the coefficient vector is the same as the number of variables
+	if coeff.Len() != 2 {
+		t.Errorf(
+			"expected LinearCoeff to return a vector of length 2; received %v",
+			coeff,
+		)
+	}
+
+	// Check that all elements are zero
+	for i := 0; i < coeff.Len(); i++ {
+		if coeff.AtVec(i) != 0 {
+			t.Errorf(
+				"expected LinearCoeff to return a vector of all zeros; received %v",
+				coeff,
+			)
+		}
+	}
+}
+
+/*
+TestPolynomial_LinearCoeff6
+Description:
+
+	Verifies that the Polynomial.LinearCoeff method returns the correct
+	linear coefficients when called with a polynomial that contains SOME linear terms.
+*/
+func TestPolynomial_LinearCoeff6(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	v3 := symbolic.NewVariable()
+	v4 := symbolic.NewVariable()
+
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v1}, Exponents: []int{1}},
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v2}, Exponents: []int{1}},
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v3}, Exponents: []int{1}},
+			symbolic.Monomial{Coefficient: 3.14, VariableFactors: []symbolic.Variable{v4}, Exponents: []int{2}},
+		},
+	}
+
+	// Test
+	coeff := p1.LinearCoeff([]symbolic.Variable{v1, v2, v3, v4})
+
+	// Tests that the length of the coefficient vector is the same as the number of variables
+	if coeff.Len() != 4 {
+		t.Errorf(
+			"expected LinearCoeff to return a vector of length 3; received %v",
+			coeff,
+		)
+	}
+
+	// Check that all elements are zero
+	for i := 0; i < coeff.Len(); i++ {
+		if i < 3 {
+			if coeff.AtVec(i) != 1 {
+				t.Errorf(
+					"expected LinearCoeff to return a vector of all ones; received %v",
+					coeff,
+				)
+			}
+		} else {
+			if coeff.AtVec(i) != 0 {
+				t.Errorf(
+					"expected LinearCoeff to return a vector of all zeros; received %v",
+					coeff,
+				)
+			}
+		}
+	}
+}
+
+/*
 TestPolynomial_Multiply1
 Description:
 

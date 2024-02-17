@@ -3,6 +3,7 @@ package symbolic
 import (
 	"fmt"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"gonum.org/v1/gonum/mat"
 )
 
 /*
@@ -331,6 +332,51 @@ func (m Monomial) Constant() float64 {
 }
 
 /*
+LinearCoeffs
+Description:
+
+	Returns the coefficients of the linear terms in the monomial.
+*/
+func (m Monomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	var wrtVars []Variable
+	switch len(wrt) {
+	case 0:
+		wrtVars = m.Variables()
+	case 1:
+		wrtVars = wrt[0]
+	default:
+		panic(
+			fmt.Errorf("Too many inputs provided to Monomial.LinearCoeff() method. Expected 0 or 1 input."),
+		)
+	}
+
+	if len(wrtVars) == 0 {
+		panic(smErrors.CanNotGetLinearCoeffOfConstantError{m})
+	}
+
+	// Algorithm
+	// Create slice
+	linearCoeffs := ZerosVector(len(wrtVars))
+
+	// Iterate through each variable
+	if m.IsLinear() {
+		// If the monomial is linear,
+		// then find the variable that is present
+		idx, _ := FindInSlice(m.VariableFactors[0], wrtVars)
+		linearCoeffs.SetVec(idx, m.Coefficient)
+	}
+
+	// Return
+	return linearCoeffs
+}
+
+/*
 IsConstant
 Description:
 
@@ -364,6 +410,12 @@ func (m Monomial) IsVariable(v Variable) bool {
 	err = v.Check()
 	if err != nil {
 		panic(err)
+	}
+
+	// If the monomial is a constant, then it is not a variable
+	// return false
+	if m.IsConstant() {
+		return false
 	}
 
 	// Algorithm

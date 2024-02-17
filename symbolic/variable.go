@@ -3,6 +3,7 @@ package symbolic
 import (
 	"fmt"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"gonum.org/v1/gonum/mat"
 )
 
 // Var represnts a variable in a optimization problem. The variable is
@@ -35,6 +36,49 @@ func (v Variable) Coeffs() []float64 {
 // variable, it always returns zero.
 func (v Variable) Constant() float64 {
 	return 0
+}
+
+/*
+LinearCoeff
+Description:
+
+	Returns the coefficient of the linear term in the expression. For a variable,
+	this is always a vector containing exactly 1 value of 1.0 all others are zero.
+*/
+func (v Variable) LinearCoeff(wrt ...[]Variable) mat.VecDense {
+	// Input Processing
+	err := v.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	var wrtVars []Variable
+	switch len(wrt) {
+	case 0:
+		wrtVars = v.Variables()
+	case 1:
+		wrtVars = wrt[0]
+	default:
+		panic(
+			fmt.Errorf("Too many inputs provided to Variable.LinearCoeff() method."),
+		)
+	}
+
+	if len(wrtVars) == 0 {
+		panic(smErrors.CanNotGetLinearCoeffOfConstantError{v})
+	}
+
+	// Constants
+
+	// Algorithm
+	coeffOut := ZerosVector(len(wrtVars))
+	for i, wrtVar := range wrtVars {
+		if v.ID == wrtVar.ID {
+			coeffOut.SetVec(i, 1.0)
+		}
+	}
+
+	return coeffOut
 }
 
 // Plus adds the current expression to another and returns the resulting

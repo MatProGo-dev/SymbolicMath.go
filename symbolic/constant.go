@@ -49,6 +49,35 @@ func (c K) Constant() float64 {
 }
 
 /*
+LinearCoeff
+Description
+
+	Returns the coefficient of the linear term in the expression. For a constant,
+	this is always a matrix of zeros.
+*/
+func (c K) LinearCoeff(wrt ...[]Variable) mat.VecDense {
+	// Constants
+
+	// Input Processing
+	var wrtVars []Variable = []Variable{}
+	if len(wrt) > 0 {
+		// If the user provided a slice of variables, use that instead
+		wrtVars = wrt[0]
+	}
+
+	if len(wrtVars) == 0 {
+		// If the user didn't provide any variables, then panic!
+		// We cannot construct zero length vectors in gonum
+		panic(
+			smErrors.EmptyLinearCoeffsError{c},
+		)
+	}
+
+	// Algorithm
+	return ZerosVector(len(wrtVars))
+}
+
+/*
 Plus
 Description:
 

@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+	"gonum.org/v1/gonum/mat"
 )
 
 // ScalarExpression represents a linear general expression of the form
@@ -17,6 +18,9 @@ type ScalarExpression interface {
 
 	// Constant returns the constant additive value in the expression
 	Constant() float64
+
+	// LinearCoeff returns the coefficient of the linear terms in the expression
+	LinearCoeff(wrt ...[]Variable) mat.VecDense
 
 	// Plus adds the current expression to another and returns the resulting
 	// expression

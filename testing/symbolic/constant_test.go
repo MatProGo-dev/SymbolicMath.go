@@ -110,6 +110,75 @@ func TestConstant_Constant1(t *testing.T) {
 }
 
 /*
+TestConstant_LinearCoeff1
+Description:
+
+	Tests that the LinearCoeff() method panics if it called
+	with no variables.
+*/
+func TestConstant_LinearCoeff1(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected LinearCoeff() to panic when given no variables; received nothing",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.EmptyLinearCoeffsError{k1}
+		if !strings.Contains(
+			rAsError.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"expected LinearCoeff() to panic with error \"%v\"; received %v",
+				expectedError,
+				rAsError,
+			)
+		}
+
+	}()
+
+	k1.LinearCoeff()
+}
+
+/*
+TestConstant_LinearCoeff2
+Description:
+
+	Tests that the LinearCoeff() method returns a vector of
+	two zeros when given a slice of 2 Variables.
+*/
+func TestConstant_LinearCoeff2(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+
+	// Test
+	coeffs := k1.LinearCoeff([]symbolic.Variable{v1, v2})
+
+	if coeffs.Len() != 2 {
+		t.Errorf(
+			"expected LinearCoeff() to return a vector of length 2; received %v",
+			coeffs.Len(),
+		)
+	}
+
+	if (coeffs.AtVec(0) != 0) || (coeffs.AtVec(1) != 0) {
+		t.Errorf(
+			"expected LinearCoeff() to return a vector of [0, 0]; received %v",
+			coeffs,
+		)
+	}
+}
+
+/*
 TestConstant_Plus1
 Description:
 

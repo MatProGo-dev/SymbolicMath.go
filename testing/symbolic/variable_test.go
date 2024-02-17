@@ -34,6 +34,107 @@ func TestVariable_Constant1(t *testing.T) {
 }
 
 /*
+TestVariable_LinearCoeff1
+Description:
+
+	Tests whether the LinearCoeff() method returns a vector of 1.0 when called on a variable
+	with no inputs.
+*/
+func TestVariable_LinearCoeff1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	coeff := x.LinearCoeff()
+	// Check that the length of the vector is 1
+	if coeff.Len() != 1 {
+		t.Errorf(
+			"expected the linear coefficient of %v to be a vector of length 1; received %v",
+			x,
+			coeff.Len(),
+		)
+	}
+
+	// Check that the only element is 1.0
+	if coeff.AtVec(0) != 1.0 {
+		t.Errorf(
+			"expected the linear coefficient of %v to be 1.0; received %v",
+			x,
+			coeff.AtVec(0),
+		)
+	}
+}
+
+/*
+TestVariable_LinearCoeff2
+Description:
+
+	Tests whether the LinearCoeff() method panics when called on a variable
+	with an input that is an empty slice.
+*/
+func TestVariable_LinearCoeff2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+	x.LinearCoeff([]symbolic.Variable{})
+}
+
+/*
+TestVariable_LinearCoeff3
+Description:
+
+	Tests whether the LinearCoeff() method returns a vector that
+	contains a 1.0 in one of its elements when called on a variable
+	with an input that is a slice containing the same variable.
+*/
+func TestVariable_LinearCoeff3(t *testing.T) {
+	// Constants
+	N := 5
+	vv1 := symbolic.NewVariableVector(N)
+	k := 3
+
+	// Test
+	coeff := vv1[k].LinearCoeff(vv1)
+	// Check that the length of the vector is 1
+	if coeff.Len() != N {
+		t.Errorf(
+			"expected the linear coefficient of %v to be a vector of length 1; received %v",
+			vv1[k],
+			coeff.Len(),
+		)
+	}
+
+	// Check all elements of coeff
+	// - almost all entries should be 0.0
+	// - the k-th entry should be 1.0
+	for i := 0; i < N; i++ {
+		if i == k {
+			if coeff.AtVec(i) != 1.0 {
+				t.Errorf(
+					"expected the linear coefficient of %v to be 1.0; received %v",
+					vv1[k],
+					coeff.AtVec(i),
+				)
+			}
+		} else {
+			if coeff.AtVec(i) != 0.0 {
+				t.Errorf(
+					"expected the linear coefficient of %v to be 0.0; received %v",
+					vv1[k],
+					coeff.AtVec(i),
+				)
+			}
+		}
+	}
+}
+
+/*
 TestVariable_Plus1
 Description:
 
