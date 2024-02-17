@@ -63,6 +63,11 @@ func (v Variable) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 			fmt.Errorf("Too many inputs provided to Variable.LinearCoeff() method."),
 		)
 	}
+
+	if len(wrtVars) == 0 {
+		panic(smErrors.CanNotGetLinearCoeffOfConstantError{v})
+	}
+
 	// Constants
 
 	// Algorithm

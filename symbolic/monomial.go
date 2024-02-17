@@ -344,24 +344,25 @@ func (m Monomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 		panic(err)
 	}
 
-	var wrtVars []Variable = m.Variables()
-	if len(wrt) > 0 {
-		// If the user provided a slice of variables,
-		// use that instead
+	var wrtVars []Variable
+	switch len(wrt) {
+	case 0:
+		wrtVars = m.Variables()
+	case 1:
 		wrtVars = wrt[0]
+	default:
+		panic(
+			fmt.Errorf("Too many inputs provided to Monomial.LinearCoeff() method. Expected 0 or 1 input."),
+		)
 	}
 
 	if len(wrtVars) == 0 {
-		// If the user didn't provide any variables, then panic!
-		// We cannot construct zero length vectors in gonum
-		panic(
-			smErrors.EmptyLinearCoeffsError{m},
-		)
+		panic(smErrors.CanNotGetLinearCoeffOfConstantError{m})
 	}
 
 	// Algorithm
 	// Create slice
-	linearCoeffs := ZerosVector(len(m.VariableFactors))
+	linearCoeffs := ZerosVector(len(wrtVars))
 
 	// Iterate through each variable
 	if m.IsLinear() {
@@ -409,6 +410,12 @@ func (m Monomial) IsVariable(v Variable) bool {
 	err = v.Check()
 	if err != nil {
 		panic(err)
+	}
+
+	// If the monomial is a constant, then it is not a variable
+	// return false
+	if m.IsConstant() {
+		return false
 	}
 
 	// Algorithm

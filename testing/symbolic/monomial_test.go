@@ -837,6 +837,135 @@ func TestMonomial_Constant2(t *testing.T) {
 }
 
 /*
+TestMonomial_LinearCoeff1
+Description:
+
+	Verifies that the Monomial.LinearCoeff function returns
+	zero when the monomial is not a linear monomial.
+*/
+func TestMonomial_LinearCoeff1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1, v2},
+		Exponents:       []int{1, 2},
+	}
+
+	// Test
+	coeffs := m1.LinearCoeff()
+
+	// Check that the length of the coeffs vector is 2
+	if coeffs.Len() != 2 {
+		t.Errorf(
+			"expected m1 to be a constant; received %v",
+			m1.LinearCoeff(),
+		)
+	}
+
+	// Check that all elements of the coeffs vector are 0
+	for _, val := range coeffs.RawVector().Data {
+		if val != 0 {
+			t.Errorf(
+				"expected m1 to be a constant; received %v",
+				m1.LinearCoeff(),
+			)
+		}
+	}
+
+}
+
+/*
+TestMonomial_LinearCoeff2
+Description:
+
+	Verifies that the Monomial.LinearCoeff function returns
+	the correct linear coefficients when the monomial is a linear monomial.
+	When no variable slice is given, this should be a length 1 vector.
+*/
+func TestMonomial_LinearCoeff2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+
+	// Test
+	coeffs := m1.LinearCoeff()
+
+	// Check that the length of the coeffs vector is 1
+	if coeffs.Len() != 1 {
+		t.Errorf(
+			"expected m1 to be a constant; received %v",
+			m1.LinearCoeff(),
+		)
+	}
+
+	// Check that all elements of the coeffs vector are 0
+	if coeffs.AtVec(0) != 3.14 {
+		t.Errorf(
+			"expected m1 to be a constant; received %v",
+			m1.LinearCoeff(),
+		)
+	}
+}
+
+/*
+TestMonomial_LinearCoeff3
+Description:
+
+	Verifies that the Monomial.LinearCoeff function returns
+	the correct linear coefficients when the monomial is a linear monomial.
+	When a variable slice is given of length 5,
+	this should be a length 5 vector.
+*/
+func TestMonomial_LinearCoeff3(t *testing.T) {
+	// Constants
+	N := 5
+	vv1 := symbolic.NewVariableVector(N)
+	k := 3
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{vv1[k]},
+		Exponents:       []int{1},
+	}
+
+	// Test
+	coeffs := m1.LinearCoeff(vv1)
+
+	// Check that the length of the coeffs vector is 5
+	if coeffs.Len() != 5 {
+		t.Errorf(
+			"expected m1 to be a constant; received %v",
+			m1.LinearCoeff(),
+		)
+	}
+
+	// Check that all elements of the coeffs vector are 0
+	// except for the k-th element, which should be 3.14
+	for i := 0; i < N; i++ {
+		if i == k {
+			if coeffs.AtVec(i) != 3.14 {
+				t.Errorf(
+					"expected m1 to be a constant; received %v",
+					m1.LinearCoeff(),
+				)
+			}
+		} else {
+			if coeffs.AtVec(i) != 0 {
+				t.Errorf(
+					"expected m1 to be a constant; received %v",
+					m1.LinearCoeff(),
+				)
+			}
+		}
+	}
+}
+
+/*
 TestMonomial_IsConstant1
 Description:
 

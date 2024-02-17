@@ -567,12 +567,12 @@ func (p Polynomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	}
 
 	// Check to see if the user provided a slice of variables
-	var varSlice []Variable
+	var wrtVars []Variable
 	switch len(wrt) {
 	case 0:
-		varSlice = p.Variables()
+		wrtVars = p.Variables()
 	case 1:
-		varSlice = wrt[0]
+		wrtVars = wrt[0]
 	default:
 		panic(fmt.Errorf("Too many inputs provided to LinearCoeff() method."))
 	}
@@ -580,15 +580,15 @@ func (p Polynomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	// Constants
 
 	// If there are no variables in the slice, then return a vector of length 1 containing zero.
-	if len(varSlice) == 0 {
+	if len(wrtVars) == 0 {
 		panic(smErrors.CanNotGetLinearCoeffOfConstantError{p})
 	}
 
 	// Algorithm
-	coeffOut := ZerosVector(len(varSlice))
-	for ii := 0; ii < len(varSlice); ii++ {
+	coeffOut := ZerosVector(len(wrtVars))
+	for ii := 0; ii < len(wrtVars); ii++ {
 		// Try to find the variable in the polynomial
-		varIndex := p.VariableMonomialIndex(varSlice[ii])
+		varIndex := p.VariableMonomialIndex(wrtVars[ii])
 		if varIndex != -1 {
 			coeffOut.SetVec(ii, p.Monomials[varIndex].Coefficient)
 		}
