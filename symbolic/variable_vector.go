@@ -278,19 +278,15 @@ func (vv VariableVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 
 	// Algorithm
 	switch rhsConverted := rightIn.(type) {
-	case KVector:
-		return VectorConstraint{vv, rhsConverted, sense}
 	case mat.VecDense:
 		rhsAsKVector := VecDenseToKVector(rhsConverted)
 
 		return vv.Comparison(rhsAsKVector, sense)
 
-	case VariableVector:
-		return VectorConstraint{vv, rhsConverted, sense}
-	case MonomialVector:
-		return VectorConstraint{vv, rhsConverted, sense}
-	case PolynomialVector:
-		return VectorConstraint{vv, rhsConverted, sense}
+	case KVector, VariableVector, MonomialVector, PolynomialVector:
+		// Convert to a vector expression
+		rightAsVE, _ := ToVectorExpression(rhsConverted)
+		return VectorConstraint{vv, rightAsVE, sense}
 	}
 
 	// Default option is to panic
