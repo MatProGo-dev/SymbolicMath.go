@@ -198,16 +198,10 @@ func (vv VariableVector) Multiply(rightIn interface{}) Expression {
 			pvOut = append(pvOut, v.Multiply(right).(Polynomial))
 		}
 		return pvOut
-	case MonomialVector:
-		// Create a new vector of monomials.
-		var mvOut MonomialVector
-		for _, v := range vv {
-			mvOut = append(mvOut, v.Multiply(right).(Monomial))
-		}
-		return mvOut
-	case PolynomialVector:
+	case KVector, VariableVector, MonomialVector, PolynomialVector:
 		// Vector of polynomials must be (1x1)
-		return vv.Multiply(right[0])
+		rightAsVE, _ := ToVectorExpression(right)
+		return vv.Multiply(rightAsVE.AtVec(0))
 	}
 
 	// Otherwise, panic
@@ -472,6 +466,30 @@ func (vv VariableVector) ToMonomialVector() MonomialVector {
 	// Algorithm
 	for _, variable := range vv {
 		out = append(out, variable.ToMonomial())
+	}
+
+	return out
+}
+
+/*
+ToPolynomialVector
+Description:
+
+	This function converts the input expression to a polynomial vector.
+*/
+func (vv VariableVector) ToPolynomialVector() PolynomialVector {
+	// Input Processing
+	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Constants
+	var out PolynomialVector
+
+	// Algorithm
+	for _, variable := range vv {
+		out = append(out, variable.ToPolynomial())
 	}
 
 	return out
