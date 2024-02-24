@@ -397,18 +397,14 @@ func (km KMatrix) Comparison(rightIn interface{}, sense ConstrSense) Constraint 
 		return km.Comparison(*right, sense) // Call the mat.Dense case
 	case mat.Dense:
 		return km.Comparison(DenseToKMatrix(right), sense) // Call the KMatrix case
-	case KMatrix:
+	case KMatrix, VariableMatrix, MonomialMatrix, PolynomialMatrix:
+		// Convert to matrix expression
+		rightAsME, _ := ToMatrixExpression(rightIn)
+
 		// Return constraint
 		return MatrixConstraint{
 			LeftHandSide:  km,
-			RightHandSide: right,
-			Sense:         sense,
-		}
-	case VariableMatrix:
-		// Return constraint
-		return MatrixConstraint{
-			LeftHandSide:  km,
-			RightHandSide: right,
+			RightHandSide: rightAsME,
 			Sense:         sense,
 		}
 	}
