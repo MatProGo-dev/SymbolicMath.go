@@ -314,7 +314,19 @@ Description:
 	Computes the transpose of the polynomial vector.
 */
 func (pv PolynomialVector) Transpose() Expression {
-	return pv // TODO: Complete this later with an actual PolynomialMatrix object
+	// Input Processing
+	err := pv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var pvT PolynomialMatrix = make([][]Polynomial, 1)
+	pvT[0] = make([]Polynomial, pv.Len())
+	for ii, polynomial := range pv {
+		pvT[0][ii] = polynomial
+	}
+	return pvT
 }
 
 /*
@@ -374,16 +386,11 @@ func (pv PolynomialVector) Comparison(e interface{}, senseIn ConstrSense) Constr
 	//		Expression: pv.Plus(right.Multiply(K(-1))),
 	//		Sense:      senseIn,
 	//	}
-	case KVector:
+	case KVector, VariableVector, MonomialVector, PolynomialVector:
+		rightAsVE, _ := ToVectorExpression(right)
 		return VectorConstraint{
 			LeftHandSide:  pv,
-			RightHandSide: right,
-			Sense:         senseIn,
-		}
-	case PolynomialVector:
-		return VectorConstraint{
-			LeftHandSide:  pv,
-			RightHandSide: right,
+			RightHandSide: rightAsVE,
 			Sense:         senseIn,
 		}
 	default:

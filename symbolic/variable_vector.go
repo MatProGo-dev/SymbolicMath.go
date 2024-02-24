@@ -191,6 +191,17 @@ func (vv VariableVector) Multiply(rightIn interface{}) Expression {
 			mvOut = append(mvOut, v.Multiply(right).(Monomial))
 		}
 		return mvOut
+	case Polynomial:
+		// Create a new vector of polynomials.
+		var pvOut PolynomialVector
+		for _, v := range vv {
+			pvOut = append(pvOut, v.Multiply(right).(Polynomial))
+		}
+		return pvOut
+	case KVector, VariableVector, MonomialVector, PolynomialVector:
+		// Vector of polynomials must be (1x1)
+		rightAsVE, _ := ToVectorExpression(right)
+		return vv.Multiply(rightAsVE.AtVec(0))
 	}
 
 	// Otherwise, panic
@@ -267,19 +278,15 @@ func (vv VariableVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 
 	// Algorithm
 	switch rhsConverted := rightIn.(type) {
-	case KVector:
-		return VectorConstraint{vv, rhsConverted, sense}
 	case mat.VecDense:
 		rhsAsKVector := VecDenseToKVector(rhsConverted)
 
 		return vv.Comparison(rhsAsKVector, sense)
 
-	case VariableVector:
-		return VectorConstraint{vv, rhsConverted, sense}
-	case MonomialVector:
-		return VectorConstraint{vv, rhsConverted, sense}
-	case PolynomialVector:
-		return VectorConstraint{vv, rhsConverted, sense}
+	case KVector, VariableVector, MonomialVector, PolynomialVector:
+		// Convert to a vector expression
+		rightAsVE, _ := ToVectorExpression(rhsConverted)
+		return VectorConstraint{vv, rightAsVE, sense}
 	}
 
 	// Default option is to panic
@@ -312,6 +319,12 @@ Description:
 	This method creates the transpose of the current vector and returns it.
 */
 func (vv VariableVector) Transpose() Expression {
+	// Input Processing
+	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
 	// Create a matrix representing the transpose
 	var vmOut VariableMatrix
 	vmOut = append(vmOut, vv.Copy())
@@ -455,6 +468,30 @@ func (vv VariableVector) ToMonomialVector() MonomialVector {
 	// Algorithm
 	for _, variable := range vv {
 		out = append(out, variable.ToMonomial())
+	}
+
+	return out
+}
+
+/*
+ToPolynomialVector
+Description:
+
+	This function converts the input expression to a polynomial vector.
+*/
+func (vv VariableVector) ToPolynomialVector() PolynomialVector {
+	// Input Processing
+	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Constants
+	var out PolynomialVector
+
+	// Algorithm
+	for _, variable := range vv {
+		out = append(out, variable.ToPolynomial())
 	}
 
 	return out

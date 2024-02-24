@@ -292,6 +292,9 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 			}
 		}
 		return monomialOut
+	case Polynomial:
+		// Create a new vector of polynomials.
+		return right.Multiply(v)
 	case *mat.VecDense:
 		return v.Multiply(*right)
 	case mat.VecDense:

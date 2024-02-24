@@ -655,6 +655,85 @@ func TestVariableVector_Multiply5(t *testing.T) {
 }
 
 /*
+TestVariableVector_Multiply6
+Description:
+
+	This test verifies that the Multiply method properly
+	multiplies a vector of variables with a polynomial.
+*/
+func TestVariableVector_Multiply6(t *testing.T) {
+	// Constants
+	N := 111
+	vv1 := symbolic.NewVariableVector(N)
+	p2 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	r := vv1.Multiply(p2)
+	if _, ok := r.(symbolic.PolynomialVector); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(pv2) to return a PolynomialVector object; received %T",
+			r,
+		)
+	}
+
+	// Check that all of the coefficients are the same as they were in p2
+	rAsPV, _ := r.(symbolic.PolynomialVector)
+	for ii := 0; ii < N; ii++ {
+		for jj, monomial := range rAsPV.AtVec(ii).(symbolic.Polynomial).Monomials {
+			if monomial.Coefficient != p2.Monomials[jj].Coefficient {
+				t.Errorf(
+					"Expected %v^th monomial in product's %v^th element to have coefficient %v; received %v",
+					jj,
+					ii,
+					p2.Monomials[jj].Coefficient,
+					monomial.Coefficient,
+				)
+			}
+		}
+	}
+}
+
+/*
+TestVariableVector_Multiply7
+Description:
+
+	This test verifies that the Multiply method properly
+	multiplies a vector of variables with a polynomial vector.
+	(For this to be valid the polynomial vector must be a scalar)
+*/
+func TestVariableVector_Multiply7(t *testing.T) {
+	// Constants
+	N := 111
+	vv1 := symbolic.NewVariableVector(N)
+	pv2 := symbolic.NewVariableVector(1).ToPolynomialVector()
+
+	// Test
+	r := vv1.Multiply(pv2)
+	if _, ok := r.(symbolic.PolynomialVector); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(pv2) to return a PolynomialVector object; received %T",
+			r,
+		)
+	}
+
+	// Check that all of the coefficients are the same as they were in pv2
+	rAsPV, _ := r.(symbolic.PolynomialVector)
+	for ii := 0; ii < N; ii++ {
+		for jj, monomial := range rAsPV.AtVec(ii).(symbolic.Polynomial).Monomials {
+			if monomial.Coefficient != pv2.AtVec(0).(symbolic.Polynomial).Monomials[jj].Coefficient {
+				t.Errorf(
+					"Expected %v^th monomial in product's %v^th element to have coefficient %v; received %v",
+					jj,
+					ii,
+					pv2.AtVec(0).(symbolic.Polynomial).Monomials[jj].Coefficient,
+					monomial.Coefficient,
+				)
+			}
+		}
+	}
+}
+
+/*
 TestVariableVector_Comparison1
 Description:
 
@@ -1024,6 +1103,58 @@ func TestVariableVector_Transpose1(t *testing.T) {
 			vm.Dims()[1],
 		)
 	}
+}
+
+/*
+TestVariableVector_Transpose2
+Description:
+
+	Verifies that the Transpose method panics if
+	the variable vector used to call it is not
+	well-defined.
+*/
+func TestVariableVector_Transpose2(t *testing.T) {
+	// Constants
+	N := 111
+	var vv symbolic.VariableVector
+	for ii := 0; ii < N; ii++ {
+		if ii != 100 {
+			vv = append(vv, symbolic.NewVariable())
+		} else {
+			vv = append(vv, symbolic.Variable{})
+		}
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vv.Transpose() to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected vv.Transpose() to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if !strings.Contains(
+			rAsE.Error(),
+			"element 100 has an issue:",
+		) {
+			t.Errorf(
+				"Expected vv.Transpose() to panic with a specific error; instead received %v",
+				r,
+			)
+		}
+	}()
+
+	vv.Transpose()
 }
 
 /*

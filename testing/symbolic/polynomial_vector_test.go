@@ -1056,6 +1056,90 @@ func TestPolynomialVector_Multiply7(t *testing.T) {
 }
 
 /*
+TestPolynomialVector_Transpose1
+Description:
+
+	Tests that the Transpose method returns a properly transposed
+	polynomial vector when called on a properly initialized polynomial.
+	The result should be a polynomial matrix of dimension (1x3) for an
+	input polynomial of dimension (3x1).
+*/
+func TestPolynomialVector_Transpose1(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+	for ii := 0; ii < 3; ii++ {
+		pv = append(pv, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	pvT, ok := pv.Transpose().(symbolic.PolynomialMatrix)
+	if !ok {
+		t.Errorf(
+			"Expected pv.Transpose to return a PolynomialMatrix; received %T",
+			pv.Transpose(),
+		)
+	}
+
+	// Check that the dimensions are correct
+	nr, nc := pvT.Dims()[0], pvT.Dims()[1]
+	if nr != 1 {
+		t.Errorf(
+			"Expected nr to be 1; received %v",
+			nr,
+		)
+	}
+
+	if nc != 3 {
+		t.Errorf(
+			"Expected nc to be 3; received %v",
+			nc,
+		)
+	}
+
+}
+
+/*
+TestPolynomialVector_Transpose2
+Description:
+
+	Tests that the Transpose method panics when
+	called on a polynomial vector that is not properly
+	initialized.
+*/
+func TestPolynomialVector_Transpose2(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Transpose to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Transpose to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if rAsE.Error() != "polynomial vector has no polynomials" {
+			t.Errorf(
+				"Expected Transpose to panic with error 'polynomial vector has no polynomials'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv.Transpose()
+}
+
+/*
 TestPolynomialVector_Dims1
 Description:
 
@@ -1207,6 +1291,130 @@ func TestPolynomialVector_Comparison3(t *testing.T) {
 			vectorComparison1.RightHandSide.Len(),
 		)
 	}
+}
+
+/*
+TestPolynomialVector_Comparison4
+Description:
+
+	This test verifies that the comparison function returns
+	a proper vector constraint when a polynomial vector is
+	provided to the function.
+*/
+func TestPolynomialVector_Comparison4(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	pv2 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
+		pv2 = append(pv2, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	comp := pv1.Comparison(pv2, symbolic.SenseGreaterThanEqual)
+	vectorComparison1, tf := comp.(symbolic.VectorConstraint)
+	if !tf {
+		t.Errorf(
+			"Expected comp to be of type VectorConstraint; received %T",
+			comp,
+		)
+	}
+
+	// Check that the right hand side of the constraint has the length of 20.
+	if vectorComparison1.RightHandSide.Len() != 20 {
+		t.Errorf(
+			"Expected vectorComparison1.RightHandSide.Len() to be 20; received %v",
+			vectorComparison1.RightHandSide.Len(),
+		)
+	}
+}
+
+/*
+TestPolynomialVector_LessEq1
+Description:
+
+	This test verifies that the LessEq method panics when
+	called on a polynomial vector that is well-defined is
+	compared with a monomial vector that is well-defined,
+	but has a different size. (Polynomial vector is (3x1)
+	and monomial vector that is (4x1)).
+*/
+func TestPolynomialVector_LessEq1(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 3; ii++ {
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
+	}
+
+	mv2 := symbolic.NewVariableVector(4).ToMonomialVector()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected LessEq to panic; received no panic",
+			)
+		}
+	}()
+
+	pv1.LessEq(mv2)
+}
+
+/*
+TestPolynomialVector_LessEq2
+Description:
+
+	This test verifies that the LessEq method produces
+	a well-defined constraint when a well-defined monomial
+	vector is compared with a constant vector.
+*/
+func TestPolynomialVector_LessEq2(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 3; ii++ {
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
+	}
+
+	mv2 := symbolic.NewVariableVector(3).ToMonomialVector()
+
+	// Test
+	comp := pv1.LessEq(mv2)
+	_, tf := comp.(symbolic.VectorConstraint)
+	if !tf {
+		t.Errorf(
+			"Expected comp to be of type VectorConstraint; received %T",
+			comp,
+		)
+	}
+}
+
+/*
+TestPolynomialVector_GreaterEq1
+Description:
+
+	This test verifies that the GreaterEq method panics when
+	a polynomial vector that is well-defined is compared with
+	an object that is not an expression (in this case, a string).
+*/
+func TestPolynomialVector_GreaterEq1(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 3; ii++ {
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected GreaterEq to panic; received no panic",
+			)
+		}
+	}()
+
+	pv1.GreaterEq("test")
 }
 
 /*
