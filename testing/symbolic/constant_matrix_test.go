@@ -7,9 +7,11 @@ Description:
 */
 
 import (
+	"fmt"
 	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"strings"
 	"testing"
 )
 
@@ -617,7 +619,7 @@ TestKMatrix_Multiply8
 Description:
 
 	Tests that the Multiply() method properly multiplies
-	a KMatrix (of dimension (1 x 3)) by a KVector (of dimension 3).
+	a KMatrix (of dimension (1 x 3)) by a KMatrix (of dimension 3).
 	The result should be a single scalar K.
 */
 func TestKMatrix_Multiply8(t *testing.T) {
@@ -643,6 +645,92 @@ func TestKMatrix_Multiply8(t *testing.T) {
 		t.Errorf(
 			"Expected k3 to be 3; received %v",
 			k3,
+		)
+	}
+}
+
+/*
+TestKMatrix_Multiply9
+Description:
+
+	Tests that the Multiply() method properly
+	computes the multiplication of a KMatrix by a VariableVector.
+	In this case, KMatrix has dimension (2x3) and the KVector has dimension (3x1).
+	The result should be a polynomial vector.
+*/
+func TestKMatrix_Multiply9(t *testing.T) {
+	// Constants
+	N := 3
+	ones1 := symbolic.OnesMatrix(2, N)
+	km1 := symbolic.DenseToKMatrix(ones1)
+
+	vv2 := symbolic.NewVariableVector(N)
+
+	// Test
+	pv3 := km1.Multiply(vv2)
+
+	// Verify that the result is a polynomial vector
+	if _, ok := pv3.(symbolic.PolynomialVector); !ok {
+		t.Errorf(
+			"Expected pv3 to be a symbolic.PolynomialVector; received %T",
+			pv3,
+		)
+	}
+
+	// Verify that the elements of the result is the correct value
+	// - Number of monomials in each element of result should
+	//	 contain 2 monomials
+	nR, _ := ones1.Dims()
+	for rowIndex := 0; rowIndex < nR; rowIndex++ {
+		pv3_ii := pv3.(symbolic.PolynomialVector).AtVec(rowIndex)
+		elt := pv3_ii.(symbolic.Polynomial)
+		if len(elt.Monomials) != N {
+			t.Errorf(
+				"Expected pv3.At(%v) to be a degree %v polynomial; received %v",
+				rowIndex,
+				N,
+				pv3.(symbolic.PolynomialVector).AtVec(rowIndex),
+			)
+		}
+	}
+}
+
+/*
+TestKMatrix_Multiply10
+Description:
+
+	Tests that the Multiply() method properly
+	computes the multiplication of a KMatrix by a VariableVector.
+	In this case, KMatrix has dimension (1x3) and the KVector has dimension (3x1).
+	The result should be a scalar polynomial.
+*/
+func TestKMatrix_Multiply10(t *testing.T) {
+	// Constants
+	N := 3
+	ones1 := symbolic.OnesMatrix(1, N)
+	km1 := symbolic.DenseToKMatrix(ones1)
+
+	vv2 := symbolic.NewVariableVector(N)
+
+	// Test
+	p3 := km1.Multiply(vv2)
+
+	// Verify that the result is a polynomial
+	if _, ok := p3.(symbolic.Polynomial); !ok {
+		t.Errorf(
+			"Expected p3 to be a symbolic.Polynomial; received %T",
+			p3,
+		)
+	}
+
+	// Verify that the elements of the result is the correct value
+	// - Number of monomials in each element of result should
+	//	 contain 1 monomial
+	if len(p3.(symbolic.Polynomial).Monomials) != N {
+		t.Errorf(
+			"Expected p3 to be a degree %v polynomial; received %v",
+			N,
+			p3,
 		)
 	}
 }
@@ -862,4 +950,235 @@ func TestKMatrix_GreaterEq2(t *testing.T) {
 	km1.GreaterEq("test")
 
 	t.Errorf("TestKMatrix_GreaterEq2 did not panic as expected")
+}
+
+/*
+TestKMatrix_Eq1
+Description:
+
+	Tests that the Eq() method properly panics when a well-formed
+	KMatrix is compared with a not well-formed expression (in this case, a Monomial).
+*/
+func TestKMatrix_Eq1(t *testing.T) {
+	// Constants
+	km1 := getKMatrix.From([][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+	})
+
+	monom2 := symbolic.Monomial{
+		VariableFactors: []symbolic.Variable{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+
+	// Define Test Handler
+	defer func() {
+		recoveredVal := recover()
+		if recoveredVal == nil {
+			t.Errorf("Expected Eq to panic when dimensions are not equal; did not panic")
+		}
+
+		err, ok := recoveredVal.(error)
+		if !ok {
+			t.Errorf("Expected recovered value to be an error; received %T", recoveredVal)
+		}
+
+		err2 := monom2.Check()
+		if err.Error() != err2.Error() {
+			t.Errorf("unexpected error: %v", err)
+		}
+	}()
+
+	// Test
+	km1.Eq(monom2)
+
+	t.Errorf("TestKMatrix_Eq1 did not panic as expected")
+}
+
+/*
+TestKMatrix_Eq2
+Description:
+
+	Tests that the Eq() method creates the correct constraint
+	when a KMatrix is compared to a Variable matrix of matching
+	dimensions.
+	The resulting constraint should be of the matrix constraint
+	type, it should have the same dimensions as the KMatrix,
+	and the sense should be equal.
+*/
+func TestKMatrix_Eq2(t *testing.T) {
+	// Constants
+	km1 := getKMatrix.From([][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+	})
+
+	vm2 := symbolic.NewVariableMatrix(2, 3)
+
+	// Test
+	c3 := km1.Eq(vm2)
+
+	// Verify that c3 is a matrix constraint
+	if _, ok := c3.(symbolic.MatrixConstraint); !ok {
+		t.Errorf(
+			"Expected c3 to be a symbolic.MatrixConstraint; received %T",
+			c3,
+		)
+	}
+
+	// Verify that the dimensions of c3 are the same as that of km1
+	c3M, _ := c3.(symbolic.MatrixConstraint)
+	if (c3M.Dims()[0] != km1.Dims()[0]) || (c3M.Dims()[1] != km1.Dims()[1]) {
+		t.Errorf(
+			"Expected c3 to have dimensions (%vx%v); received %v",
+			km1.Dims()[0],
+			km1.Dims()[1],
+			c3M.Dims(),
+		)
+	}
+
+	// Verify that the sense of c3 is equal
+	if c3M.ConstrSense() != symbolic.SenseEqual {
+		t.Errorf(
+			"Expected c3 to have sense equal; received %v",
+			c3M.ConstrSense(),
+		)
+	}
+}
+
+/*
+TestKMatrix_Comparison1
+Description:
+
+	Tests that the Comparison() method properly returns a constraint
+	of the correct type when a KMatrix is compared to a scalar constant
+	K with sense SenseGreaterThanEqual.
+	The result should be a matrix constraint with the same dimensions
+	as the KMatrix and the sense should be SenseGreaterThanEqual.
+*/
+func TestKMatrix_Comparison1(t *testing.T) {
+	// Constants
+	km1 := getKMatrix.From([][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+	})
+
+	k2 := symbolic.K(3)
+
+	// Test
+	c3 := km1.Comparison(k2, symbolic.SenseGreaterThanEqual)
+
+	// Verify that c3 is a matrix constraint
+	if _, ok := c3.(symbolic.MatrixConstraint); !ok {
+		t.Errorf(
+			"Expected c3 to be a symbolic.MatrixConstraint; received %T",
+			c3,
+		)
+	}
+
+	// Verify that the dimensions of c3 are the same as that of km1
+	c3M, _ := c3.(symbolic.MatrixConstraint)
+	if (c3M.Dims()[0] != km1.Dims()[0]) || (c3M.Dims()[1] != km1.Dims()[1]) {
+		t.Errorf(
+			"Expected c3 to have dimensions (%vx%v); received %v",
+			km1.Dims()[0],
+			km1.Dims()[1],
+			c3M.Dims(),
+		)
+	}
+
+	// Verify that the sense of c3 is equal
+	if c3M.ConstrSense() != symbolic.SenseGreaterThanEqual {
+		t.Errorf(
+			"Expected c3 to have sense equal; received %v",
+			c3M.ConstrSense(),
+		)
+	}
+
+	// Verify that the right hand side of the constraint is a matrix
+	// of all k2
+	for rowIndex := 0; rowIndex < c3M.Dims()[0]; rowIndex++ {
+		for colIndex := 0; colIndex < c3M.Dims()[1]; colIndex++ {
+			if c3M.RightHandSide.At(rowIndex, colIndex) != k2 {
+				t.Errorf(
+					"Expected c3.At(%v,%v) to be %v; received %v",
+					rowIndex,
+					colIndex,
+					k2,
+					c3M.RightHandSide.At(rowIndex, colIndex),
+				)
+			}
+		}
+	}
+}
+
+/*
+TestKMatrix_Constant1
+Description:
+
+	Tests that the Constant() method properly returns a constant matrix
+	when called on a KMatrix.
+	The result should contain the same elements as if we called ToDense()
+	on the KMatrix.
+*/
+func TestKMatrix_Constant1(t *testing.T) {
+	// Constants
+	km1 := getKMatrix.From([][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+	})
+
+	// Test
+	km2 := km1.Constant()
+
+	// Verify that the elements of the result is the correct value
+	nR, nC := km1.Dims()[0], km1.Dims()[1]
+	for rowIndex := 0; rowIndex < nR; rowIndex++ {
+		for colIndex := 0; colIndex < nC; colIndex++ {
+			if km2.At(rowIndex, colIndex) != float64(km1.At(rowIndex, colIndex).(symbolic.K)) {
+				t.Errorf(
+					"Expected km2.At(%v,%v) to be %v; received %v",
+					rowIndex,
+					colIndex,
+					km1.At(rowIndex, colIndex),
+					km2.At(rowIndex, colIndex),
+				)
+			}
+		}
+	}
+}
+
+/*
+TestKMatrix_String1
+Description:
+
+	Tests that the String() method properly returns a string representation
+	of the KMatrix.
+	Checks that all elements are properly represented.
+*/
+func TestKMatrix_String1(t *testing.T) {
+	// Constants
+	km1 := getKMatrix.From([][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+	})
+
+	// Test
+	str := km1.String()
+
+	// Verify that the string representation is correct
+	// - Check that each element from km1 is contained (i.e.,
+	//	 is a substring of the string representation)
+	nR, nC := km1.Dims()[0], km1.Dims()[1]
+	for rowIndex := 0; rowIndex < nR; rowIndex++ {
+		for colIndex := 0; colIndex < nC; colIndex++ {
+			elt := km1.At(rowIndex, colIndex)
+			if !strings.Contains(str, fmt.Sprintf("%v", elt)) {
+				t.Errorf(
+					"Expected string representation to contain %v; received %v",
+					elt,
+					str,
+				)
+			}
+		}
+	}
 }

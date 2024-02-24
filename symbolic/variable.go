@@ -253,7 +253,12 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 
 	if IsExpression(rightIn) {
 		rightAsE, _ := ToExpression(rightIn)
-		err := smErrors.CheckDimensionsInMultiplication(v, rightAsE)
+		err := rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		err = smErrors.CheckDimensionsInMultiplication(v, rightAsE)
 		if err != nil {
 			panic(err)
 		}
@@ -287,6 +292,22 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 			}
 		}
 		return monomialOut
+	case *mat.VecDense:
+		return v.Multiply(*right)
+	case mat.VecDense:
+		// Convert to KVector
+		return v.Multiply(VecDenseToKVector(right))
+	case KVector:
+		// Create a monomial vector and store result in it
+		var monomialsOut MonomialVector = make([]Monomial, right.Len())
+		for i := 0; i < right.Len(); i++ {
+			monomialsOut[i] = Monomial{
+				Coefficient:     float64(right[i]),
+				VariableFactors: []Variable{v},
+				Exponents:       []int{1},
+			}
+		}
+		return monomialsOut
 	}
 
 	// Unrecornized response is a panic

@@ -549,13 +549,38 @@ Description:
 	This function creates a new variable matrix
 	and properly initializes each element in it.
 */
-func NewVariableMatrix(nRows, nCols int) VariableMatrix {
+func NewVariableMatrix(nRows, nCols int, envs ...*Environment) VariableMatrix {
+	return NewVariableMatrixClassic(nRows, nCols, envs...)
+}
+
+/*
+NewVariableMatrixClassic
+Description:
+
+	This function creates a new variable matrix
+	and properly initializes each element in it
+	when given a list of variables.
+*/
+func NewVariableMatrixClassic(nRows, nCols int, envs ...*Environment) VariableMatrix {
+	// Collect an environment if one exists
+	var env *Environment
+	switch len(envs) {
+	case 0:
+		env = &BackgroundEnvironment
+	case 1:
+		env = envs[0]
+	default:
+		panic(
+			fmt.Errorf("Too many inputs provided to NewVariableMatrix() method."),
+		)
+	}
+
 	// Create a new matrix
 	var vmOut VariableMatrix
 	for ii := 0; ii < nRows; ii++ {
 		vmOut = append(vmOut, make([]Variable, nCols))
 		for jj := 0; jj < nCols; jj++ {
-			vmOut[ii][jj] = NewVariable()
+			vmOut[ii][jj] = NewContinuousVariable(env)
 		}
 	}
 	return vmOut
