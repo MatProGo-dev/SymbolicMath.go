@@ -874,6 +874,78 @@ func TestVariable_Multiply4(t *testing.T) {
 }
 
 /*
+TestVariable_Multiply5
+Description:
+
+	Tests that the Multiply() method works properly
+	when a variable multiplies a polynomial.
+*/
+func TestVariable_Multiply5(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	p := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{
+				Coefficient:     3.14,
+				VariableFactors: []symbolic.Variable{x},
+				Exponents:       []int{2},
+			},
+			symbolic.Monomial{
+				Coefficient:     2.71,
+				VariableFactors: []symbolic.Variable{x},
+				Exponents:       []int{4},
+			},
+		},
+	}
+
+	// Test
+	prod := x.Multiply(p)
+	if _, tf := prod.(symbolic.Polynomial); !tf {
+		t.Errorf(
+			"expected %v * %v to be a polynomial; received %T",
+			x,
+			p,
+			prod,
+		)
+	}
+
+	// Check that the product is a polynomial
+	p2, ok := prod.(symbolic.Polynomial)
+	if !ok {
+		t.Errorf(
+			"expected %v * %v to be a polynomial; received %T",
+			x,
+			p,
+			prod,
+		)
+	}
+
+	// Check that the length of the vector is 3
+	if len(p2.Monomials) != 2 {
+		t.Errorf(
+			"expected the polynomial %v * %v to have 2 terms; received %v",
+			x,
+			p,
+			len(p2.Monomials),
+		)
+	}
+
+	// Check that each element of the vector contains a coefficient
+	// that matches v
+	for ii := 0; ii < 2; ii++ {
+		if prod.(symbolic.Polynomial).Monomials[ii].Coefficient != p.Monomials[ii].Coefficient {
+			t.Errorf(
+				"expected the polynomial %v * %v to have a coefficient of %v; received %v",
+				x,
+				p,
+				p.Monomials[ii].Coefficient,
+				prod.(symbolic.Polynomial).Monomials[ii].Coefficient,
+			)
+		}
+	}
+}
+
+/*
 TestVariable_String1
 Description:
 

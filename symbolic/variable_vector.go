@@ -191,6 +191,23 @@ func (vv VariableVector) Multiply(rightIn interface{}) Expression {
 			mvOut = append(mvOut, v.Multiply(right).(Monomial))
 		}
 		return mvOut
+	case Polynomial:
+		// Create a new vector of polynomials.
+		var pvOut PolynomialVector
+		for _, v := range vv {
+			pvOut = append(pvOut, v.Multiply(right).(Polynomial))
+		}
+		return pvOut
+	case MonomialVector:
+		// Create a new vector of monomials.
+		var mvOut MonomialVector
+		for _, v := range vv {
+			mvOut = append(mvOut, v.Multiply(right).(Monomial))
+		}
+		return mvOut
+	case PolynomialVector:
+		// Vector of polynomials must be (1x1)
+		return vv.Multiply(right[0])
 	}
 
 	// Otherwise, panic

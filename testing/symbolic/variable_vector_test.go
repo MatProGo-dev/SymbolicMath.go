@@ -655,6 +655,45 @@ func TestVariableVector_Multiply5(t *testing.T) {
 }
 
 /*
+TestVariableVector_Multiply6
+Description:
+
+	This test verifies that the Multiply method properly
+	multiplies a vector of variables with a polynomial.
+*/
+func TestVariableVector_Multiply6(t *testing.T) {
+	// Constants
+	N := 111
+	vv1 := symbolic.NewVariableVector(N)
+	p2 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	r := vv1.Multiply(p2)
+	if _, ok := r.(symbolic.PolynomialVector); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(pv2) to return a PolynomialVector object; received %T",
+			r,
+		)
+	}
+
+	// Check that all of the coefficients are the same as they were in p2
+	rAsPV, _ := r.(symbolic.PolynomialVector)
+	for ii := 0; ii < N; ii++ {
+		for jj, monomial := range rAsPV.AtVec(ii).(symbolic.Polynomial).Monomials {
+			if monomial.Coefficient != p2.Monomials[jj].Coefficient {
+				t.Errorf(
+					"Expected %v^th monomial in product's %v^th element to have coefficient %v; received %v",
+					jj,
+					ii,
+					p2.Monomials[jj].Coefficient,
+					monomial.Coefficient,
+				)
+			}
+		}
+	}
+}
+
+/*
 TestVariableVector_Comparison1
 Description:
 

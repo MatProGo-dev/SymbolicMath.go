@@ -1210,6 +1210,42 @@ func TestPolynomialVector_Comparison3(t *testing.T) {
 }
 
 /*
+TestPolynomialVector_Comparison4
+Description:
+
+	This test verifies that the comparison function returns
+	a proper vector constraint when a polynomial vector is
+	provided to the function.
+*/
+func TestPolynomialVector_Comparison4(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	pv2 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
+		pv2 = append(pv2, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	comp := pv1.Comparison(pv2, symbolic.SenseGreaterThanEqual)
+	vectorComparison1, tf := comp.(symbolic.VectorConstraint)
+	if !tf {
+		t.Errorf(
+			"Expected comp to be of type VectorConstraint; received %T",
+			comp,
+		)
+	}
+
+	// Check that the right hand side of the constraint has the length of 20.
+	if vectorComparison1.RightHandSide.Len() != 20 {
+		t.Errorf(
+			"Expected vectorComparison1.RightHandSide.Len() to be 20; received %v",
+			vectorComparison1.RightHandSide.Len(),
+		)
+	}
+}
+
+/*
 TestPolynomialVector_Simplify1
 Description:
 

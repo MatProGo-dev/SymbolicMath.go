@@ -374,16 +374,11 @@ func (pv PolynomialVector) Comparison(e interface{}, senseIn ConstrSense) Constr
 	//		Expression: pv.Plus(right.Multiply(K(-1))),
 	//		Sense:      senseIn,
 	//	}
-	case KVector:
+	case KVector, VariableVector, MonomialVector, PolynomialVector:
+		rightAsVE, _ := ToVectorExpression(right)
 		return VectorConstraint{
 			LeftHandSide:  pv,
-			RightHandSide: right,
-			Sense:         senseIn,
-		}
-	case PolynomialVector:
-		return VectorConstraint{
-			LeftHandSide:  pv,
-			RightHandSide: right,
+			RightHandSide: rightAsVE,
 			Sense:         senseIn,
 		}
 	default:
