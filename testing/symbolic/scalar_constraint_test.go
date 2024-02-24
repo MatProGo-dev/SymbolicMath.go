@@ -8,6 +8,7 @@ Description:
 
 import (
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"strings"
 	"testing"
 )
 
@@ -249,6 +250,166 @@ func TestScalarConstraint_Simplify2(t *testing.T) {
 		t.Errorf(
 			"Expected sc.Right() to be 0; received %v",
 			sc.Right(),
+		)
+	}
+}
+
+/*
+TestScalarConstraint_Check1
+Description:
+
+	Tests the Check() method of a scalar constraint.
+	Verifies that an error is returned when the left hand side
+	is a NOT well-defined variable and the right hand side is a
+	constant.
+*/
+func TestScalarConstraint_Check1(t *testing.T) {
+	// Constants
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		symbolic.Variable{},
+		c2,
+		symbolic.SenseLessThanEqual,
+	}
+
+	// Check
+	err := sc.Check()
+	if err == nil {
+		t.Errorf(
+			"Expected an error from sc.Check(); received nil",
+		)
+	} else {
+		if !strings.Contains(
+			err.Error(),
+			sc.LeftHandSide.Check().Error(),
+		) {
+			t.Errorf(
+				"Expected error message to contain %v; received %v",
+				sc.LeftHandSide.Check(),
+				err.Error(),
+			)
+		}
+	}
+}
+
+/*
+TestScalarConstraint_Check2
+Description:
+
+	Tests the Check() method of a scalar constraint.
+	Verifies that an error is returned when the left hand side
+	is a constant and the right hand side is a NOT well-defined
+	variable.
+*/
+func TestScalarConstraint_Check2(t *testing.T) {
+	// Constants
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		c2,
+		symbolic.Variable{},
+		symbolic.SenseLessThanEqual,
+	}
+
+	// Check
+	err := sc.Check()
+	if err == nil {
+		t.Errorf(
+			"Expected an error from sc.Check(); received nil",
+		)
+	} else {
+		if !strings.Contains(
+			err.Error(),
+			sc.RightHandSide.Check().Error(),
+		) {
+			t.Errorf(
+				"Expected error message to contain %v; received %v",
+				sc.RightHandSide.Check(),
+				err.Error(),
+			)
+		}
+	}
+}
+
+/*
+TestScalarConstraint_Check3
+Description:
+
+	Tests the Check() method of a scalar constraint.
+	Verifies that an error is returned when the left hand side
+	is a constant and the right hand side is a well-defined monomial,
+	BUT the sense is not an allowed value.
+*/
+func TestScalarConstraint_Check3(t *testing.T) {
+	// Constants
+	c2 := symbolic.K(3.14)
+	x := symbolic.NewVariable()
+	m := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1},
+		VariableFactors: []symbolic.Variable{x},
+	}
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		c2,
+		m,
+		'?',
+	}
+
+	// Check
+	err := sc.Check()
+	if err == nil {
+		t.Errorf(
+			"Expected an error from sc.Check(); received nil",
+		)
+	} else {
+		if !strings.Contains(
+			err.Error(),
+			sc.ConstrSense().Check().Error(),
+		) {
+			t.Errorf(
+				"Expected error message to contain '%v'; received %v",
+				sc.ConstrSense().Check(),
+				err.Error(),
+			)
+		}
+	}
+}
+
+/*
+TestScalarConstraint_Check4
+Description:
+
+	Tests the Check() method of a scalar constraint.
+	Verifies that a completely well-defined constraint returns no error.
+*/
+func TestScalarConstraint_Check4(t *testing.T) {
+	// Constants
+	c2 := symbolic.K(3.14)
+	x := symbolic.NewVariable()
+	m := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1},
+		VariableFactors: []symbolic.Variable{x},
+	}
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		c2,
+		m,
+		symbolic.SenseLessThanEqual,
+	}
+
+	// Check
+	err := sc.Check()
+	if err != nil {
+		t.Errorf(
+			"Expected no error from sc.Check(); received %v",
+			err,
 		)
 	}
 }
