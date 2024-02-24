@@ -153,6 +153,14 @@ func (p Polynomial) Plus(e interface{}) Expression {
 
 		// Simplify?
 		return pCopy.Simplify()
+	case KVector, VariableVector, MonomialVector, PolynomialVector:
+		// Right must be a vector of length 1
+		ve, _ := ToVectorExpression(right)
+		return p.Plus(ve.AtVec(0)) // Reuse scalar case
+	case KMatrix, VariableMatrix, MonomialMatrix, PolynomialMatrix:
+		// Right must be a matrix of size [1,1]
+		me, _ := ToMatrixExpression(right)
+		return p.Plus(me.At(0, 0)) // Reuse scalar case
 	}
 
 	// Unrecognized response is a panic
@@ -304,6 +312,14 @@ func (p Polynomial) Multiply(e interface{}) Expression {
 		}
 
 		return productOut
+	case KVector, VariableVector, MonomialVector, PolynomialVector:
+		// Right must be a vector of length 1
+		ve, _ := ToVectorExpression(right)
+		return ve.Multiply(p) // Reuse scalar case
+	case KMatrix, VariableMatrix, MonomialMatrix, PolynomialMatrix:
+		// Right must be a matrix of size [1,1]
+		me, _ := ToMatrixExpression(right)
+		return me.Multiply(p) // Reuse scalar case
 	}
 
 	// Unrecognized response is a panic

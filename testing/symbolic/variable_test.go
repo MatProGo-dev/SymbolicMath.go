@@ -2,6 +2,7 @@ package symbolic_test
 
 import (
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"gonum.org/v1/gonum/mat"
 	"strings"
 	"testing"
 )
@@ -823,6 +824,52 @@ func TestVariable_Multiply3(t *testing.T) {
 			y,
 			mon.Coefficient,
 		)
+	}
+}
+
+/*
+TestVariable_Multiply4
+Description:
+
+	Tests that the Multiply() method works properly
+	when a variable multiplies a *mat.VecDense vector.
+*/
+func TestVariable_Multiply4(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	v := mat.NewVecDense(3, []float64{1, 2, 3})
+
+	// Test
+	prod := x.Multiply(v)
+	if _, tf := prod.(symbolic.MonomialVector); !tf {
+		t.Errorf(
+			"expected %v * %v to be a KVector; received %T",
+			x,
+			v,
+			prod,
+		)
+	}
+
+	// Check that the length of the vector is 3
+	if prod.(symbolic.MonomialVector).Len() != 3 {
+		t.Errorf(
+			"expected the linear coefficient of %v to be a vector of length 3; received %v",
+			x,
+			prod.(symbolic.MonomialVector).Len(),
+		)
+	}
+
+	// Check that each element of the vector contains a coefficient
+	// that matches v
+	for ii := 0; ii < 3; ii++ {
+		if prod.(symbolic.MonomialVector)[ii].Coefficient != v.AtVec(ii) {
+			t.Errorf(
+				"expected the linear coefficient of %v to be %v; received %v",
+				x,
+				v.AtVec(ii),
+				prod.(symbolic.MonomialVector)[ii].Coefficient,
+			)
+		}
 	}
 }
 

@@ -70,6 +70,24 @@ Description:
 func (vc VectorConstraint) Check() error {
 	// Constants
 
+	// Input Processing
+	// Check that the left and right hand sides are well formed.
+	err := vc.LeftHandSide.Check()
+	if err != nil {
+		return err
+	}
+
+	err = vc.RightHandSide.Check()
+	if err != nil {
+		return err
+	}
+
+	// Check the sense
+	err = vc.Sense.Check()
+	if err != nil {
+		return err
+	}
+
 	// Check dimensions of left and right hand sides.
 	if vc.LeftHandSide.Len() != vc.RightHandSide.Len() {
 		return fmt.Errorf(

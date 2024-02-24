@@ -206,6 +206,49 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 
 	case K:
 		return km.Multiply(float64(right)) // Reuse float64 case
+	case *mat.VecDense:
+		// Use gonum's built-in multiplication function
+		var product mat.VecDense
+		kmAsDense := km.ToDense()
+		product.MulVec(&kmAsDense, right)
+
+		// Check output dimensions
+		nOutput := product.Len()
+		if nOutput == 1 {
+			// If the output is a scalar, return a scalar
+			return K(product.AtVec(0))
+		} else {
+			// Otherwsie return a KVector
+			return VecDenseToKVector(product)
+		}
+
+	case VariableVector:
+		// Choose the correct output type based on the size of km
+		nR := km.Dims()[0]
+		if nR == 1 {
+			// If the output is a scalar, return a scalar
+			var out Polynomial = K(0).ToPolynomial()
+			for cIndex := 0; cIndex < len(right); cIndex++ {
+				out = out.Plus(
+					right[cIndex].Multiply(km[0][cIndex]),
+				).(Polynomial)
+			}
+			return out
+		} else {
+			nC := km.Dims()[1]
+			// If the output is a vector, return a vector
+			var outputVec PolynomialVector = VecDenseToKVector(
+				ZerosVector(nR),
+			).ToPolynomialVector()
+			for colIndex := 0; colIndex < nC; colIndex++ {
+				kmAsDense := km.ToDense()
+				tempCol := (&kmAsDense).ColView(colIndex)
+				outputVec = outputVec.Plus(
+					right[colIndex].Multiply(tempCol),
+				).(PolynomialVector)
+			}
+			return outputVec
+		}
 	case *mat.Dense:
 		// Check output dimensions
 		nOutputR := km.Dims()[0]
@@ -345,7 +388,7 @@ func (km KMatrix) Comparison(rightIn interface{}, sense ConstrSense) Constraint 
 	case K:
 		// Create a matrix of all elements with value right
 		ones := OnesMatrix(km.Dims()[0], km.Dims()[1])
-		var rightAsDense *mat.Dense
+		var rightAsDense mat.Dense
 		rightAsDense.Scale(float64(right), &ones)
 
 		// Call the *mat.Dense case
@@ -354,18 +397,14 @@ func (km KMatrix) Comparison(rightIn interface{}, sense ConstrSense) Constraint 
 		return km.Comparison(*right, sense) // Call the mat.Dense case
 	case mat.Dense:
 		return km.Comparison(DenseToKMatrix(right), sense) // Call the KMatrix case
-	case KMatrix:
+	case KMatrix, VariableMatrix, MonomialMatrix, PolynomialMatrix:
+		// Convert to matrix expression
+		rightAsME, _ := ToMatrixExpression(rightIn)
+
 		// Return constraint
 		return MatrixConstraint{
 			LeftHandSide:  km,
-			RightHandSide: right,
-			Sense:         sense,
-		}
-	case VariableMatrix:
-		// Return constraint
-		return MatrixConstraint{
-			LeftHandSide:  km,
-			RightHandSide: right,
+			RightHandSide: rightAsME,
 			Sense:         sense,
 		}
 	}

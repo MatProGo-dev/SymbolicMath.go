@@ -69,3 +69,32 @@ Description:
 func (sc ScalarConstraint) ConstrSense() ConstrSense {
 	return sc.Sense
 }
+
+/*
+Check
+Description:
+
+	Checks that the ScalarConstraint is valid.
+*/
+func (sc ScalarConstraint) Check() error {
+	// Input Processing
+	// Check that the left and right hand sides are well formed.
+	err := sc.LeftHandSide.Check()
+	if err != nil {
+		return err
+	}
+
+	err = sc.RightHandSide.Check()
+	if err != nil {
+		return err
+	}
+
+	// Check that the sense is valid.
+	err = sc.Sense.Check()
+	if err != nil {
+		return err
+	}
+
+	// All Checks Passed!
+	return nil
+}
