@@ -1099,6 +1099,47 @@ func TestPolynomialVector_Transpose1(t *testing.T) {
 }
 
 /*
+TestPolynomialVector_Transpose2
+Description:
+
+	Tests that the Transpose method panics when
+	called on a polynomial vector that is not properly
+	initialized.
+*/
+func TestPolynomialVector_Transpose2(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Transpose to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Transpose to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if rAsE.Error() != "polynomial vector has no polynomials" {
+			t.Errorf(
+				"Expected Transpose to panic with error 'polynomial vector has no polynomials'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv.Transpose()
+}
+
+/*
 TestPolynomialVector_Dims1
 Description:
 

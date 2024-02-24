@@ -1106,6 +1106,58 @@ func TestVariableVector_Transpose1(t *testing.T) {
 }
 
 /*
+TestVariableVector_Transpose2
+Description:
+
+	Verifies that the Transpose method panics if
+	the variable vector used to call it is not
+	well-defined.
+*/
+func TestVariableVector_Transpose2(t *testing.T) {
+	// Constants
+	N := 111
+	var vv symbolic.VariableVector
+	for ii := 0; ii < N; ii++ {
+		if ii != 100 {
+			vv = append(vv, symbolic.NewVariable())
+		} else {
+			vv = append(vv, symbolic.Variable{})
+		}
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vv.Transpose() to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected vv.Transpose() to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if !strings.Contains(
+			rAsE.Error(),
+			"element 100 has an issue:",
+		) {
+			t.Errorf(
+				"Expected vv.Transpose() to panic with a specific error; instead received %v",
+				r,
+			)
+		}
+	}()
+
+	vv.Transpose()
+}
+
+/*
 TestVariableVector_String1
 Description:
 
