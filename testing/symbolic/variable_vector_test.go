@@ -7,6 +7,7 @@ Description:
 */
 
 import (
+	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
@@ -730,6 +731,42 @@ func TestVariableVector_Multiply7(t *testing.T) {
 				)
 			}
 		}
+	}
+}
+
+/*
+TestVariableVector_Multiply8
+Description:
+
+	This test verifies that the multiplication of a variable vector
+	with a square matrix and another variable vector produces a
+	scalar expression.
+*/
+func TestVariableVector_Multiply8(t *testing.T) {
+	// Constants
+	N := 1
+	vv1 := symbolic.NewVariableVector(N)
+	m2 := getKMatrix.From(symbolic.Identity(N))
+
+	L4 := getKVector.From(symbolic.OnesVector(N))
+
+	// Test
+	r := vv1.Transpose().Multiply(m2).Multiply(vv1).Plus(
+		L4.Transpose().Multiply(vv1),
+	).Plus(3.14)
+	if _, ok := r.(symbolic.ScalarExpression); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(m2, vv3) to return a scalar expression; received %T",
+			r,
+		)
+	}
+
+	// Check that the output is a scalar polynomial
+	if _, ok := r.(symbolic.Polynomial); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(m2, vv3) to return a scalar polynomial; received %T",
+			r,
+		)
 	}
 }
 

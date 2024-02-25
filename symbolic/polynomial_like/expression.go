@@ -1,6 +1,9 @@
-package symbolic
+package polynomial_like
 
-import "github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+import (
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+)
 
 /*
 polynomial_like.go
@@ -12,39 +15,39 @@ Description:
 */
 type PolynomialLike interface {
 	// NumVars returns the number of variables in the expression
-	Variables() []Variable
+	Variables() []symbolic.Variable
 
 	// Dims returns a slice describing the true dimensions of a given expression (scalar, vector, or matrix)
 	Dims() []int
 
 	// Plus adds the current expression to another and returns the resulting
 	// expression
-	Plus(rightIn interface{}) Expression
+	Plus(rightIn interface{}) symbolic.Expression
 
 	// Multiply multiplies the current expression to another and returns the
 	// resulting expression
-	Multiply(rightIn interface{}) Expression
+	Multiply(rightIn interface{}) symbolic.Expression
 
 	// Transpose transposes the given expression
-	Transpose() Expression
+	Transpose() symbolic.Expression
 
 	// LessEq returns a less than or equal to (<=) constraint between the
 	// current expression and another
-	LessEq(rightIn interface{}) Constraint
+	LessEq(rightIn interface{}) symbolic.Constraint
 
 	// GreaterEq returns a greater than or equal to (>=) constraint between the
 	// current expression and another
-	GreaterEq(rightIn interface{}) Constraint
+	GreaterEq(rightIn interface{}) symbolic.Constraint
 
 	// Eq returns an equality (==) constraint between the current expression
 	// and another
-	Eq(rightIn interface{}) Constraint
+	Eq(rightIn interface{}) symbolic.Constraint
 
 	// Comparison
-	Comparison(rightIn interface{}, sense ConstrSense) Constraint
+	Comparison(rightIn interface{}, sense symbolic.ConstrSense) symbolic.Constraint
 
 	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
-	DerivativeWrt(vIn Variable) Expression
+	DerivativeWrt(vIn symbolic.Variable) symbolic.Expression
 
 	// Check
 	Check() error
@@ -64,7 +67,7 @@ func IsPolynomialLike(e interface{}) bool {
 	return false
 }
 
-func ToPolynomialLike(e interface{}) (Expression, error) {
+func ToPolynomialLike(e interface{}) (symbolic.Expression, error) {
 	//switch {
 	//case IsScalarExpression(e):
 	//	return ToScalarExpression(e)

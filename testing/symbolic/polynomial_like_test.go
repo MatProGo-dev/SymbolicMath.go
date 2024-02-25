@@ -2,6 +2,7 @@ package symbolic_test
 
 import (
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"github.com/MatProGo-dev/SymbolicMath.go/symbolic/polynomial_like"
 	"testing"
 )
 
@@ -23,7 +24,7 @@ func TestPolynomialLike_IsPolynomialLike1(t *testing.T) {
 	x := symbolic.NewVariable()
 
 	// Test
-	if symbolic.IsPolynomialLike(x) {
+	if polynomial_like.IsPolynomialLike(x) {
 		t.Errorf(
 			"Expected IsPolynomialLike(%T) to be false; received true",
 			x,
