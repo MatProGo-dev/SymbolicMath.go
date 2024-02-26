@@ -63,19 +63,18 @@ Description:
 	Tests whether or not the input variable is one of the expression types.
 */
 func IsPolynomialLike(e interface{}) bool {
-	//return IsScalarExpression(e) || IsVectorExpression(e) || IsMatrixExpression(e)
-	return false
+	return IsScalarExpression(e) || IsVectorExpression(e) || IsMatrixExpression(e)
 }
 
 func ToPolynomialLike(e interface{}) (symbolic.Expression, error) {
-	//switch {
-	//case IsScalarExpression(e):
-	//	return ToScalarExpression(e)
-	//case IsVectorExpression(e):
-	//	return ToVectorExpression(e)
-	//case IsMatrixExpression(e):
-	//	return ToMatrixExpression(e)
-	//}
+	switch {
+	case IsScalarExpression(e):
+		return ToScalarExpression(e)
+	case IsVectorExpression(e):
+		return ToVectorExpression(e)
+	case IsMatrixExpression(e):
+		return ToMatrixExpression(e)
+	}
 
 	// If the input is not a valid expression, panic
 	panic(
