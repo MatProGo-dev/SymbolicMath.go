@@ -3,7 +3,6 @@ package polynomial_like_test
 import (
 	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
-	"github.com/MatProGo-dev/SymbolicMath.go/symbolic/polynomial_like"
 	"testing"
 )
 
@@ -25,7 +24,7 @@ func TestExpression_IsPolynomialLike1(t *testing.T) {
 	x := symbolic.NewVariable()
 
 	// Test
-	if polynomial_like.IsPolynomialLike(x) {
+	if symbolic.IsPolynomialLike(x) {
 		t.Errorf(
 			"Expected IsPolynomialLike(%T) to be false; received true",
 			x,
@@ -45,7 +44,7 @@ func TestExpression_IsPolynomialLike2(t *testing.T) {
 	x := "test"
 
 	// Test
-	if polynomial_like.IsPolynomialLike(x) {
+	if symbolic.IsPolynomialLike(x) {
 		t.Errorf(
 			"Expected IsPolynomialLike(%T) to be false; received true",
 			x,
@@ -65,7 +64,7 @@ func TestExpression_ToPolynomialLike1(t *testing.T) {
 	x := symbolic.NewVariable()
 
 	// Test
-	if _, err := polynomial_like.ToPolynomialLike(x); err != nil {
+	if _, err := symbolic.ToPolynomialLike(x); err != nil {
 		t.Errorf(
 			"Expected ToPolynomialLike(%T) to return no error; received %v",
 			x,
@@ -86,7 +85,7 @@ func TestExpression_ToPolynomialLike2(t *testing.T) {
 	x := getKMatrix.From(symbolic.Identity(2))
 
 	// Test
-	if _, err := polynomial_like.ToPolynomialLike(x); err != nil {
+	if _, err := symbolic.ToPolynomialLike(x); err != nil {
 		t.Errorf(
 			"Expected ToPolynomialLike(%T) to return no error; received %v",
 			x,
@@ -106,7 +105,7 @@ func TestExpression_ToPolynomialLike3(t *testing.T) {
 	x := symbolic.NewVariableVector(2)
 
 	// Test
-	if _, err := polynomial_like.ToPolynomialLike(x); err != nil {
+	if _, err := symbolic.ToPolynomialLike(x); err != nil {
 		t.Errorf(
 			"Expected ToPolynomialLike(%T) to return no error; received %v",
 			x,
@@ -136,5 +135,5 @@ func TestExpression_ToPolynomialLike4(t *testing.T) {
 	}()
 
 	// Test
-	polynomial_like.ToPolynomialLike(x)
+	symbolic.ToPolynomialLike(x)
 }

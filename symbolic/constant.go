@@ -304,13 +304,13 @@ func (c K) DerivativeWrt(vIn Variable) Expression {
 }
 
 /*
-IsLinear
+Degree
 Description:
 
-	Returns true always. A constant expression is always linear.
+	The degree of a constant is always 0.
 */
-func (c K) IsLinear() bool {
-	return true
+func (c K) Degree() int {
+	return 0
 }
 
 /*

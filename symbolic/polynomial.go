@@ -543,12 +543,12 @@ func (p Polynomial) DerivativeWrt(vIn Variable) Expression {
 }
 
 /*
-IsLinear
+Degree
 Description:
 
-	This function returns true only if all of the monomials in the polynomial are linear.
+	The degree of the polynomial is the maximum degree of any of the monomials.
 */
-func (p Polynomial) IsLinear() bool {
+func (p Polynomial) Degree() int {
 	// Input Processing
 	err := p.Check()
 	if err != nil {
@@ -556,14 +556,13 @@ func (p Polynomial) IsLinear() bool {
 	}
 
 	// Algorithm
+	degree := 0
 	for _, monomial := range p.Monomials {
-		if !monomial.IsLinear() {
-			return false
+		if monomial.Degree() > degree {
+			degree = monomial.Degree()
 		}
 	}
-
-	// All monomials are linear
-	return true
+	return degree
 }
 
 /*

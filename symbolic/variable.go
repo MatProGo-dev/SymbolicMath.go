@@ -487,13 +487,13 @@ func (v Variable) DerivativeWrt(vIn Variable) Expression {
 }
 
 /*
-IsLinear
+Degree
 Description:
 
-	This function always returns true. A single variable is always a linear expression.
+	Returns the degree of the variable (which is always 1).
 */
-func (v Variable) IsLinear() bool {
-	return true
+func (v Variable) Degree() int {
+	return 1
 }
 
 /*

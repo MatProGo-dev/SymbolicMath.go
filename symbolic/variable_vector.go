@@ -186,10 +186,6 @@ func (vv VariableVector) Multiply(rightIn interface{}) Expression {
 	// Algorithm
 	switch right := rightIn.(type) {
 	case float64:
-		// Is output a scalar?
-		if nResultRows == 1 {
-			return vv[0].Multiply(K(right))
-		}
 		// Use K method
 		return vv.Multiply(K(right))
 	case K:

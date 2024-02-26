@@ -365,7 +365,7 @@ func (m Monomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	linearCoeffs := ZerosVector(len(wrtVars))
 
 	// Iterate through each variable
-	if m.IsLinear() {
+	if IsLinear(m) {
 		// If the monomial is linear,
 		// then find the variable that is present
 		idx, _ := FindInSlice(m.VariableFactors[0], wrtVars)
@@ -523,13 +523,12 @@ func (m Monomial) DerivativeWrt(vIn Variable) Expression {
 }
 
 /*
-IsLinear
+Degree
 Description:
 
-	This function returns true only if the sum of all degrees in the monomial is
-	less than or equal to 1.
+	Returns the degree of the monomial.
 */
-func (m Monomial) IsLinear() bool {
+func (m Monomial) Degree() int {
 	// Input Processing
 	err := m.Check()
 	if err != nil {
@@ -537,12 +536,13 @@ func (m Monomial) IsLinear() bool {
 	}
 
 	// Algorithm
-	sum := 0
-	for _, degree := range m.Exponents {
-		sum += degree
+	degree := 0
+	for _, exp := range m.Exponents {
+		degree += exp
 	}
 
-	return sum <= 1
+	// Return
+	return degree
 }
 
 /*

@@ -1,8 +1,7 @@
-package polynomial_like
+package symbolic
 
 import (
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
-	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 )
 
 /*
@@ -15,39 +14,39 @@ Description:
 */
 type PolynomialLike interface {
 	// NumVars returns the number of variables in the expression
-	Variables() []symbolic.Variable
+	Variables() []Variable
 
 	// Dims returns a slice describing the true dimensions of a given expression (scalar, vector, or matrix)
 	Dims() []int
 
 	// Plus adds the current expression to another and returns the resulting
 	// expression
-	Plus(rightIn interface{}) symbolic.Expression
+	Plus(rightIn interface{}) Expression
 
 	// Multiply multiplies the current expression to another and returns the
 	// resulting expression
-	Multiply(rightIn interface{}) symbolic.Expression
+	Multiply(rightIn interface{}) Expression
 
 	// Transpose transposes the given expression
-	Transpose() symbolic.Expression
+	Transpose() Expression
 
 	// LessEq returns a less than or equal to (<=) constraint between the
 	// current expression and another
-	LessEq(rightIn interface{}) symbolic.Constraint
+	LessEq(rightIn interface{}) Constraint
 
 	// GreaterEq returns a greater than or equal to (>=) constraint between the
 	// current expression and another
-	GreaterEq(rightIn interface{}) symbolic.Constraint
+	GreaterEq(rightIn interface{}) Constraint
 
 	// Eq returns an equality (==) constraint between the current expression
 	// and another
-	Eq(rightIn interface{}) symbolic.Constraint
+	Eq(rightIn interface{}) Constraint
 
 	// Comparison
-	Comparison(rightIn interface{}, sense symbolic.ConstrSense) symbolic.Constraint
+	Comparison(rightIn interface{}, sense ConstrSense) Constraint
 
 	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
-	DerivativeWrt(vIn symbolic.Variable) symbolic.Expression
+	DerivativeWrt(vIn Variable) Expression
 
 	// Check
 	Check() error
@@ -63,23 +62,23 @@ Description:
 	Tests whether or not the input variable is one of the expression types.
 */
 func IsPolynomialLike(e interface{}) bool {
-	return IsScalarExpression(e) || IsVectorExpression(e) || IsMatrixExpression(e)
+	return IsPolynomialLikeScalar(e) || IsPolynomialLikeVector(e) || IsPolynomialLikeMatrix(e)
 }
 
-func ToPolynomialLike(e interface{}) (symbolic.Expression, error) {
+func ToPolynomialLike(e interface{}) (Expression, error) {
 	switch {
-	case IsScalarExpression(e):
-		return ToScalarExpression(e)
-	case IsVectorExpression(e):
-		return ToVectorExpression(e)
-	case IsMatrixExpression(e):
-		return ToMatrixExpression(e)
+	case IsPolynomialLikeScalar(e):
+		return ToPolynomialLikeScalar(e)
+	case IsPolynomialLikeVector(e):
+		return ToPolynomialLikeVector(e)
+	case IsPolynomialLikeMatrix(e):
+		return ToPolynomialLikeMatrix(e)
 	}
 
 	// If the input is not a valid expression, panic
 	panic(
 		smErrors.UnsupportedInputError{
-			FunctionName: "ToExpression",
+			FunctionName: "ToPolynomialLike",
 			Input:        e,
 		},
 	)

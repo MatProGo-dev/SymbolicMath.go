@@ -1,6 +1,9 @@
 package symbolic
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+)
 
 // ScalarConstraint represnts a linear constraint of the form x <= y, x >= y, or
 // x == y. ScalarConstraint uses a left and right hand side expressions along with a
@@ -27,7 +30,30 @@ Description:
 	linear or not.
 */
 func (sc ScalarConstraint) IsLinear() bool {
-	return sc.LeftHandSide.IsLinear() && sc.RightHandSide.IsLinear()
+	// Check that both sides are polynomial like
+	if !IsPolynomialLike(sc.LeftHandSide) {
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "ScalarConstraint.IsLinear",
+				Input:        sc.LeftHandSide,
+			},
+		)
+	}
+
+	if !IsPolynomialLike(sc.RightHandSide) {
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "ScalarConstraint.IsLinear",
+				Input:        sc.RightHandSide,
+			},
+		)
+	}
+
+	// Convert left and right hand sides to polynomial like
+	leftAsPLS, _ := ToPolynomialLikeScalar(sc.LeftHandSide)
+	rightAsPLS, _ := ToPolynomialLikeScalar(sc.RightHandSide)
+
+	return IsLinear(leftAsPLS) && IsLinear(rightAsPLS)
 }
 
 /*
