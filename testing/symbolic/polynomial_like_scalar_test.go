@@ -1,4 +1,4 @@
-package polynomial_like_test
+package symbolic_test
 
 /*
 scalar_expression_test.go

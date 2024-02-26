@@ -1,4 +1,4 @@
-package polynomial_like_test
+package symbolic_test
 
 import (
 	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
@@ -24,7 +24,7 @@ func TestExpression_IsPolynomialLike1(t *testing.T) {
 	x := symbolic.NewVariable()
 
 	// Test
-	if symbolic.IsPolynomialLike(x) {
+	if !symbolic.IsPolynomialLike(x) {
 		t.Errorf(
 			"Expected IsPolynomialLike(%T) to be false; received true",
 			x,
