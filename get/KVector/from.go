@@ -34,6 +34,13 @@ func From(expr interface{}) symbolic.KVector {
 		// constructor.
 		newVD := mat.NewVecDense(len(converted), converted)
 		return symbolic.VecDenseToKVector(*newVD)
+	case []int:
+		// Transform []int into []float64
+		tempV := make([]float64, len(converted))
+		for i, v := range converted {
+			tempV[i] = float64(v)
+		}
+		return From(tempV)
 	default:
 		panic(
 			smErrors.UnsupportedInputError{
