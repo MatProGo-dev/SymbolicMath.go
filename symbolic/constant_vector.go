@@ -123,6 +123,11 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 	// Management
 	switch right := rightIn.(type) {
 	case float64:
+		// Check to see if the output is a vector or a scalar
+		if kvLen == 1 {
+			return K(float64(kv[0]) + right)
+		}
+
 		// Create vector
 		tempOnes := OnesVector(kvLen)
 		var eAsVec mat.VecDense
