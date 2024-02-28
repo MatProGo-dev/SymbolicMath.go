@@ -180,18 +180,41 @@ func (vv VariableVector) Multiply(rightIn interface{}) Expression {
 		}
 	}
 
+	// Constants
+	nResultRows := vv.Dims()[0]
+
+	// Algorithm
 	switch right := rightIn.(type) {
 	case float64:
 		// Use K method
 		return vv.Multiply(K(right))
 	case K:
+		// Is output a scalar
+		if nResultRows == 1 {
+			return vv[0].Multiply(right)
+		}
 		// Create a new vector of polynomials.
 		var mvOut MonomialVector
 		for _, v := range vv {
 			mvOut = append(mvOut, v.Multiply(right).(Monomial))
 		}
 		return mvOut
+	case Monomial:
+		// Is output a scalar?
+		if nResultRows == 1 {
+			return vv[0].Multiply(right)
+		}
+		// Otherwise, create a new vector of monomials.
+		var mvOut MonomialVector
+		for _, v := range vv {
+			mvOut = append(mvOut, v.Multiply(right).(Monomial))
+		}
+		return mvOut
 	case Polynomial:
+		// Is output a scalar?
+		if nResultRows == 1 {
+			return vv[0].Multiply(right)
+		}
 		// Create a new vector of polynomials.
 		var pvOut PolynomialVector
 		for _, v := range vv {

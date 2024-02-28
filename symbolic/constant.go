@@ -251,11 +251,18 @@ func (c K) Multiply(term1 interface{}) Expression {
 		return c * right
 	case Variable:
 		return right.Multiply(c)
+	case Monomial:
+		return right.Multiply(c)
+	case Polynomial:
+		return right.Multiply(c)
 	}
 
 	// Unrecornized response is a panic
 	panic(
-		fmt.Errorf("Unexpected type of term1 in the Multiply() method: %T (%v)", term1, term1),
+		smErrors.UnsupportedInputError{
+			FunctionName: "K.Multiply",
+			Input:        term1,
+		},
 	)
 }
 
@@ -304,13 +311,13 @@ func (c K) DerivativeWrt(vIn Variable) Expression {
 }
 
 /*
-IsLinear
+Degree
 Description:
 
-	Returns true always. A constant expression is always linear.
+	The degree of a constant is always 0.
 */
-func (c K) IsLinear() bool {
-	return true
+func (c K) Degree() int {
+	return 0
 }
 
 /*

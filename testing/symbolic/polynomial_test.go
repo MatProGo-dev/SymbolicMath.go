@@ -1133,11 +1133,11 @@ func TestPolynomial_IsLinear1(t *testing.T) {
 	}
 
 	// Test
-	if !p1.IsLinear() {
+	if !symbolic.IsLinear(p1) {
 		t.Errorf(
 			"expected %v to be linear; received %v",
 			p1,
-			p1.IsLinear(),
+			symbolic.IsLinear(p1),
 		)
 	}
 }

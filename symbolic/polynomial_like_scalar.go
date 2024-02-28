@@ -9,7 +9,7 @@ import (
 // c0 * x0 + c1 * x1 + ... + cn * xn + k where ci are coefficients and xi are
 // variables and k is a constant. This is a base interface that is implemented
 // by single variables, constants, and general linear expressions.
-type ScalarExpression interface {
+type PolynomialLikeScalar interface {
 	// Check returns an error if the expression is not valid
 	Check() error
 
@@ -56,26 +56,21 @@ type ScalarExpression interface {
 	// DerivativeWrt returns the derivative of the expression with respect to the input variable vIn.
 	DerivativeWrt(vIn Variable) Expression
 
+	// Degree returns the degree of the expression
+	Degree() int
+
 	// String returns a string representation of the expression
 	String() string
 }
 
-// NewExpr returns a new expression with a single additive constant value, c,
-// and no variables. Creating an expression like sum := NewExpr(0) is useful
-// for creating new empty expressions that you can perform operatotions on
-// later
-//func NewScalarExpression(c float64) ScalarExpression {
-//	return ScalarLinearExpr{C: c}
-//}
-
 /*
-IsScalarExpression
+IsPolynomialLikeScalar
 Description:
 
 	Determines whether or not an input object is a
-	valid "ScalarExpression" according to MatProInterface.
+	valid "PolynomialLikeScalar" according to MatProInterface.
 */
-func IsScalarExpression(e interface{}) bool {
+func IsPolynomialLikeScalar(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
 	case float64:
@@ -95,17 +90,17 @@ func IsScalarExpression(e interface{}) bool {
 }
 
 /*
-ToScalarExpression
+ToPolynomialLikeScalar
 Description:
 
 	Converts the input expression to a valid type that
-	implements "ScalarExpression".
+	implements "PolynomialLikeScalar".
 */
-func ToScalarExpression(e interface{}) (ScalarExpression, error) {
+func ToPolynomialLikeScalar(e interface{}) (PolynomialLikeScalar, error) {
 	// Input Processing
-	if !IsScalarExpression(e) {
+	if !IsPolynomialLikeScalar(e) {
 		return K(1.0), fmt.Errorf(
-			"the input interface is of type %T, which is not recognized as a ScalarExpression.",
+			"the input interface is of type %T, which is not recognized as a PolynomialLikeScalar.",
 			e,
 		)
 	}
@@ -128,4 +123,30 @@ func ToScalarExpression(e interface{}) (ScalarExpression, error) {
 			e,
 		)
 	}
+}
+
+/*
+IsLinear
+Description:
+
+	Determines whether an input object is a
+	valid linear expression.
+	In math, this means that the polynomial like expression
+	has a degree less than or equal to 1.
+*/
+func IsLinear(e PolynomialLikeScalar) bool {
+	return e.Degree() <= 1
+}
+
+/*
+IsQuadratic
+Description:
+
+	Determines whether or not an input object is a
+	valid Quadratic Expression.
+	In math, this means that the polynomial like expression
+	has a degree less than or equal to 2.
+*/
+func IsQuadratic(e PolynomialLikeScalar) bool {
+	return e.Degree() <= 2
 }

@@ -123,6 +123,11 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 	// Management
 	switch right := rightIn.(type) {
 	case float64:
+		// Check to see if the output is a vector or a scalar
+		if kvLen == 1 {
+			return K(float64(kv[0]) + right)
+		}
+
 		// Create vector
 		tempOnes := OnesVector(kvLen)
 		var eAsVec mat.VecDense
@@ -277,9 +282,17 @@ func (kv KVector) Multiply(rightIn interface{}) Expression {
 		}
 	}
 
+	// Constants
+	nResultRows := kv.Len()
+
 	// Compute Multiplication
 	switch right := rightIn.(type) {
 	case float64:
+		// Is output a vector or a scalar?
+		if nResultRows == 1 {
+			return K(float64(kv[0]) * right)
+		}
+
 		// Use mat.Vector's multiplication method
 		var result mat.VecDense
 		kvAsVec := kv.ToVecDense()
@@ -292,12 +305,41 @@ func (kv KVector) Multiply(rightIn interface{}) Expression {
 
 		return kv.Multiply(eAsFloat)
 	case Variable:
+		// Is the output a vector or a scalar?
+		if nResultRows == 1 {
+			return right.Multiply(kv[0])
+		}
+
 		// Create a new monomial vector
 		var mvOut MonomialVector
 		for _, element := range kv {
 			mvOut = append(mvOut, element.Multiply(right).(Monomial))
 		}
 		return mvOut
+	case Monomial:
+		// Is the output a vector or a scalar?
+		if nResultRows == 1 {
+			return right.Multiply(kv[0])
+		}
+
+		// Create a new monomial vector
+		var mvOut MonomialVector
+		for _, element := range kv {
+			mvOut = append(mvOut, element.Multiply(right).(Monomial))
+		}
+		return mvOut
+	case Polynomial:
+		// Is the output a vector or a scalar?
+		if nResultRows == 1 {
+			return right.Multiply(kv[0])
+		}
+
+		// Create a new monomial vector
+		var pvOut PolynomialVector
+		for _, element := range kv {
+			pvOut = append(pvOut, element.Multiply(right).(Polynomial))
+		}
+		return pvOut
 	case *mat.VecDense:
 		return kv.Multiply(*right)
 	case mat.VecDense:

@@ -521,6 +521,30 @@ func TestConstantVector_Plus9(t *testing.T) {
 }
 
 /*
+TestConstantVector_Plus10
+Description:
+
+	Tests that the Plus() method returns a scalar constant when
+	a KVector of length 1 is multiplied by a float64.
+*/
+func TestConstantVector_Plus10(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(1))
+	f2 := 3.14
+
+	// Test
+	sum := kv1.Plus(f2)
+
+	// Check that sum is a K object
+	if _, tf := sum.(symbolic.K); !tf {
+		t.Errorf(
+			"Expected sum to be of type K; received %v",
+			sum,
+		)
+	}
+}
+
+/*
 TestConstantVector_LessEq1
 Description:
 
@@ -931,5 +955,182 @@ func TestConstantVector_Multiply7(t *testing.T) {
 				kv3.(symbolic.MonomialVector)[ii].VariableFactors[0],
 			)
 		}
+	}
+}
+
+/*
+TestConstantVector_Multiply8
+Description:
+
+	Verifies that the Multiply method correctly computes the product
+	of a KVector (of length 1) and float64 that produces a scalar constant K.
+*/
+func TestConstantVector_Multiply8(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(1))
+	f2 := 3.14
+
+	// Test
+	product := kv1.Multiply(f2)
+
+	// Check that product is a K object
+	if _, tf := product.(symbolic.K); !tf {
+		t.Errorf(
+			"Expected product to be of type K; received %v",
+			product,
+		)
+	}
+}
+
+/*
+TestConstantVector_Multiply9
+Description:
+
+	Verifies that the Multiply method correctly computes the product
+	of a KVector (length 1) and a scalar Variable.
+	The output should be a scalar monomial.
+*/
+func TestConstantVector_Multiply9(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(1))
+	v2 := symbolic.Variable{
+		ID:    1001,
+		Lower: 0.0,
+		Upper: 1.0,
+	}
+
+	// Test
+	product := kv1.Multiply(v2)
+
+	// Check that product is a K object
+	if _, tf := product.(symbolic.Monomial); !tf {
+		t.Errorf(
+			"Expected product to be of type Monomial; received %v",
+			product,
+		)
+	}
+}
+
+/*
+TestConstantVector_Multiply10
+Description:
+
+	Verifies that the Multiply method correctly computes the product
+	of a KVector (length 1) and a scalar Monomial.
+	The result should be a scalar monomial.
+*/
+func TestConstantVector_Multiply10(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(1))
+	m2 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{symbolic.NewVariable()},
+		Exponents:       []int{1},
+	}
+
+	// Test
+	product := kv1.Multiply(m2)
+
+	// Check that product is a K object
+	if _, tf := product.(symbolic.Monomial); !tf {
+		t.Errorf(
+			"Expected product to be of type Monomial; received %v",
+			product,
+		)
+	}
+}
+
+/*
+TestConstantVector_Multiply11
+Description:
+
+	Verifies that the Multiply method correctly computes the product
+	of a KVector (length 1) and a Polynomial.
+	The result should be a Polynomial.
+*/
+func TestConstantVector_Multiply11(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(1))
+	p2 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{
+				Coefficient:     3.14,
+				VariableFactors: []symbolic.Variable{symbolic.NewVariable()},
+				Exponents:       []int{1},
+			},
+		},
+	}
+
+	// Test
+	product := kv1.Multiply(p2)
+
+	// Check that product is a K object
+	if _, tf := product.(symbolic.Polynomial); !tf {
+		t.Errorf(
+			"Expected product to be of type Polynomial; received %v",
+			product,
+		)
+	}
+}
+
+/*
+TestConstantVector_Multiply12
+Description:
+
+	Verifies that the Multiply method correctly computes the product
+	of a KVector (length 10) and a Monomial.
+	The result should be a MonomialVector.
+*/
+func TestConstantVector_Multiply12(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(10))
+	m2 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{symbolic.NewVariable()},
+		Exponents:       []int{1},
+	}
+
+	// Test
+	product := kv1.Multiply(m2)
+
+	// Check that product is a K object
+	if _, tf := product.(symbolic.MonomialVector); !tf {
+		t.Errorf(
+			"Expected product to be of type MonomialVector; received %v",
+			product,
+		)
+	}
+}
+
+/*
+TestConstantVector_Multiply13
+Description:
+
+	Verifies that the Multiply method correctly computes the product
+	of a KVector (length 10) and a Polynomial.
+	The result should be a PolynomialVector.
+*/
+func TestConstantVector_Multiply13(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(10))
+	p2 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{
+				Coefficient:     3.14,
+				VariableFactors: []symbolic.Variable{symbolic.NewVariable()},
+				Exponents:       []int{1},
+			},
+		},
+	}
+
+	// Test
+	product := kv1.Multiply(p2)
+
+	// Check that product is a K object
+	if _, tf := product.(symbolic.PolynomialVector); !tf {
+		t.Errorf(
+			"Expected product to be of type PolynomialVector; received %v",
+			product,
+		)
 	}
 }

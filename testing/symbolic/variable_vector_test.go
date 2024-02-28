@@ -7,6 +7,7 @@ Description:
 */
 
 import (
+	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
@@ -732,6 +733,117 @@ func TestVariableVector_Multiply7(t *testing.T) {
 		}
 	}
 }
+
+/*
+TestVariableVector_Multiply8
+Description:
+
+	This test verifies that the multiplication of a variable vector
+	with a square matrix and another variable vector produces a
+	scalar expression.
+*/
+func TestVariableVector_Multiply8(t *testing.T) {
+	// Constants
+	N := 1
+	vv1 := symbolic.NewVariableVector(N)
+	m2 := getKMatrix.From(symbolic.Identity(N))
+
+	L4 := getKVector.From(symbolic.OnesVector(N))
+
+	// Test
+	r := vv1.Transpose().Multiply(m2).Multiply(vv1).Plus(
+		L4.Transpose().Multiply(vv1),
+	).Plus(3.14)
+	if _, ok := r.(symbolic.ScalarExpression); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(m2, vv3) to return a scalar expression; received %T",
+			r,
+		)
+	}
+
+	// Check that the output is a scalar polynomial
+	if _, ok := r.(symbolic.Polynomial); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(m2, vv3) to return a scalar polynomial; received %T",
+			r,
+		)
+	}
+}
+
+/*
+TestVariableVector_Multiply9
+Description:
+
+	This test verifies that the multiplication of a variable vector
+	of length 1 multiplied by a float64 returns a monomial.
+*/
+func TestVariableVector_Multiply9(t *testing.T) {
+	// Constants
+	N := 1
+	vv1 := symbolic.NewVariableVector(N)
+	k2 := symbolic.K(3.14)
+
+	// Test
+	r := vv1.Multiply(k2)
+	if _, ok := r.(symbolic.Monomial); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(k2) to return a MonomialVector object; received %T",
+			r,
+		)
+	}
+}
+
+/*
+TestVariableVector_Multiply10
+Description:
+
+	This test verifies that the multiplication of a variable vector
+	(of length 10) with a monomial returns a monomial vector.
+*/
+func TestVariableVector_Multiply10(t *testing.T) {
+	// Constants
+	N := 10
+	vv1 := symbolic.NewVariableVector(N)
+	mv2 := symbolic.NewVariable().ToMonomial()
+
+	// Test
+	r := vv1.Multiply(mv2)
+	if _, ok := r.(symbolic.MonomialVector); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(mv2) to return a Monomial object; received %T",
+			r,
+		)
+	}
+
+}
+
+/*
+TestVariableVector_Multiply11
+Description:
+
+	This test verifies that the multiplication of a variable vector
+	(of length 1) with a monomial returns a scalar monomial.
+*/
+func TestVariableVector_Multiply11(t *testing.T) {
+	// Constants
+	N := 1
+	vv1 := symbolic.NewVariableVector(N)
+	m2 := symbolic.NewVariable().ToMonomial()
+
+	// Test
+	r := vv1.Multiply(m2)
+	if _, ok := r.(symbolic.Monomial); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(m2) to return a Monomial object; received %T",
+			r,
+		)
+	}
+}
+
+/*
+TestVariableVector_Multiply12
+
+*/
 
 /*
 TestVariableVector_Comparison1

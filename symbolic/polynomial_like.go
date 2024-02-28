@@ -1,6 +1,8 @@
 package symbolic
 
-import "github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+import (
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+)
 
 /*
 polynomial_like.go
@@ -60,24 +62,23 @@ Description:
 	Tests whether or not the input variable is one of the expression types.
 */
 func IsPolynomialLike(e interface{}) bool {
-	//return IsScalarExpression(e) || IsVectorExpression(e) || IsMatrixExpression(e)
-	return false
+	return IsPolynomialLikeScalar(e) || IsPolynomialLikeVector(e) || IsPolynomialLikeMatrix(e)
 }
 
 func ToPolynomialLike(e interface{}) (Expression, error) {
-	//switch {
-	//case IsScalarExpression(e):
-	//	return ToScalarExpression(e)
-	//case IsVectorExpression(e):
-	//	return ToVectorExpression(e)
-	//case IsMatrixExpression(e):
-	//	return ToMatrixExpression(e)
-	//}
+	switch {
+	case IsPolynomialLikeScalar(e):
+		return ToPolynomialLikeScalar(e)
+	case IsPolynomialLikeVector(e):
+		return ToPolynomialLikeVector(e)
+	case IsPolynomialLikeMatrix(e):
+		return ToPolynomialLikeMatrix(e)
+	}
 
 	// If the input is not a valid expression, panic
 	panic(
 		smErrors.UnsupportedInputError{
-			FunctionName: "ToExpression",
+			FunctionName: "ToPolynomialLike",
 			Input:        e,
 		},
 	)
