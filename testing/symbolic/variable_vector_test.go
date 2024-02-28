@@ -771,6 +771,81 @@ func TestVariableVector_Multiply8(t *testing.T) {
 }
 
 /*
+TestVariableVector_Multiply9
+Description:
+
+	This test verifies that the multiplication of a variable vector
+	of length 1 multiplied by a float64 returns a monomial.
+*/
+func TestVariableVector_Multiply9(t *testing.T) {
+	// Constants
+	N := 1
+	vv1 := symbolic.NewVariableVector(N)
+	k2 := symbolic.K(3.14)
+
+	// Test
+	r := vv1.Multiply(k2)
+	if _, ok := r.(symbolic.Monomial); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(k2) to return a MonomialVector object; received %T",
+			r,
+		)
+	}
+}
+
+/*
+TestVariableVector_Multiply10
+Description:
+
+	This test verifies that the multiplication of a variable vector
+	(of length 10) with a monomial returns a monomial vector.
+*/
+func TestVariableVector_Multiply10(t *testing.T) {
+	// Constants
+	N := 10
+	vv1 := symbolic.NewVariableVector(N)
+	mv2 := symbolic.NewVariable().ToMonomial()
+
+	// Test
+	r := vv1.Multiply(mv2)
+	if _, ok := r.(symbolic.MonomialVector); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(mv2) to return a Monomial object; received %T",
+			r,
+		)
+	}
+
+}
+
+/*
+TestVariableVector_Multiply11
+Description:
+
+	This test verifies that the multiplication of a variable vector
+	(of length 1) with a monomial returns a scalar monomial.
+*/
+func TestVariableVector_Multiply11(t *testing.T) {
+	// Constants
+	N := 1
+	vv1 := symbolic.NewVariableVector(N)
+	m2 := symbolic.NewVariable().ToMonomial()
+
+	// Test
+	r := vv1.Multiply(m2)
+	if _, ok := r.(symbolic.Monomial); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(m2) to return a Monomial object; received %T",
+			r,
+		)
+	}
+}
+
+/*
+TestVariableVector_Multiply12
+
+*/
+
+/*
 TestVariableVector_Comparison1
 Description:
 

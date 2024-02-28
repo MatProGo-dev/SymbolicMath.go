@@ -292,6 +292,9 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 			}
 		}
 		return monomialOut
+	case Monomial:
+		// Use Monomial method
+		return right.Multiply(v)
 	case Polynomial:
 		// Create a new vector of polynomials.
 		return right.Multiply(v)
@@ -315,7 +318,7 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 
 	// Unrecornized response is a panic
 	panic(
-		fmt.Errorf("Unexpected input to v.Multiply(): %T", rightIn),
+		fmt.Errorf("Unexpected input to Variable.Multiply(): %T", rightIn),
 	)
 }
 
