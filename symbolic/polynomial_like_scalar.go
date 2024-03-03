@@ -26,6 +26,10 @@ type PolynomialLikeScalar interface {
 	// expression
 	Plus(rightIn interface{}) Expression
 
+	// Minus subtracts an expression from the current one and returns the resulting
+	// expression
+	Minus(rightIn interface{}) Expression
+
 	// LessEq returns a less than or equal to (<=) constraint between the
 	// current expression and another
 	LessEq(rhsIn interface{}) Constraint

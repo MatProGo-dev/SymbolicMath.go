@@ -173,6 +173,52 @@ func (p Polynomial) Plus(e interface{}) Expression {
 }
 
 /*
+Minus
+Description:
+
+	Defines a subtraction between the polynomial and another expression.
+*/
+func (p Polynomial) Minus(e interface{}) Expression {
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(e) {
+		eAsE, _ := ToExpression(e)
+		err = eAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check the dimensions in this subtraction
+		err := smErrors.CheckDimensionsInSubtraction(p, eAsE)
+		if err != nil {
+			panic(err)
+		}
+
+		// Use Expression's Minus() method
+		return Minus(p, eAsE)
+	}
+
+	// Constants
+	switch right := e.(type) {
+	case float64:
+		return p.Minus(K(right))
+	}
+
+	// If the function has reached this point, then
+	// the input is not recognized
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "Polynomial.Minus",
+			Input:        e,
+		},
+	)
+}
+
+/*
 ConstantMonomialIndex
 Description:
 

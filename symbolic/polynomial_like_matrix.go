@@ -28,7 +28,11 @@ type PolynomialLikeMatrix interface {
 	// expression
 	Plus(e interface{}) Expression
 
-	// Mult multiplies the current expression with another and returns the
+	// Minus subtracts an expression from the current one and returns the resulting
+	// expression
+	Minus(rightIn interface{}) Expression
+
+	// Multiply multiplies the current expression with another and returns the
 	// resulting expression
 	Multiply(e interface{}) Expression
 

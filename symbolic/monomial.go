@@ -130,6 +130,51 @@ func (m Monomial) Plus(e interface{}) Expression {
 }
 
 /*
+Minus
+Description:
+
+	Subtraction of the monomial with another expression.
+*/
+func (m Monomial) Minus(e interface{}) Expression {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(e) {
+		// Convert to expression
+		rightAsE, _ := ToExpression(e)
+		err = rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+		// Check Dimensions
+		err := smErrors.CheckDimensionsInAddition(m, rightAsE)
+		if err != nil {
+			panic(err)
+		}
+
+		// Use Expression's method
+		return Minus(m, rightAsE)
+	}
+
+	// Algorithm
+	switch right := e.(type) {
+	case float64:
+		return m.Minus(K(right)) // Reuse K case
+	}
+
+	// Unrecognized response is a panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "Monomial.Minus",
+			Input:        e,
+		},
+	)
+}
+
+/*
 Multiply
 Description:
 

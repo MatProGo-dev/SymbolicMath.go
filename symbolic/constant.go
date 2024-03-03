@@ -129,6 +129,45 @@ func (c K) Plus(rightIn interface{}) Expression {
 	)
 }
 
+/*
+Minus
+Description:
+
+	This function subtracts the current expression from another and returns the resulting expression.
+*/
+func (c K) Minus(rightIn interface{}) Expression {
+	// Input Processing
+	if IsExpression(rightIn) {
+		rightAsE, _ := ToExpression(rightIn)
+		err := rightAsE.Check()
+		if err != nil {
+			panic(fmt.Errorf("error in second argument to %v.Minus: %v", c, err))
+		}
+
+		err = smErrors.CheckDimensionsInSubtraction(c, rightAsE)
+		if err != nil {
+			panic(err)
+		}
+
+		// Use Minus function
+		return Minus(c, rightAsE)
+	}
+
+	// Switching based on input type
+	switch right := rightIn.(type) {
+	case float64:
+		return c.Minus(K(right))
+	}
+
+	// Default response is a panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "K.Minus",
+			Input:        rightIn,
+		},
+	)
+}
+
 // LessEq returns a less than or equal to (<=) constraint between the
 // current expression and another
 func (c K) LessEq(rightIn interface{}) Constraint {

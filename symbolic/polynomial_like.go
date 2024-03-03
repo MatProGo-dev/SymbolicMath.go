@@ -23,6 +23,10 @@ type PolynomialLike interface {
 	// expression
 	Plus(rightIn interface{}) Expression
 
+	// Minus subtracts an expression from the current one and returns the resulting
+	// expression
+	Minus(rightIn interface{}) Expression
+
 	// Multiply multiplies the current expression to another and returns the
 	// resulting expression
 	Multiply(rightIn interface{}) Expression

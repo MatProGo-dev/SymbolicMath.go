@@ -167,6 +167,53 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 }
 
 /*
+Minus
+Description:
+
+	Subtracts the current expression from another and returns the resulting expression
+*/
+func (kv KVector) Minus(e interface{}) Expression {
+	// Input Processing
+	err := kv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(e) {
+		// Check right
+		eAsE, _ := ToExpression(e)
+		err = eAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check dimensions
+		err = smErrors.CheckDimensionsInSubtraction(kv, eAsE)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	// Algorithm
+	switch right := e.(type) {
+	case float64:
+		return kv.Minus(K(right)) // Reuse K case
+	case mat.VecDense:
+		return kv.Minus(VecDenseToKVector(right)) // Convert to KVector
+	case *mat.VecDense:
+		return kv.Minus(VecDenseToKVector(*right)) // Convert to KVector
+	}
+
+	// Default response is a panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "KVector.Minus",
+			Input:        e,
+		},
+	)
+}
+
+/*
 LessEq
 Description:
 

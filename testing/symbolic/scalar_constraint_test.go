@@ -146,6 +146,15 @@ func TestScalarConstraint_IsLinear2(t *testing.T) {
 }
 
 /*
+TestScalarConstraint_IsLinear3
+Description:
+
+	Verifies that the method panics if the left hand side
+	is not a polynomial like scalar.
+	TODO: Finish this test
+*/
+
+/*
 TestScalarConstraint_Simplify1
 Description:
 

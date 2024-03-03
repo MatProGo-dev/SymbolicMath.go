@@ -21,6 +21,10 @@ type Expression interface {
 	// expression
 	Plus(rightIn interface{}) Expression
 
+	// Minus subtracts an expression from the current one and returns the resulting
+	// expression
+	Minus(rightIn interface{}) Expression
+
 	// Multiply multiplies the current expression to another and returns the
 	// resulting expression
 	Multiply(rightIn interface{}) Expression
@@ -106,5 +110,17 @@ func ToExpression(e interface{}) (Expression, error) {
 			FunctionName: "ToExpression",
 			Input:        e,
 		},
+	)
+}
+
+/*
+Minus
+Description:
+
+	subtracts the current expression from another and returns the resulting expression
+*/
+func Minus(left, right Expression) Expression {
+	return left.Plus(
+		right.Multiply(-1),
 	)
 }

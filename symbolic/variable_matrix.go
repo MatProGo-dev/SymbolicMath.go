@@ -180,6 +180,63 @@ func (vm VariableMatrix) Plus(e interface{}) Expression {
 }
 
 /*
+Minus
+Description:
+
+	This function subtracts a variable matrix from another term.
+*/
+func (vm VariableMatrix) Minus(e interface{}) Expression {
+	// Input Processing
+	// - Check the variable matrix is well-defined
+	// - If e is an expression, then:
+	//   + Check that it is a well-defined expression
+	//   + Check that the dimensions of the two expressions match
+
+	err := vm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(e) {
+		// Convert e to an expression
+		eAsE, _ := ToExpression(e)
+		err = eAsE.Check()
+		if err != nil {
+			panic(
+				fmt.Errorf("error in second argument to VariableMatrix.Minus: %v", err),
+			)
+		}
+
+		err := smErrors.CheckDimensionsInSubtraction(vm, eAsE)
+		if err != nil {
+			panic(err)
+		}
+
+		// Use Expression's Minus Function
+		return Minus(vm, eAsE)
+	}
+
+	// Algorithm for non-expressions
+	switch right := e.(type) {
+	case float64:
+		return vm.Minus(K(right)) // Use K case
+	case mat.Dense:
+		return vm.Minus(DenseToKMatrix(right)) // Use KMatrix case
+	case *mat.Dense:
+		return vm.Minus(DenseToKMatrix(*right)) // Use KMatrix case
+	}
+
+	// panic if the type is not recognized
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "VariableMatrix.Minus",
+			Input:        e,
+		},
+	)
+
+}
+
+/*
 Multiply
 Description:
 

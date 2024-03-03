@@ -28,6 +28,10 @@ type MatrixExpression interface {
 	// expression
 	Plus(e interface{}) Expression
 
+	// Minus subtracts an expression from the current one and returns the resulting
+	// expression
+	Minus(rightIn interface{}) Expression
+
 	// Mult multiplies the current expression with another and returns the
 	// resulting expression
 	Multiply(e interface{}) Expression

@@ -248,6 +248,59 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 }
 
 /*
+Minus
+Description:
+
+	Defines a subtraction between the polynomial vector and another expression.
+*/
+func (pv PolynomialVector) Minus(e interface{}) Expression {
+	// Input Processing
+	// - Check the polynomial vector
+	// - Checks if the input e is an expression, if so:
+	//	 + Checks the expression
+	//	 + Checks the dimensions of the polynomial vector and the expression
+
+	err := pv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(e) {
+		eAsE, _ := ToExpression(e)
+		err = eAsE.Check()
+		if err != nil {
+			panic(fmt.Errorf("error in second argument to Minus: %v", err))
+		}
+
+		err = smErrors.CheckDimensionsInSubtraction(pv, eAsE)
+		if err != nil {
+			panic(err)
+		}
+
+		// Use the Expression's Minus method
+		return Minus(pv, eAsE)
+	}
+
+	// Algorithm for non-expressions
+	switch right := e.(type) {
+	case float64:
+		return pv.Minus(K(right))
+	case mat.VecDense:
+		return pv.Minus(VecDenseToKVector(right))
+	case *mat.VecDense:
+		return pv.Minus(VecDenseToKVector(*right))
+	}
+
+	// Default response is a panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "PolynomialVector.Minus",
+			Input:        e,
+		},
+	)
+}
+
+/*
 Multiply
 Description:
 

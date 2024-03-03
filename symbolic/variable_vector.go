@@ -155,6 +155,60 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 }
 
 /*
+Minus
+Description:
+
+	This function subtracts an expression from the current
+	variable vector and returns the resulting expression.
+*/
+func (vv VariableVector) Minus(rightIn interface{}) Expression {
+	// Input Checking
+	// - Check that the receiver is well-defined
+	// - If the rightIn is an expression, then
+	//	 + Check that the rightIn is well-defined
+	//	 + Check that the dimensions are compatible
+
+	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(rightIn) {
+		rightAsE, _ := ToExpression(rightIn)
+		err := rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		err = smErrors.CheckDimensionsInSubtraction(vv, rightAsE)
+		if err != nil {
+			panic(err)
+		}
+
+		// Use Expression's Minus function
+		return Minus(vv, rightAsE)
+	}
+
+	// Algorithm for non-expressions
+	switch right := rightIn.(type) {
+	case float64:
+		return vv.Minus(K(right)) // Use K method
+	case mat.VecDense:
+		return vv.Minus(VecDenseToKVector(right)) // Use KVector method
+	case *mat.VecDense:
+		return vv.Minus(VecDenseToKVector(*right)) // Use KVector method
+	}
+
+	// If input isn't recognized, then panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "VariableVector.Minus",
+			Input:        rightIn,
+		},
+	)
+}
+
+/*
 Multiply
 Description:
 

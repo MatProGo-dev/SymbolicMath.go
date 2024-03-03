@@ -131,6 +131,51 @@ func (v Variable) Plus(rightIn interface{}) Expression {
 	)
 }
 
+/*
+Minus
+Description:
+
+	This function subtracts an expression from the current
+	variable.
+*/
+func (v Variable) Minus(rightIn interface{}) Expression {
+	// Input Processing
+	err := v.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(rightIn) {
+		rightAsE, _ := ToExpression(rightIn)
+		err := rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check dimensions
+		err = smErrors.CheckDimensionsInSubtraction(v, rightAsE)
+		if err != nil {
+			panic(err)
+		}
+
+		// Use Expression's Minus() method
+		return Minus(v, rightAsE)
+	}
+
+	// Algorithm
+	switch right := rightIn.(type) {
+	case float64:
+		return v.Minus(K(right))
+	}
+
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "Variable.Minus",
+			Input:        rightIn,
+		},
+	)
+}
+
 // LessEq returns a less than or equal to (<=) constraint between the
 // current expression and another
 func (v Variable) LessEq(rhsIn interface{}) Constraint {

@@ -202,6 +202,60 @@ func (pm PolynomialMatrix) Plus(e interface{}) Expression {
 }
 
 /*
+Minus
+Description:
+
+	Subtracts another expression from the given polynomial matrix
+	and returns the result.
+*/
+func (pm PolynomialMatrix) Minus(e interface{}) Expression {
+	// Input Processing
+	// - Check that pm is valid
+	// - Check that the input expression (if it is an expression)
+	//   + is valid
+	//	 + has the same dimensions as pm
+
+	err := pm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(e) {
+		eAsE, _ := ToExpression(e)
+		err = eAsE.Check()
+		if err != nil {
+			panic(fmt.Errorf("error in second argument to Minus: %v", err))
+		}
+
+		err = smErrors.CheckDimensionsInSubtraction(pm, eAsE)
+		if err != nil {
+			panic(err)
+		}
+
+		// Perform the subtraction with Expression's Minus() function
+		return Minus(pm, eAsE)
+	}
+
+	// Algorithm for non-expressions
+	switch right := e.(type) {
+	case float64:
+		return pm.Minus(K(right))
+	case mat.Dense:
+		return pm.Minus(DenseToKMatrix(right))
+	case *mat.Dense:
+		return pm.Minus(*right)
+	}
+
+	// If type isn't recognized, then panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "PolynomialMatrix.Minus",
+			Input:        e,
+		},
+	)
+}
+
+/*
 Multiply
 Description:
 
