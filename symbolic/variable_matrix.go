@@ -692,3 +692,14 @@ func (vm VariableMatrix) ToPolynomialMatrix() PolynomialMatrix {
 	}
 	return pmOut
 }
+
+/*
+Degree
+Description:
+
+	Returns the maximum degree of the vector of
+	variables (which is always 1).
+*/
+func (vm VariableMatrix) Degree() int {
+	return 1
+}

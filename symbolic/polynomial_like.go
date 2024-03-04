@@ -57,6 +57,9 @@ type PolynomialLike interface {
 
 	// String returns a string representation of the expression
 	String() string
+
+	// Degree returns the degree of the expression
+	Degree() int
 }
 
 /*
@@ -69,7 +72,7 @@ func IsPolynomialLike(e interface{}) bool {
 	return IsPolynomialLikeScalar(e) || IsPolynomialLikeVector(e) || IsPolynomialLikeMatrix(e)
 }
 
-func ToPolynomialLike(e interface{}) (Expression, error) {
+func ToPolynomialLike(e interface{}) (PolynomialLike, error) {
 	switch {
 	case IsPolynomialLikeScalar(e):
 		return ToPolynomialLikeScalar(e)

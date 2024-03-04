@@ -134,3 +134,14 @@ func (mc MatrixConstraint) At(ii, jj int) ScalarConstraint {
 
 	return ScalarConstraint{lhsAtIIJJ, rhsAtIIJJ, mc.Sense}
 }
+
+/*
+IsLinear
+Description:
+
+	Describes whether a given matrix constraint is
+	linear or not.
+*/
+func (mc MatrixConstraint) IsLinear() bool {
+	return IsLinear(mc.RightHandSide) && IsLinear(mc.LeftHandSide)
+}

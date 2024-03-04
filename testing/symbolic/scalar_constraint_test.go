@@ -171,13 +171,7 @@ func TestScalarConstraint_Simplify1(t *testing.T) {
 	sc := symbolic.ScalarConstraint{x, c2, symbolic.SenseLessThanEqual}
 
 	// Simplify
-	sc, err := sc.Simplify()
-	if err != nil {
-		t.Errorf(
-			"Expected no error from sc.Simplify(); received %v",
-			err,
-		)
-	}
+	sc = sc.Simplify()
 
 	// Verify that the constraint is linear
 	if !sc.IsLinear() {
@@ -223,13 +217,7 @@ func TestScalarConstraint_Simplify2(t *testing.T) {
 	sc := symbolic.ScalarConstraint{c2, x, symbolic.SenseLessThanEqual}
 
 	// Simplify
-	sc, err := sc.Simplify()
-	if err != nil {
-		t.Errorf(
-			"Expected no error from sc.Simplify(); received %v",
-			err,
-		)
-	}
+	sc = sc.Simplify()
 
 	// Verify that the constraint is linear
 	if !sc.IsLinear() {

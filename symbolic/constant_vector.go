@@ -574,3 +574,13 @@ Description:
 func (kv KVector) ToPolynomialVector() PolynomialVector {
 	return kv.ToMonomialVector().ToPolynomialVector()
 }
+
+/*
+Degree
+Description:
+
+	The degree of a constant matrix is always 0.
+*/
+func (kv KVector) Degree() int {
+	return 0
+}

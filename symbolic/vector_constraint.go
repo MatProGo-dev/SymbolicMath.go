@@ -118,3 +118,14 @@ Description:
 func (vc VectorConstraint) ConstrSense() ConstrSense {
 	return vc.Sense
 }
+
+/*
+IsLinear
+Description:
+
+	Describes whether a given vector constraint is
+	linear or not.
+*/
+func (vc VectorConstraint) IsLinear() bool {
+	return IsLinear(vc.RightHandSide) && IsLinear(vc.LeftHandSide)
+}

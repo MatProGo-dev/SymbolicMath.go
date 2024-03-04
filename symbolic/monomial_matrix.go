@@ -621,3 +621,31 @@ func (mm MonomialMatrix) String() string {
 	// Return the string
 	return out
 }
+
+/*
+Degree
+Description:
+
+	Returns the MAXIMUM degree in the monomial matrix.
+*/
+func (mm MonomialMatrix) Degree() int {
+	// Input Processing
+	err := mm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	maxDegree := 0
+	for _, row := range mm {
+		for _, m := range row {
+			degree := m.Degree()
+			if degree > maxDegree {
+				maxDegree = degree
+			}
+		}
+	}
+
+	// Return
+	return maxDegree
+}

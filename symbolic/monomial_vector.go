@@ -610,3 +610,29 @@ func (mv MonomialVector) ToPolynomialVector() PolynomialVector {
 	// Return
 	return pv
 }
+
+/*
+Degree
+Description:
+
+	Returns the MAXIMUM degree in the monomial vector.
+*/
+func (mv MonomialVector) Degree() int {
+	// Input Processing
+	err := mv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	maxDegree := 0
+	for _, m := range mv {
+		degree := m.Degree()
+		if degree > maxDegree {
+			maxDegree = degree
+		}
+	}
+
+	// Return
+	return maxDegree
+}

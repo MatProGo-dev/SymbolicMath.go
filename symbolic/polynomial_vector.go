@@ -577,3 +577,30 @@ func (pv PolynomialVector) String() string {
 	output += "]"
 	return output
 }
+
+/*
+Degree
+Description:
+
+	Returns the maximum degree of any of the entries
+	in the polynomial vector.
+*/
+func (pv PolynomialVector) Degree() int {
+	// Input Processing
+	err := pv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Constants
+	var maxDegree int = 0
+
+	// Algorithm
+	for _, polynomial := range pv {
+		if polynomial.Degree() > maxDegree {
+			maxDegree = polynomial.Degree()
+		}
+	}
+
+	return maxDegree
+}

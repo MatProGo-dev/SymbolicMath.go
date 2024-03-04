@@ -621,3 +621,29 @@ func (pm PolynomialMatrix) String() string {
 	// Return the string
 	return out
 }
+
+/*
+Degree
+Description:
+
+	The degree of the polynomial matrix
+	is the maximum degree of the entries.
+*/
+func (pm PolynomialMatrix) Degree() int {
+	// Input Processing
+	err := pm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	maxDegree := 0
+	for _, row := range pm {
+		for _, p := range row {
+			if p.Degree() > maxDegree {
+				maxDegree = p.Degree()
+			}
+		}
+	}
+	return maxDegree
+}

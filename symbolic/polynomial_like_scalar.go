@@ -128,29 +128,3 @@ func ToPolynomialLikeScalar(e interface{}) (PolynomialLikeScalar, error) {
 		)
 	}
 }
-
-/*
-IsLinear
-Description:
-
-	Determines whether an input object is a
-	valid linear expression.
-	In math, this means that the polynomial like expression
-	has a degree less than or equal to 1.
-*/
-func IsLinear(e PolynomialLikeScalar) bool {
-	return e.Degree() <= 1
-}
-
-/*
-IsQuadratic
-Description:
-
-	Determines whether or not an input object is a
-	valid Quadratic Expression.
-	In math, this means that the polynomial like expression
-	has a degree less than or equal to 2.
-*/
-func IsQuadratic(e PolynomialLikeScalar) bool {
-	return e.Degree() <= 2
-}

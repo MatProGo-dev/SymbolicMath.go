@@ -80,6 +80,9 @@ type PolynomialLikeVector interface {
 
 	// String returns a string representation of the expression
 	String() string
+
+	// Degree returns the degree of the expression
+	Degree() int
 }
 
 /*

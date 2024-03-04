@@ -121,6 +121,46 @@ Description:
 */
 func Minus(left, right Expression) Expression {
 	return left.Plus(
-		right.Multiply(-1),
+		right.Multiply(-1.0),
 	)
+}
+
+/*
+IsLinear
+Description:
+
+	Determines whether an input object is a
+	valid linear expression.
+	In math, this means that the polynomial like expression
+	has a degree less than or equal to 1.
+*/
+func IsLinear(e Expression) bool {
+	// Input Processing
+	if !IsPolynomialLike(e) {
+		return false // Not a polynomial like expression, so it can't be linear
+	}
+
+	eAsPL, _ := ToPolynomialLike(e)
+
+	return eAsPL.Degree() <= 1
+}
+
+/*
+IsQuadratic
+Description:
+
+	Determines whether or not an input object is a
+	valid Quadratic Expression.
+	In math, this means that the polynomial like expression
+	has a degree less than or equal to 2.
+*/
+func IsQuadratic(e Expression) bool {
+	// Input Processing
+	if !IsPolynomialLike(e) {
+		return false // Not a polynomial like expression, so it can't be linear
+	}
+
+	eAsPL, _ := ToPolynomialLike(e)
+
+	return eAsPL.Degree() <= 2
 }

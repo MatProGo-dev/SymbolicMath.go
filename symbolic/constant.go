@@ -100,6 +100,8 @@ func (c K) Plus(rightIn interface{}) Expression {
 
 	// Switching based on input type
 	switch right := rightIn.(type) {
+	case int:
+		return c.Plus(K(right))
 	case float64:
 		return c.Plus(K(right))
 	case K:
@@ -285,6 +287,8 @@ func (c K) Multiply(term1 interface{}) Expression {
 	// Algorithm
 	switch right := term1.(type) {
 	case float64:
+		return c.Multiply(K(right))
+	case int:
 		return c.Multiply(K(right))
 	case K:
 		return c * right

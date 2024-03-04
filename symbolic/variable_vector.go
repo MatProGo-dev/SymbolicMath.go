@@ -573,3 +573,14 @@ func (vv VariableVector) ToPolynomialVector() PolynomialVector {
 
 	return out
 }
+
+/*
+Degree
+Description:
+
+	Returns the degree of the vector of variables
+	(which is always 1).
+*/
+func (vv VariableVector) Degree() int {
+	return 1
+}
