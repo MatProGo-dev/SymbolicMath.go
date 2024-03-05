@@ -84,10 +84,15 @@ func (p Polynomial) Plus(e interface{}) Expression {
 
 	if IsExpression(e) {
 		eAsE, _ := ToExpression(e)
-		err := smErrors.CheckDimensionsInAddition(p, eAsE)
+		err = eAsE.Check()
 		if err != nil {
 			panic(err)
 		}
+
+		//err := smErrors.CheckDimensionsInAddition(p, eAsE)
+		//if err != nil {
+		//	panic(err)
+		//}
 	}
 
 	// Constants
@@ -154,13 +159,40 @@ func (p Polynomial) Plus(e interface{}) Expression {
 		// Simplify?
 		return pCopy.Simplify()
 	case KVector, VariableVector, MonomialVector, PolynomialVector:
-		// Right must be a vector of length 1
 		ve, _ := ToVectorExpression(right)
-		return p.Plus(ve.AtVec(0)) // Reuse scalar case
+		if ve.Len() == 1 {
+			return p.Plus(ve.AtVec(0)) // Reuse scalar case
+		} else {
+			// Return a polynomial vector
+			var polVecOut PolynomialVector
+			for ii := 0; ii < ve.Len(); ii++ {
+				polVecOut = append(polVecOut, p.Plus(ve.AtVec(ii)).(Polynomial))
+			}
+			return polVecOut
+		}
+
 	case KMatrix, VariableMatrix, MonomialMatrix, PolynomialMatrix:
-		// Right must be a matrix of size [1,1]
-		me, _ := ToMatrixExpression(right)
-		return p.Plus(me.At(0, 0)) // Reuse scalar case
+		// Setup
+
+		// Convert right to as ME
+		rightAsME, _ := ToMatrixExpression(right)
+		nResultRows, nResultCols := rightAsME.Dims()[0], rightAsME.Dims()[1]
+
+		switch {
+		case nResultRows == 1 && nResultCols == 1:
+			return p.Plus(rightAsME.At(0, 0)) // Reuse scalar case
+		default:
+			// Return a polynomial matrix
+			var polMatOut PolynomialMatrix
+			for ii := 0; ii < nResultRows; ii++ {
+				var polRowOut []Polynomial
+				for jj := 0; jj < nResultCols; jj++ {
+					polRowOut = append(polRowOut, p.Plus(rightAsME.At(ii, jj)).(Polynomial))
+				}
+				polMatOut = append(polMatOut, polRowOut)
+			}
+			return polMatOut
+		}
 	}
 
 	// Unrecognized response is a panic
@@ -192,11 +224,11 @@ func (p Polynomial) Minus(e interface{}) Expression {
 			panic(err)
 		}
 
-		// Check the dimensions in this subtraction
-		err := smErrors.CheckDimensionsInSubtraction(p, eAsE)
-		if err != nil {
-			panic(err)
-		}
+		//// Check the dimensions in this subtraction
+		//err := smErrors.CheckDimensionsInSubtraction(p, eAsE)
+		//if err != nil {
+		//	panic(err)
+		//}
 
 		// Use Expression's Minus() method
 		return Minus(p, eAsE)
