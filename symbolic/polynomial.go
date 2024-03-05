@@ -70,6 +70,20 @@ func (p Polynomial) Dims() []int {
 }
 
 /*
+Copy
+Description:
+
+	Returns a deep copy of the polynomial.
+*/
+func (p Polynomial) Copy() Polynomial {
+	out := Polynomial{
+		Monomials: make([]Monomial, len(p.Monomials)),
+	}
+	copy(out.Monomials, p.Monomials)
+	return out
+}
+
+/*
 Plus
 Description:
 
@@ -100,10 +114,7 @@ func (p Polynomial) Plus(e interface{}) Expression {
 	case float64:
 		return p.Plus(K(right))
 	case K:
-		pCopy := Polynomial{
-			Monomials: make([]Monomial, len(p.Monomials)),
-		}
-		copy(pCopy.Monomials, p.Monomials)
+		pCopy := p.Copy()
 
 		// Algorithm
 		constantIndex := pCopy.ConstantMonomialIndex()
@@ -122,10 +133,7 @@ func (p Polynomial) Plus(e interface{}) Expression {
 		return pCopy
 
 	case Variable:
-		pCopy := Polynomial{
-			Monomials: make([]Monomial, len(p.Monomials)),
-		}
-		copy(pCopy.Monomials, p.Monomials)
+		pCopy := p.Copy()
 
 		// Check to see if the variable is already in the polynomial
 		variableIndex := pCopy.VariableMonomialIndex(right)
@@ -148,10 +156,7 @@ func (p Polynomial) Plus(e interface{}) Expression {
 		return p.Plus(right.ToPolynomial())
 
 	case Polynomial:
-		pCopy := Polynomial{
-			Monomials: make([]Monomial, len(p.Monomials)),
-		}
-		copy(pCopy.Monomials, p.Monomials)
+		pCopy := p.Copy()
 
 		// Combine the list of monomials.
 		pCopy.Monomials = append(pCopy.Monomials, right.Monomials...)
@@ -237,7 +242,7 @@ func (p Polynomial) Minus(e interface{}) Expression {
 	// Constants
 	switch right := e.(type) {
 	case float64:
-		return p.Minus(K(right))
+		return p.Copy().Minus(K(right))
 	}
 
 	// If the function has reached this point, then
@@ -349,10 +354,15 @@ func (p Polynomial) Multiply(e interface{}) Expression {
 
 	if IsExpression(e) {
 		eAsE, _ := ToExpression(e)
-		err := smErrors.CheckDimensionsInMultiplication(p, eAsE)
+		err = eAsE.Check()
 		if err != nil {
 			panic(err)
 		}
+
+		//err := smErrors.CheckDimensionsInMultiplication(p, eAsE)
+		//if err != nil {
+		//	panic(err)
+		//}
 	}
 
 	// Algorithm
@@ -360,36 +370,46 @@ func (p Polynomial) Multiply(e interface{}) Expression {
 	case float64:
 		return p.Multiply(K(right))
 	case K:
-		pCopy := p
+		pCopy := p.Copy()
 		for ii, _ := range pCopy.Monomials {
 			product_ii := pCopy.Monomials[ii].Multiply(right)
 			pCopy.Monomials[ii] = product_ii.(Monomial) // Convert to Monomial
 		}
 		return pCopy
 	case Variable:
-		pCopy := p
+		pCopy := p.Copy()
 		for ii, _ := range pCopy.Monomials {
 			product_ii := pCopy.Monomials[ii].Multiply(right)
 			pCopy.Monomials[ii] = product_ii.(Monomial) // Convert to Monomial
 		}
 		return pCopy
 	case Monomial:
-		pCopy := p
-		for ii, _ := range pCopy.Monomials {
-			product_ii := pCopy.Monomials[ii].Multiply(right)
-			pCopy.Monomials[ii] = product_ii.(Monomial)
+		pCopy := p.Copy()
+		var out Polynomial
+		for _, m := range pCopy.Monomials {
+			out.Monomials = append(
+				out.Monomials,
+				m.Multiply(right).(Monomial),
+			)
 		}
-		return pCopy
+		return out
 	case Polynomial:
-		pCopy := p
+		pCopy := p.Copy()
 
 		// Multiply each monomial of the polynomial by the polynomial
-		productOut := pCopy.Multiply(right.Monomials[0])
-		for ii := 1; ii < len(right.Monomials); ii++ {
-			productOut = productOut.Plus(pCopy.Multiply(right.Monomials[ii]))
+		var productOut Expression = K(0.0)
+		for ii := 0; ii < len(right.Monomials); ii++ {
+			fmt.Println(fmt.Sprintf("pCopy.Multiply(right.Monomials[ii]): %v", pCopy.Multiply(right.Monomials[ii])))
+			productOut = productOut.Plus(
+				pCopy.Multiply(right.Monomials[ii]),
+			)
 		}
 
-		return productOut
+		fmt.Println(
+			fmt.Sprintf("Before Simplify: ", productOut),
+		)
+
+		return productOut.(Polynomial).Simplify()
 	case KVector, VariableVector, MonomialVector, PolynomialVector:
 		// Right must be a vector of length 1
 		ve, _ := ToVectorExpression(right)

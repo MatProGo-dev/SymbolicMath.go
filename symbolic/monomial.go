@@ -222,7 +222,6 @@ func (m Monomial) Multiply(e interface{}) Expression {
 		}
 		return monomialOut
 	case Monomial:
-		var monomialOut Monomial
 
 		// Collect all variables in both monomials
 		variables := append(m.VariableFactors, right.VariableFactors...)
@@ -246,10 +245,12 @@ func (m Monomial) Multiply(e interface{}) Expression {
 			multiDegree[foundIndex] += right.Exponents[ii]
 		}
 
-		// Create coefficient
-		monomialOut.Coefficient = m.Coefficient * right.Coefficient
-
-		return monomialOut
+		// Create monomialOut
+		return Monomial{
+			Coefficient:     m.Coefficient * right.Coefficient,
+			Exponents:       multiDegree,
+			VariableFactors: variables,
+		}
 	case Polynomial:
 		return right.Multiply(m) // Commutative
 	}
@@ -624,11 +625,16 @@ func (m Monomial) String() string {
 	monomialString := ""
 
 	// Add coefficient
-	monomialString += fmt.Sprintf("%v", m.Coefficient)
+	if (m.Coefficient != 1) || (len(m.VariableFactors) == 0) {
+		monomialString += fmt.Sprintf("%v", m.Coefficient)
+		if len(m.VariableFactors) != 0 {
+			monomialString += " "
+		}
+	}
 
 	// Add variables
 	for ii, variable := range m.VariableFactors {
-		monomialString += fmt.Sprintf(" %v", variable)
+		monomialString += fmt.Sprintf("%v", variable)
 		if m.Exponents[ii] != 1 {
 			monomialString += fmt.Sprintf("^%v", m.Exponents[ii])
 		}
