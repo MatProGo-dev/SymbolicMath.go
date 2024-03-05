@@ -405,10 +405,6 @@ func (p Polynomial) Multiply(e interface{}) Expression {
 			)
 		}
 
-		fmt.Println(
-			fmt.Sprintf("Before Simplify: ", productOut),
-		)
-
 		return productOut.(Polynomial).Simplify()
 	case KVector, VariableVector, MonomialVector, PolynomialVector:
 		// Right must be a vector of length 1
