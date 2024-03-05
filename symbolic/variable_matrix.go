@@ -449,25 +449,19 @@ func (vm VariableMatrix) Comparison(rightIn interface{}, sense ConstrSense) Cons
 	case mat.Dense:
 		// Use the KMatrix case
 		return vm.Comparison(DenseToKMatrix(right), sense)
-	case KMatrix:
+	case KMatrix, VariableMatrix, MonomialMatrix, PolynomialMatrix:
+		rightAsME, _ := ToMatrixExpression(right)
 		return MatrixConstraint{
 			LeftHandSide:  vm,
-			RightHandSide: right,
+			RightHandSide: rightAsME,
 			Sense:         sense,
 		}
-	case MonomialMatrix:
-		return MatrixConstraint{
-			LeftHandSide:  vm,
-			RightHandSide: right,
-			Sense:         sense,
-		}
-
 	}
 
 	// If the type is not recognized, panic
 	panic(
 		smErrors.UnsupportedInputError{
-			FunctionName: "VariableMatrix.Comparison",
+			FunctionName: fmt.Sprintf("VariableMatrix.Comparison (%v)", sense.String()),
 			Input:        rightIn,
 		},
 	)
