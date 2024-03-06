@@ -92,10 +92,11 @@ func (c K) Plus(rightIn interface{}) Expression {
 			panic(fmt.Errorf("error in second argument to %v.Plus: %v", c, err))
 		}
 
-		err = smErrors.CheckDimensionsInAddition(c, rightAsE)
-		if err != nil {
-			panic(err)
-		}
+		// Dimension checks should be fine because c is a scalar.
+		//err = smErrors.CheckDimensionsInAddition(c, rightAsE)
+		//if err != nil {
+		//	panic(err)
+		//}
 	}
 
 	// Switching based on input type
@@ -116,10 +117,14 @@ func (c K) Plus(rightIn interface{}) Expression {
 		return c.Plus(VecDenseToKVector(right))
 	case *mat.VecDense:
 		return c.Plus(VecDenseToKVector(*right))
-	case KVector:
-		return right.Plus(c)
-	case PolynomialVector:
-		return right.Plus(c)
+	case KVector, VariableVector, MonomialVector, PolynomialVector:
+		// Convert to VectorExpression
+		ve, _ := ToVectorExpression(right)
+		return ve.Plus(c)
+	case KMatrix, VariableMatrix, MonomialMatrix, PolynomialMatrix:
+		// Convert to MatrixExpression
+		me, _ := ToMatrixExpression(right)
+		return me.Plus(c)
 	}
 
 	// Default response is a panic
@@ -146,10 +151,10 @@ func (c K) Minus(rightIn interface{}) Expression {
 			panic(fmt.Errorf("error in second argument to %v.Minus: %v", c, err))
 		}
 
-		err = smErrors.CheckDimensionsInSubtraction(c, rightAsE)
-		if err != nil {
-			panic(err)
-		}
+		//err = smErrors.CheckDimensionsInSubtraction(c, rightAsE)
+		//if err != nil {
+		//	panic(err)
+		//}
 
 		// Use Minus function
 		return Minus(c, rightAsE)
@@ -213,14 +218,10 @@ func (c K) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	case float64:
 		// Use the version of Comparison for K
 		return c.Comparison(K(right), sense)
-	case K:
-		return ScalarConstraint{c, right, sense}
-	case Variable:
-		return ScalarConstraint{c, right, sense}
-	case Monomial:
-		return ScalarConstraint{c, right, sense}
-	case Polynomial:
-		return ScalarConstraint{c, right, sense}
+	case K, Variable, Monomial, Polynomial:
+		// Cast right to scalar expression
+		se, _ := ToScalarExpression(right)
+		return ScalarConstraint{c, se, sense}
 	case mat.VecDense:
 		// Convert to KVector
 		return c.Comparison(VecDenseToKVector(right), sense)
@@ -276,12 +277,18 @@ func (c K) Multiply(term1 interface{}) Expression {
 
 	// Input Processing
 	if IsExpression(term1) {
-		// Check dimensions
+		// Cast to expression
 		term1AsE, _ := ToExpression(term1)
-		err := smErrors.CheckDimensionsInMultiplication(c, term1AsE)
+		err := term1AsE.Check()
 		if err != nil {
 			panic(err)
 		}
+
+		//// Check dimensions (not necessary for scalar K)
+		//err := smErrors.CheckDimensionsInMultiplication(c, term1AsE)
+		//if err != nil {
+		//	panic(err)
+		//}
 	}
 
 	// Algorithm

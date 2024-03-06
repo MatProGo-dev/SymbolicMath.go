@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"gonum.org/v1/gonum/floats"
 	"strings"
 	"testing"
 )
@@ -616,6 +617,147 @@ func TestConstant_Plus11(t *testing.T) {
 }
 
 /*
+TestConstant_Plus12
+Description:
+
+	Tests that the plus method produces a valid sum when added to an
+	int. The sum should be a constant.
+*/
+func TestConstant_Plus12(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	i1 := 2
+
+	// Test
+	sum := k1.Plus(i1)
+
+	if !floats.EqualApprox(
+		[]float64{float64(sum.(symbolic.K))},
+		[]float64{5.14},
+		0.001,
+	) {
+		t.Errorf(
+			"expected Plus() to return a K 5.14; received %v",
+			sum,
+		)
+	}
+}
+
+/*
+TestConstant_Minus1
+Description:
+
+	Tests that the Minus() method properly subtracts a symbolic.K.
+*/
+func TestConstant_Minus1(t *testing.T) {
+	// Setup
+	k1 := symbolic.K(3.14)
+	k2 := symbolic.K(2.71)
+
+	// Test
+	res := k1.Minus(k2)
+
+	// Check that result is a constant
+	if _, tf := res.(symbolic.K); !tf {
+		t.Errorf(
+			"expected Minus() to return a K; received %T",
+			res,
+		)
+	}
+
+	// Check that the proper result is revealed.
+	if !floats.EqualApprox(
+		[]float64{float64(res.(symbolic.K))},
+		[]float64{0.43},
+		0.001,
+	) {
+		t.Errorf(
+			"expected constant to be 0.43; received %v",
+			res,
+		)
+	}
+
+}
+
+/*
+TestConstant_Minus2
+Description:
+
+	Tests that the Minus() method properly subtracts a float.
+*/
+func TestConstant_Minus2(t *testing.T) {
+	// Setup
+	k1 := symbolic.K(3.14)
+	f2 := 2.71
+
+	// Test
+	res := k1.Minus(f2)
+
+	// Check that result is a constant
+	if _, tf := res.(symbolic.K); !tf {
+		t.Errorf(
+			"expected Minus() to return a K; received %T",
+			res,
+		)
+	}
+
+	// Check that the proper result is revealed.
+	if !floats.EqualApprox(
+		[]float64{float64(res.(symbolic.K))},
+		[]float64{0.43},
+		0.001,
+	) {
+		t.Errorf(
+			"expected constant to be 0.43; received %v",
+			res,
+		)
+	}
+}
+
+/*
+TestConstant_Minus3
+Description:
+
+	Tests that the Minus() method properly panics when called with a
+	well-defined constant and an object that is not an expression
+	(in this case, it's a string).
+*/
+func TestConstant_Minus3(t *testing.T) {
+	// Setup
+	k1 := symbolic.K(3.14)
+	s1 := "hello"
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Minus() to panic when given a bad string; received nothing",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.UnsupportedInputError{
+			FunctionName: "K.Minus",
+			Input:        s1,
+		}
+		if !strings.Contains(
+			rAsError.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"expected Minus() to panic with error \"%v\"; received %v",
+				expectedError,
+				rAsError,
+			)
+		}
+
+	}()
+
+	k1.Minus(s1)
+}
+
+/*
 TestConstant_LessEq1
 Description:
 
@@ -893,6 +1035,325 @@ func TestConstant_Eq1(t *testing.T) {
 			"expected Eq() to return a ScalarConstraint with right hand side %v; received %v",
 			m1,
 			eqAsSC.Right(),
+		)
+	}
+}
+
+/*
+TestConstant_Comparison1
+Description:
+
+	Tests that the Comparison() method properly panics
+	when a constant is compared to an unsupported type (a string).
+*/
+func TestConstant_Comparison1(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	s1 := "hello"
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Comparison() to panic when given a bad string; received nothing",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.UnsupportedInputError{
+			FunctionName: "K.Comparison",
+			Input:        s1,
+		}
+		if !strings.Contains(
+			rAsError.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"expected Comparison() to panic with error \"%v\"; received %v",
+				expectedError,
+				rAsError,
+			)
+		}
+
+	}()
+
+	k1.Comparison(s1, symbolic.SenseEqual)
+}
+
+/*
+TestConstant_Comparison2
+Description:
+
+	Tests that the Comparison() method properly returns a scalar constraint
+	when a K is compared to a float64.
+*/
+func TestConstant_Comparison2(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	f1 := 2.71
+
+	// Test
+	comp := k1.Comparison(f1, symbolic.SenseEqual)
+
+	// Check that the constraint is a scalar constraint
+	compAsSC, tf := comp.(symbolic.ScalarConstraint)
+	if !tf {
+		t.Errorf(
+			"expected Comparison() to return a ScalarConstraint; received %T",
+			comp,
+		)
+	}
+
+	// Check that the sense is SenseEqual
+	if compAsSC.Sense != symbolic.SenseEqual {
+		t.Errorf(
+			"expected Comparison() to return a ScalarConstraint with sense Eq; received %v",
+			compAsSC.Sense,
+		)
+	}
+
+	// Check that the left hand side is the constant
+	if float64(compAsSC.Left().(symbolic.K)) != float64(k1) {
+		t.Errorf(
+			"expected Comparison() to return a ScalarConstraint with left hand side %v; received %v",
+			k1,
+			compAsSC.Left(),
+		)
+	}
+
+	// Check that the right hand side is the float
+	if float64(compAsSC.Right().(symbolic.K)) != f1 {
+		t.Errorf(
+			"expected Comparison() to return a ScalarConstraint with right hand side %v; received %v",
+			f1,
+			compAsSC.Right(),
+		)
+	}
+}
+
+/*
+TestConstant_Comparison3
+Description:
+
+	Tests that the Comparison() method properly returns a vector constraint
+	when a K is compared to a *mat.VecDense object.
+*/
+func TestConstant_Comparison3(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	v1 := symbolic.OnesVector(4)
+
+	// Test
+	comp := k1.Comparison(&v1, symbolic.SenseEqual)
+
+	// Check that the constraint is a vector constraint
+	compAsVC, tf := comp.(symbolic.VectorConstraint)
+	if !tf {
+		t.Errorf(
+			"expected Comparison() to return a VectorConstraint; received %T",
+			comp,
+		)
+	}
+
+	// Check that the sense is SenseEqual
+	if compAsVC.Sense != symbolic.SenseEqual {
+		t.Errorf(
+			"expected Comparison() to return a VectorConstraint with sense Eq; received %v",
+			compAsVC.Sense,
+		)
+	}
+
+	// Check that the left hand side is a constant vector
+	if _, tf := compAsVC.Left().(symbolic.KVector); !tf {
+		t.Errorf(
+			"expected Comparison() to return a VectorConstraint with left hand side a KVector; received %T",
+			compAsVC.Left(),
+		)
+
+	}
+	if float64(compAsVC.Left().(symbolic.KVector)[1]) != float64(k1) {
+		t.Errorf(
+			"expected Comparison() to return a VectorConstraint with left hand side %v; received %v",
+			k1,
+			compAsVC.Left(),
+		)
+	}
+
+	// Check that the right hand side is a KVector
+	if _, tf := compAsVC.Right().(symbolic.KVector); !tf {
+		t.Errorf(
+			"expected Comparison() to return a VectorConstraint with right hand side a KVector; received %T",
+			compAsVC.Right(),
+		)
+	}
+}
+
+/*
+TestConstant_Multiply1
+Description:
+
+	Tests that the Multiply() method properly panics
+	when a constant is multiplied by an expression that is
+	not well-defined (in this case, a monomial).
+*/
+func TestConstant_Multiply1(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	m1 := symbolic.Monomial{
+		Coefficient:     2.71,
+		VariableFactors: []symbolic.Variable{},
+		Exponents:       []int{1},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Multiply() to panic when given a bad monomial; received nothing",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := m1.Check()
+		if !strings.Contains(
+			rAsError.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"expected Multiply() to panic with error \"%v\"; received %v",
+				expectedError,
+				rAsError,
+			)
+		}
+
+	}()
+
+	k1.Multiply(m1)
+}
+
+/*
+TestConstant_Multiply2
+Description:
+
+	Tests that the Multiply() method properly multiplies a constant by an
+	int.
+*/
+func TestConstant_Multiply2(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	i1 := 2
+
+	// Test
+	product := k1.Multiply(i1)
+
+	// Check that the product is a constant
+	if _, tf := product.(symbolic.K); !tf {
+		t.Errorf(
+			"expected Multiply() to return a K; received %T",
+			product,
+		)
+	}
+
+	// Check that the proper product is revealed.
+	if !floats.EqualApprox(
+		[]float64{float64(product.(symbolic.K))},
+		[]float64{6.28},
+		0.001,
+	) {
+		t.Errorf(
+			"expected constant to be 6.28; received %v",
+			product,
+		)
+	}
+}
+
+/*
+TestConstant_Multiply3
+Description:
+
+	Tests that the Multiply() method panics when it is
+	given a well-defined constant and has an input that is not
+	an expression (in this case, a string).
+*/
+func TestConstant_Multiply3(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+	s1 := "hello"
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Multiply() to panic when given a bad string; received nothing",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.UnsupportedInputError{
+			FunctionName: "K.Multiply",
+			Input:        s1,
+		}
+		if !strings.Contains(
+			rAsError.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"expected Multiply() to panic with error \"%v\"; received %v",
+				expectedError,
+				rAsError,
+			)
+		}
+
+	}()
+
+	k1.Multiply(s1)
+}
+
+/*
+TestConstant_Transpose1
+Description:
+
+	Tests that the Transpose() method properly returns
+	a constant when called on a constant.
+*/
+func TestConstant_Transpose1(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+
+	// Test
+	transposed := k1.Transpose()
+
+	// Verifies that the value of transposed is the same as k1
+	if float64(transposed.(symbolic.K)) != 3.14 {
+		t.Errorf(
+			"expected Transpose() to return a K 3.14; received %v",
+			transposed,
+		)
+	}
+}
+
+/*
+TestConstant_DerivativeWrt1
+Description:
+
+	Tests that the DerivativeWrt() method properly returns
+	0.0 when called on a constant.
+*/
+func TestConstant_DerivativeWrt1(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+
+	// Test
+	derivative := k1.DerivativeWrt(symbolic.NewVariable())
+
+	// Verifies that the value of derivative is the same as k1
+	if float64(derivative.(symbolic.K)) != 0.0 {
+		t.Errorf(
+			"expected DerivativeWrt() to return a K 0.0; received %v",
+			derivative,
 		)
 	}
 }
