@@ -26,12 +26,6 @@ func (v Variable) Variables() []Variable {
 	return []Variable{v}
 }
 
-// Coeffs returns a slice of the coefficients in the expression. For a variable,
-// it always returns a singleton slice containing the value one.
-func (v Variable) Coeffs() []float64 {
-	return []float64{1}
-}
-
 // Constant returns the constant additive value in the expression. For a
 // variable, it always returns zero.
 func (v Variable) Constant() float64 {
@@ -124,6 +118,11 @@ func (v Variable) Plus(rightIn interface{}) Expression {
 		return right.Plus(v)
 	case Polynomial:
 		return right.Plus(v)
+	case *mat.VecDense:
+		return v.Plus(VecDenseToKVector(*right))
+	case KVector, VariableVector, MonomialVector, PolynomialVector:
+		ve, _ := ToVectorExpression(rightIn)
+		return ve.Plus(v)
 	}
 
 	panic(
@@ -381,7 +380,7 @@ func (v Variable) Dims() []int {
 Check
 Description:
 
-	Checks whether or not the Variable has a sensible initialization.
+	Checks whether the Variable has a sensible initialization.
 */
 func (v Variable) Check() error {
 	// Check that the lower bound is below is the upper bound

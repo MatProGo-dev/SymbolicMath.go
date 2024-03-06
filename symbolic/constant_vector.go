@@ -138,6 +138,13 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 	case K:
 		// Return Addition
 		return kv.Plus(float64(right))
+	case Variable:
+		// Create a new polynomial vector
+		var pvOut PolynomialVector
+		for _, element := range kv {
+			pvOut = append(pvOut, element.Plus(right).(Polynomial))
+		}
+		return pvOut
 
 	case *mat.VecDense:
 		return kv.Plus(VecDenseToKVector(*right)) // Convert to KVector

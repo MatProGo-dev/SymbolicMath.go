@@ -136,6 +136,46 @@ func TestVariable_LinearCoeff3(t *testing.T) {
 }
 
 /*
+TestVariable_LinearCoeff4
+Description:
+
+	Verifies that LinearCoeff panics when called with
+	a Variable that is not well-formed.
+*/
+func TestVariable_LinearCoeff4(t *testing.T) {
+	// Constants
+	var x symbolic.Variable
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+	x.LinearCoeff()
+}
+
+/*
+TestVariable_LinearCoeff5
+Description:
+
+	Verifies that LinearCoeff panics when called with
+	more than one input.
+*/
+func TestVariable_LinearCoeff5(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+	x.LinearCoeff([]symbolic.Variable{x}, []symbolic.Variable{x})
+}
+
+/*
 TestVariable_Plus1
 Description:
 
@@ -444,6 +484,81 @@ func TestVariable_Plus8(t *testing.T) {
 		}
 	}()
 	x.Plus("hello")
+}
+
+/*
+TestVariable_Plus9
+Description:
+
+	This test verifies that the variable.Plus method
+	returns a polynomialvector with the correct length
+	when a well-formed variable is added to a mat.VecDense.
+*/
+func TestVariable_Plus9(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	v := mat.NewVecDense(3, []float64{1, 2, 3})
+
+	// Test
+	sum := x.Plus(v)
+	sumAsPV, tf := sum.(symbolic.PolynomialVector)
+	if !tf {
+		t.Errorf(
+			"expected %v + %v to be a KVector; received %T",
+			x,
+			v,
+			sum,
+		)
+	}
+
+	// Check that the length of the vector is 3
+	if sumAsPV.Len() != 3 {
+		t.Errorf(
+			"expected %v + %v to be a vector of length 3; received %v",
+			x,
+			v,
+			sumAsPV.Len(),
+		)
+	}
+}
+
+/*
+TestVariable_Minus1
+Description:
+
+	Verifies that the Minus() method works properly when subtracting a float64 from a variable.
+*/
+func TestVariable_Minus1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	diff := x.Minus(3.14)
+	if diff.(symbolic.ScalarExpression).Constant() != -3.14 {
+		t.Errorf(
+			"expected %v - 3.14 to have constant component -3.14; received %v",
+			x,
+			x.Minus(3.14),
+		)
+	}
+
+	// Test that diff is a polynomial with 2 terms
+	diffAsPoly, tf := diff.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected %v - 3.14 to be a polynomial; received %T",
+			x,
+			diff,
+		)
+	}
+
+	if len(diffAsPoly.Monomials) != 2 {
+		t.Errorf(
+			"expected %v - 3.14 to have 2 terms; received %v",
+			x,
+			len(diffAsPoly.Monomials),
+		)
+	}
 }
 
 /*
