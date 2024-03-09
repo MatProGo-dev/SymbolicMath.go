@@ -281,16 +281,6 @@ func (pv PolynomialVector) Minus(e interface{}) Expression {
 		return Minus(pv, eAsE)
 	}
 
-	// Algorithm for non-expressions
-	switch right := e.(type) {
-	case float64:
-		return pv.Minus(K(right))
-	case mat.VecDense:
-		return pv.Minus(VecDenseToKVector(right))
-	case *mat.VecDense:
-		return pv.Minus(VecDenseToKVector(*right))
-	}
-
 	// Default response is a panic
 	panic(
 		smErrors.UnsupportedInputError{
