@@ -236,16 +236,6 @@ func (pm PolynomialMatrix) Minus(e interface{}) Expression {
 		return Minus(pm, eAsE)
 	}
 
-	// Algorithm for non-expressions
-	switch right := e.(type) {
-	case float64:
-		return pm.Minus(K(right))
-	case mat.Dense:
-		return pm.Minus(DenseToKMatrix(right))
-	case *mat.Dense:
-		return pm.Minus(*right)
-	}
-
 	// If type isn't recognized, then panic
 	panic(
 		smErrors.UnsupportedInputError{

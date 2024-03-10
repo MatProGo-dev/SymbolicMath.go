@@ -654,6 +654,122 @@ func TestPolynomialMatrix_Plus9(t *testing.T) {
 }
 
 /*
+TestPolynomialMatrix_Minus1
+Description:
+
+	Tests that the Minus() method properly panics when an improperly
+	initialized matrix of polynomials is used to call it.
+*/
+func TestPolynomialMatrix_Minus1(t *testing.T) {
+	// Constants
+	var pm symbolic.PolynomialMatrix
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm.Minus(pm) to panic; received %v",
+				pm.Minus(pm),
+			)
+		}
+	}()
+
+	pm.Minus(pm)
+}
+
+/*
+TestPolynomialMatrix_Minus2
+Description:
+
+	Tests that the Minus() method properly panics an error if two
+	matrices of different dimensions are given to the method.
+*/
+func TestPolynomialMatrix_Minus2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	p1 := v1.ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1, p1},
+		{p1, p1},
+		{p1, p1},
+	}
+	var pm2 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1, p1},
+		{p1, p1},
+	}
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm1.Minus(pm2) to panic; received %v",
+				pm1.Minus(pm2),
+			)
+		}
+
+		rAsError, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"expected r to be an error; received %v of type %T",
+				r, r,
+			)
+		}
+
+		if rAsError.Error() != (smErrors.DimensionError{
+			Operation: "Minus",
+			Arg1:      pm1,
+			Arg2:      pm2,
+		}).Error() {
+			t.Errorf(
+				"expected r to be a DimensionError; received %v",
+				r,
+			)
+		}
+	}()
+
+	// Test
+	pm1.Minus(pm2)
+}
+
+/*
+TestPolynomialMatrix_Minus3
+Description:
+
+	Tests that the Minus() method properly panics when a well-defined PolynomialMatrix
+	calls Miinus() on a Monomial that is NOT well-defined.
+*/
+func TestPolynomialMatrix_Minus3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	p1 := v1.ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1, p1},
+		{p1, p1},
+		{p1, p1},
+	}
+
+	m1 := symbolic.Monomial{
+		VariableFactors: []symbolic.Variable{v1},
+	}
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm1.Minus(m1) to panic; received %v",
+				pm1.Minus(m1),
+			)
+		}
+	}()
+
+	// Test
+	pm1.Minus(m1)
+}
+
+/*
 TestPolynomialMatrix_Multiply1
 Description:
 
