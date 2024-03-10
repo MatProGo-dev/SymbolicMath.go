@@ -248,6 +248,49 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 }
 
 /*
+Minus
+Description:
+
+	Defines a subtraction between the polynomial vector and another expression.
+*/
+func (pv PolynomialVector) Minus(e interface{}) Expression {
+	// Input Processing
+	// - Check the polynomial vector
+	// - Checks if the input e is an expression, if so:
+	//	 + Checks the expression
+	//	 + Checks the dimensions of the polynomial vector and the expression
+
+	err := pv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(e) {
+		eAsE, _ := ToExpression(e)
+		err = eAsE.Check()
+		if err != nil {
+			panic(fmt.Errorf("error in second argument to Minus: %v", err))
+		}
+
+		err = smErrors.CheckDimensionsInSubtraction(pv, eAsE)
+		if err != nil {
+			panic(err)
+		}
+
+		// Use the Expression's Minus method
+		return Minus(pv, eAsE)
+	}
+
+	// Default response is a panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "PolynomialVector.Minus",
+			Input:        e,
+		},
+	)
+}
+
+/*
 Multiply
 Description:
 
@@ -523,4 +566,31 @@ func (pv PolynomialVector) String() string {
 	}
 	output += "]"
 	return output
+}
+
+/*
+Degree
+Description:
+
+	Returns the maximum degree of any of the entries
+	in the polynomial vector.
+*/
+func (pv PolynomialVector) Degree() int {
+	// Input Processing
+	err := pv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Constants
+	var maxDegree int = 0
+
+	// Algorithm
+	for _, polynomial := range pv {
+		if polynomial.Degree() > maxDegree {
+			maxDegree = polynomial.Degree()
+		}
+	}
+
+	return maxDegree
 }

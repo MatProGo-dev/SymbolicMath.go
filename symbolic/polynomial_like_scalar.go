@@ -26,6 +26,10 @@ type PolynomialLikeScalar interface {
 	// expression
 	Plus(rightIn interface{}) Expression
 
+	// Minus subtracts an expression from the current one and returns the resulting
+	// expression
+	Minus(rightIn interface{}) Expression
+
 	// LessEq returns a less than or equal to (<=) constraint between the
 	// current expression and another
 	LessEq(rhsIn interface{}) Constraint
@@ -123,30 +127,4 @@ func ToPolynomialLikeScalar(e interface{}) (PolynomialLikeScalar, error) {
 			e,
 		)
 	}
-}
-
-/*
-IsLinear
-Description:
-
-	Determines whether an input object is a
-	valid linear expression.
-	In math, this means that the polynomial like expression
-	has a degree less than or equal to 1.
-*/
-func IsLinear(e PolynomialLikeScalar) bool {
-	return e.Degree() <= 1
-}
-
-/*
-IsQuadratic
-Description:
-
-	Determines whether or not an input object is a
-	valid Quadratic Expression.
-	In math, this means that the polynomial like expression
-	has a degree less than or equal to 2.
-*/
-func IsQuadratic(e PolynomialLikeScalar) bool {
-	return e.Degree() <= 2
 }

@@ -146,6 +146,15 @@ func TestScalarConstraint_IsLinear2(t *testing.T) {
 }
 
 /*
+TestScalarConstraint_IsLinear3
+Description:
+
+	Verifies that the method panics if the left hand side
+	is not a polynomial like scalar.
+	TODO: Finish this test
+*/
+
+/*
 TestScalarConstraint_Simplify1
 Description:
 
@@ -162,13 +171,7 @@ func TestScalarConstraint_Simplify1(t *testing.T) {
 	sc := symbolic.ScalarConstraint{x, c2, symbolic.SenseLessThanEqual}
 
 	// Simplify
-	sc, err := sc.Simplify()
-	if err != nil {
-		t.Errorf(
-			"Expected no error from sc.Simplify(); received %v",
-			err,
-		)
-	}
+	sc = sc.Simplify()
 
 	// Verify that the constraint is linear
 	if !sc.IsLinear() {
@@ -214,13 +217,7 @@ func TestScalarConstraint_Simplify2(t *testing.T) {
 	sc := symbolic.ScalarConstraint{c2, x, symbolic.SenseLessThanEqual}
 
 	// Simplify
-	sc, err := sc.Simplify()
-	if err != nil {
-		t.Errorf(
-			"Expected no error from sc.Simplify(); received %v",
-			err,
-		)
-	}
+	sc = sc.Simplify()
 
 	// Verify that the constraint is linear
 	if !sc.IsLinear() {

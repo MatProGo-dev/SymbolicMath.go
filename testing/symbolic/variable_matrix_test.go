@@ -5,6 +5,7 @@ import (
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"gonum.org/v1/gonum/mat"
 	"strings"
 	"testing"
 )
@@ -428,6 +429,182 @@ func TestVariableMatrix_Plus6(t *testing.T) {
 }
 
 /*
+TestVariableMatrix_Minus1
+Description:
+
+	Tests that the Minus method for a VariableMatrix object panics
+	when the VariableMatrix is not well-defined.
+*/
+func TestVariableMatrix_Minus1(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.Variable{}},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Expected Minus to panic; received nil")
+		}
+	}()
+
+	vm.Minus(vm)
+}
+
+/*
+TestVariableMatrix_Minus2
+Description:
+
+	Tests the Minus method for a VariableMatrix object that is well-defined
+	when it is applied to a not well-defined expression (a monomial).
+*/
+func TestVariableMatrix_Minus2(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	m := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{symbolic.NewVariable()},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Expected Minus to panic; received nil")
+		}
+	}()
+
+	vm.Minus(m)
+}
+
+/*
+TestVariableMatrix_Minus3
+Description:
+
+	Tests the Minus method for a VariableMatrix object that is well-defined
+	being subtracted from a well-defined expression (a constant matrix)
+	panics when the two matrices do not have matching dimensions.
+	In this case, the VariableMatrix has dimensions (2, 2) and the constant matrix has dimensions (3, 2).
+*/
+func TestVariableMatrix_Minus3(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	cm := getKMatrix.From(
+		[][]float64{
+			{1, 2},
+			{3, 4},
+			{5, 6},
+		})
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Expected Minus to panic; received nil")
+		}
+	}()
+
+	vm.Minus(cm)
+}
+
+/*
+TestVariableMatrix_Minus4
+Description:
+
+	Tests the Minus method for a VariableMatrix object that is well-defined
+	being subtracted from a well-defined expression (a mat.Dense object).
+	The two objects have matching dimensions, so this should return a PolynomialMatrix.
+*/
+func TestVariableMatrix_Minus4(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	cm := mat.NewDense(2, 2, []float64{1, 2, 3, 4})
+
+	// Test
+	result := vm.Minus(cm)
+
+	// Check that object is a polynomial matrix
+	if _, ok := result.(symbolic.PolynomialMatrix); !ok {
+		t.Errorf("Expected Minus to return a PolynomialMatrix; received %T", result)
+	}
+
+	// Check that each polynomial in the result contains two monomials.
+	pm := result.(symbolic.PolynomialMatrix)
+	for i := 0; i < pm.Dims()[0]; i++ {
+		for j := 0; j < pm.Dims()[1]; j++ {
+			if len(pm[i][j].Monomials) != 2 {
+				t.Errorf("Expected each polynomial to contain 2 monomials; received %v", len(pm[i][j].Monomials))
+			}
+		}
+	}
+}
+
+/*
+TestVariableMatrix_Minus5
+Description:
+
+	Tests the Minus method for a VariableMatrix object that is well-defined
+	being subtracted from a non-expression that can be transformed into one (a float64).
+*/
+func TestVariableMatrix_Minus5(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+
+	// Test
+	result := vm.Minus(2.0)
+
+	// Check that object is a PolynomialMatrix
+	if _, ok := result.(symbolic.PolynomialMatrix); !ok {
+		t.Errorf("Expected Minus to return a PolynomialMatrix; received %T", result)
+	}
+
+	// Check that each polynomial in the result contains two monomials.
+	pm := result.(symbolic.PolynomialMatrix)
+	for i := 0; i < pm.Dims()[0]; i++ {
+		for j := 0; j < pm.Dims()[1]; j++ {
+			if len(pm[i][j].Monomials) != 2 {
+				t.Errorf("Expected each polynomial to contain 2 monomials; received %v", len(pm[i][j].Monomials))
+			}
+		}
+	}
+}
+
+/*
+TestVariableMatrix_Minus6
+Description:
+
+	Tests the Minus method for a VariableMatrix object that is well-defined
+	being subtracted from a non-expression (a string).
+	In this case, a panic should be thrown.
+*/
+func TestVariableMatrix_Minus6(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Expected Minus to panic; received nil")
+		}
+	}()
+
+	vm.Minus("hello")
+}
+
+/*
 TestVariableMatrix_Multiply1
 Description:
 
@@ -752,6 +929,74 @@ func TestVariableMatrix_Multiply10(t *testing.T) {
 }
 
 /*
+TestVariableMatrix_Multiply11
+Description:
+
+	Tests the Multiply method for a VariableMatrix object that is well-defined
+	of a dimension (3, 2) being multiplied by a mat.Dense object of dimension (2, 1).
+	The product should be a PolynomialVector of dimension (3, 1) with two monomials in each polynomial.
+*/
+func TestVariableMatrix_Multiply11(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	cm := mat.NewDense(2, 1, []float64{1, 2})
+
+	// Compute Product
+	result := vm.Multiply(*cm)
+
+	// Check that object is a PolynomialVector
+	if _, ok := result.(symbolic.PolynomialVector); !ok {
+		t.Errorf("Expected Multiply to return a PolynomialVector; received %T", result)
+	}
+
+	// Check that each polynomial in the result contains two monomials.
+	pv := result.(symbolic.PolynomialVector)
+	for i := 0; i < pv.Dims()[0]; i++ {
+		if len(pv[i].Monomials) != 2 {
+			t.Errorf("Expected each polynomial to contain 2 monomials; received %v", len(pv[i].Monomials))
+		}
+	}
+}
+
+/*
+TestVariableMatrix_Multiply12
+Description:
+
+	Tests the Multiply method for a VariableMatrix object that is well-defined
+	of a dimension (3, 2) being multiplied by a *mat.Dense object of dimension (2, 1).
+	The product should be a PolynomialVector of dimension (3, 1) with two monomials in each polynomial.
+*/
+func TestVariableMatrix_Multiply12(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	cm := mat.NewDense(2, 1, []float64{1, 2})
+
+	// Compute Product
+	result := vm.Multiply(cm)
+
+	// Check that object is a PolynomialVector
+	if _, ok := result.(symbolic.PolynomialVector); !ok {
+		t.Errorf("Expected Multiply to return a PolynomialVector; received %T", result)
+	}
+
+	// Check that each polynomial in the result contains two monomials.
+	pv := result.(symbolic.PolynomialVector)
+	for i := 0; i < pv.Dims()[0]; i++ {
+		if len(pv[i].Monomials) != 2 {
+			t.Errorf("Expected each polynomial to contain 2 monomials; received %v", len(pv[i].Monomials))
+		}
+	}
+}
+
+/*
 TestVariableMatrix_Transpose1
 Description:
 
@@ -912,4 +1157,60 @@ func TestVariableMatrix_GreaterEq1(t *testing.T) {
 	}()
 
 	vm.GreaterEq(mm)
+}
+
+/*
+TestVariableMatrix_Eq1
+Description:
+
+	Tests that the Eq method panics for a well-defined VariableMatrix
+	that is compared to a not well-defined expression (in this case,
+	a monomial).
+*/
+func TestVariableMatrix_Eq1(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable()},
+	}
+	badMonomial := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{symbolic.NewVariable()},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Expected Eq to panic; received nil")
+		}
+	}()
+
+	vm.Eq(badMonomial)
+}
+
+/*
+TestVariableMatrix_Eq2
+Description:
+
+	Tests the Eq method for a VariableMatrix object that is well-defined
+	being compared to a well-defined monomial matrix.
+	Verifies that no panics are thrown when the matrices are of the same shape.
+*/
+func TestVariableMatrix_Eq2(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	mm := symbolic.MonomialMatrix{
+		{symbolic.NewVariable().ToMonomial(), symbolic.NewVariable().ToMonomial()},
+		{symbolic.NewVariable().ToMonomial(), symbolic.NewVariable().ToMonomial()},
+	}
+
+	// Test
+	mc0 := vm.Eq(mm)
+
+	// Check that the result is a MatrixConstraint
+	if _, ok := mc0.(symbolic.MatrixConstraint); !ok {
+		t.Errorf("Expected Eq to return a MatrixConstraint; received %T", mc0)
+	}
 }

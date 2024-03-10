@@ -223,6 +223,54 @@ func (mm MonomialMatrix) Plus(e interface{}) Expression {
 }
 
 /*
+Minus
+Description:
+
+	Subtraction of the monomial matrix with another expression.
+*/
+func (mm MonomialMatrix) Minus(e interface{}) Expression {
+	// Input Processing
+	err := mm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(e) {
+		eAsE, _ := ToExpression(e)
+		err = eAsE.Check()
+		if err != nil {
+			panic(fmt.Errorf("error in second argument to Plus: %v", err))
+		}
+
+		err := smErrors.CheckDimensionsInSubtraction(mm, eAsE)
+		if err != nil {
+			panic(err)
+		}
+
+		// Use Expression's method
+		return Minus(mm, eAsE)
+	}
+
+	// Constants
+	switch right := e.(type) {
+	case float64:
+		return mm.Minus(K(right))
+	case mat.Dense:
+		return mm.Minus(DenseToKMatrix(right))
+	case *mat.Dense:
+		return mm.Minus(DenseToKMatrix(*right))
+	}
+
+	// If we've gotten this far, the input is not recognized
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "MonomialVector.Minus",
+			Input:        e,
+		},
+	)
+}
+
+/*
 Multiply
 Description:
 
@@ -572,4 +620,32 @@ func (mm MonomialMatrix) String() string {
 
 	// Return the string
 	return out
+}
+
+/*
+Degree
+Description:
+
+	Returns the MAXIMUM degree in the monomial matrix.
+*/
+func (mm MonomialMatrix) Degree() int {
+	// Input Processing
+	err := mm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	maxDegree := 0
+	for _, row := range mm {
+		for _, m := range row {
+			degree := m.Degree()
+			if degree > maxDegree {
+				maxDegree = degree
+			}
+		}
+	}
+
+	// Return
+	return maxDegree
 }

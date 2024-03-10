@@ -7,6 +7,8 @@ Description:
 */
 
 import (
+	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
+	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
@@ -546,6 +548,317 @@ func TestPolynomial_Plus4(t *testing.T) {
 }
 
 /*
+TestPolynomial_Plus5
+Description:
+
+	Verifies that calling Plus() using a well-defined polynomial
+	and a not well-defined expression causes a panic to occur.
+*/
+func TestPolynomial_Plus5(t *testing.T) {
+	// Setup
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Plus to panic when called with a non-expression; received nil",
+			)
+		}
+	}()
+
+	// Call the Plus method
+	p1.Plus(symbolic.Polynomial{})
+
+	t.Errorf("expected Plus to panic when called with a non-expression; received nil")
+}
+
+/*
+TestPolynomial_Plus6
+Description:
+
+	This function verifies that the plus method returns the correct
+	output type when called with a polynomial vector (of
+	length 1) and a constant.
+*/
+func TestPolynomial_Plus6(t *testing.T) {
+	// Setup
+	p1 := symbolic.NewVariable().ToPolynomial()
+	k1 := getKVector.From([]float64{3.14})
+
+	// Test
+	sum := p1.Plus(k1)
+
+	// Check that the output is a scalar polynomial
+	if _, ok := sum.(symbolic.Polynomial); !ok {
+		t.Errorf(
+			"expected Plus to return a polynomial; received %T",
+			sum,
+		)
+	}
+}
+
+/*
+TestPolynomial_Plus7
+Description:
+
+	Verifies that the sum of a polynomial and a well-defined polynomial
+	vector of length 4.
+*/
+func TestPolynomial_Plus7(t *testing.T) {
+	// Setup
+	p1 := symbolic.NewVariable().ToPolynomial()
+	p2 := symbolic.NewVariable().ToPolynomial()
+	p3 := symbolic.NewVariable().ToPolynomial()
+	p4 := symbolic.NewVariable().ToPolynomial()
+
+	pv5 := symbolic.PolynomialVector{p2, p3, p4}
+
+	// Test
+	sum := p1.Plus(pv5)
+
+	// Check that the output is a polynomial vector
+	sumAsPV, ok := sum.(symbolic.PolynomialVector)
+	if !ok {
+		t.Errorf(
+			"expected Plus to return a polynomial; received %T",
+			sum,
+		)
+	}
+
+	// Check that the length of the output is 3
+	if len(sumAsPV) != 3 {
+		t.Errorf(
+			"expected Plus to return a polynomial vector of length 4; received %v",
+			len(sumAsPV),
+		)
+	}
+}
+
+/*
+TestPolynomial_Plus8
+Description:
+
+	Verifies that the sum of a polynomial and a well-defined KMatrix
+	(of dimension 1 x 1) returns a polynomial.
+*/
+func TestPolynomial_Plus8(t *testing.T) {
+	// Setup
+	p1 := symbolic.NewVariable().ToPolynomial()
+	km1 := getKMatrix.From([][]float64{{3.14}})
+
+	// Test
+	sum := p1.Plus(km1)
+
+	// Check that the output is a polynomial
+	if _, ok := sum.(symbolic.Polynomial); !ok {
+		t.Errorf(
+			"expected Plus to return a polynomial; received %T",
+			sum,
+		)
+	}
+}
+
+/*
+TestPolynomial_Plus9
+Description:
+
+	Verifies that the sum of a polynomial and a well-defined KMatrix
+	(of dimension 1 x 4) returns a polynomial matrix of dimension 1 x 4.
+*/
+func TestPolynomial_Plus9(t *testing.T) {
+	// Setup
+	p1 := symbolic.NewVariable().ToPolynomial()
+	km1 := getKMatrix.From([][]float64{{3.14, 2.71, 1.0, 0.0}})
+
+	// Test
+	sum := p1.Plus(km1)
+
+	// Check that the output is a polynomial matrix
+	if _, ok := sum.(symbolic.PolynomialMatrix); !ok {
+		t.Errorf(
+			"expected Plus to return a polynomial matrix; received %T",
+			sum,
+		)
+	}
+
+	// Check that the dimensions of the output are correct
+	if sum.Dims()[0] != 1 || sum.Dims()[1] != 4 {
+		t.Errorf(
+			"expected Plus to return a polynomial matrix of dimensions [1,4]; received %v",
+			sum.Dims(),
+		)
+	}
+}
+
+/*
+TestPolynomial_Minus1
+Description:
+
+	Verifies that the Polynomial.Minus function panics
+	when called with a polynomial that is not well-defined.
+*/
+func TestPolynomial_Minus1(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Minus to panic when called with an undefined polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the Minus method
+	p1.Minus(p1)
+}
+
+/*
+TestPolynomial_Minus2
+Description:
+
+	Verifies that the Polynomial.Minus() method panics when called
+	with a well-defined polynomial and a not well-defined monomial.
+*/
+func TestPolynomial_Minus2(t *testing.T) {
+	// Setup
+	p1 := symbolic.NewVariable().ToPolynomial()
+	m1 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{},
+		Exponents:       []int{2},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Minus to panic when called with a non-expression; received nil",
+			)
+		}
+	}()
+
+	// Call the Minus method
+	p1.Minus(m1)
+}
+
+/*
+TestPolynomial_Minus3
+Description:
+
+	Verifies that the Polynomial.Minus() method when applied
+	to a well-defined polynomial and a well-defined variable
+	returns a polynomial. The new polynomial should have
+	one more extra monomial than the original.
+*/
+func TestPolynomial_Minus3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{
+				Coefficient:     1.0,
+				VariableFactors: []symbolic.Variable{v1},
+				Exponents:       []int{1},
+			},
+		},
+	}
+
+	// Test
+	diff := p1.Minus(symbolic.NewVariable())
+	if len(diff.(symbolic.Polynomial).Monomials) != len(p1.Monomials)+1 {
+		t.Errorf(
+			"expected %v - %v to have 2 monomials; received %v",
+			p1,
+			v1,
+			len(diff.(symbolic.Polynomial).Monomials),
+		)
+	}
+}
+
+/*
+TestPolynomial_Minus4
+Description:
+
+	Verifies that the Polynomial.Minus() method produces
+	the correct output when called with a well-defined polynomial
+	and a float64.
+*/
+func TestPolynomial_Minus4(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	diff := p1.Minus(3.14)
+	if len(diff.(symbolic.Polynomial).Monomials) != 2 {
+		t.Errorf(
+			"expected %v - %v to have 1 monomial; received %v",
+			p1,
+			3.14,
+			len(diff.(symbolic.Polynomial).Monomials),
+		)
+	}
+}
+
+/*
+TestPolynomial_Minus5
+Description:
+
+	Verifies that the Polynomial.Minus() method panics
+	when called with a well-defined polynomial and a non-expression
+	(in this case a string).
+*/
+func TestPolynomial_Minus5(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Minus to panic when called with a non-expression; received nil",
+			)
+		}
+	}()
+
+	// Call the Minus method
+	p1.Minus("string")
+}
+
+/*
+TestPolynomial_ConstantMonomialIndex1
+Description:
+
+	Verifies that ConstantMonomialIndex() panics
+	when called with a polynomial that is not well-defined.
+*/
+func TestPolynomial_ConstantMonomialIndex1(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected ConstantMonomialIndex to panic when called with an undefined polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the ConstantMonomialIndex method
+	p1.ConstantMonomialIndex()
+
+}
+
+/*
 TestPolynomial_VariableMonomialIndex1
 Description:
 
@@ -576,6 +889,145 @@ func TestPolynomial_VariableMonomialIndex1(t *testing.T) {
 		)
 	}
 
+}
+
+/*
+TestPolynomial_VariableMonomialIndex2
+Description:
+
+	Verifies that VariableMonomialIndex panics when called with a polynomial
+	that is not well-defined.
+*/
+func TestPolynomial_VariableMonomialIndex2(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected VariableMonomialIndex to panic when called with an undefined polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the VariableMonomialIndex method
+	p1.VariableMonomialIndex(symbolic.NewVariable())
+}
+
+/*
+TestPolynomial_VariableMonomialIndex3
+Description:
+
+	Verifies that VariableMonomialIndex panics
+	when called with a polynomial that is well-defined
+	and a variable that is NOT well-defined.
+*/
+func TestPolynomial_VariableMonomialIndex3(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected VariableMonomialIndex to panic when called with an undefined variable; received nil",
+			)
+		}
+	}()
+
+	// Call the VariableMonomialIndex method
+	p1.VariableMonomialIndex(symbolic.Variable{})
+}
+
+/*
+TestPolynomial_MonomialIndex1
+Description:
+
+	Verifies that MonomialIndex returns the correct index when the
+	monomial is in the polynomial.
+*/
+func TestPolynomial_MonomialIndex1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+
+	m1 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{v1, v2},
+		Exponents:       []int{1, 2},
+	}
+
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{m1, v2.ToMonomial()},
+	}
+
+	// Test that the index is 0
+	if p1.MonomialIndex(m1) != 0 {
+		t.Errorf(
+			"expected index of %v to be 0; received %v",
+			m1,
+			p1.MonomialIndex(m1),
+		)
+	}
+}
+
+/*
+TestPolynomial_MonomialIndex2
+Description:
+
+	Verifies that MonomialIndex panics when called with a polynomial
+	that is not well-defined.
+*/
+func TestPolynomial_MonomialIndex2(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected MonomialIndex to panic when called with an undefined polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the MonomialIndex method
+	p1.MonomialIndex(symbolic.NewVariable().ToMonomial())
+
+}
+
+/*
+TestPolynomial_MonomialIndex3
+Description:
+
+	Verifies that MonomialIndex panics
+	when called with a polynomial that is well-defined
+	and a monomial that is NOT well-defined.
+*/
+func TestPolynomial_MonomialIndex3(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected MonomialIndex to panic when called with an undefined monomial; received nil",
+			)
+		}
+	}()
+
+	// Call the MonomialIndex method
+	p1.MonomialIndex(symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{},
+		Exponents:       []int{2},
+	})
 }
 
 /*
@@ -896,6 +1348,109 @@ func TestPolynomial_Multiply3(t *testing.T) {
 			p2,
 			len(p1.Monomials)*len(p2.Monomials),
 			len(product.(symbolic.Polynomial).Monomials),
+		)
+	}
+}
+
+/*
+TestPolynomial_Multiply4
+Description:
+
+	Verifies that the Polynomial.Multiply method panics
+	when called with a polynomial that is well-defined
+	and a non-expression (in this case a string).
+*/
+func TestPolynomial_Multiply4(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Multiply to panic when called with a non-expression; received nil",
+			)
+		}
+	}()
+
+	// Call the Multiply method
+	p1.Multiply("string")
+}
+
+/*
+TestPolynomial_Multiply5
+Description:
+
+	Verifies that the Polynomial.Multiply method produced
+	the correct output when called with a well-defined polynomial
+	and a float64.
+	The resulting polynomial should have the same number of polynomials
+	as the original polynomial.
+*/
+func TestPolynomial_Multiply5(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	prod := p1.Multiply(3.14)
+	if len(prod.(symbolic.Polynomial).Monomials) != 1 {
+		t.Errorf(
+			"expected %v * %v to have 1 monomial; received %v",
+			p1,
+			3.14,
+			len(prod.(symbolic.Polynomial).Monomials),
+		)
+	}
+}
+
+/*
+TestPolynomial_Multiply6
+Description:
+
+	Verifies that the Polynomial.Multiply method returns the correct output
+	when called with a well-defined polynomial (with 2 monomials)
+	and a well-defined polynomial (with 2 unique monomials).
+	In this case, the resulting polynomial should have
+	4 = 2 x 2 monomials.
+*/
+func TestPolynomial_Multiply6(t *testing.T) {
+	// Setup
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.NewVariable().ToMonomial(),
+			symbolic.NewVariable().ToMonomial(),
+		},
+	}
+	p2 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.NewVariable().ToMonomial(),
+			symbolic.NewVariable().ToMonomial(),
+		},
+	}
+
+	// Test
+	prod := p1.Multiply(p2)
+
+	// Verify that the product is a polynomial
+	prodAsP, tf := prod.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected %v * %v to return a polynomial; received %T",
+			p1,
+			p2,
+			prod,
+		)
+	}
+
+	// Verify that the product has the correct number of monomials
+	if len(prodAsP.Monomials) != 4 {
+		t.Errorf(
+			"expected (%v) * (%v) to have 4 monomials; received %v (%v)",
+			p1,
+			p2,
+			len(prodAsP.Monomials),
+			prodAsP,
 		)
 	}
 }

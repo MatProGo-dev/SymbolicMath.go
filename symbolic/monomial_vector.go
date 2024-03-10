@@ -246,6 +246,56 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 }
 
 /*
+Minus
+Description:
+
+	This function returns the difference of the monomial vector and the input expression.
+*/
+func (mv MonomialVector) Minus(term1 interface{}) Expression {
+	// Input Processing
+	err := mv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(term1) {
+		// Convert term1 to expression and check it
+		term1AsE, _ := ToExpression(term1)
+		err := term1AsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check dimensions
+		err = smErrors.CheckDimensionsInSubtraction(mv, term1AsE)
+		if err != nil {
+			panic(err)
+		}
+
+		// Use Expression's Minus function
+		return Minus(mv, term1AsE)
+	}
+
+	// Algorithm
+	switch right := term1.(type) {
+	case float64:
+		return mv.Minus(K(right))
+	case mat.VecDense:
+		return mv.Minus(VecDenseToKVector(right))
+	case *mat.VecDense:
+		return mv.Minus(VecDenseToKVector(*right))
+	}
+
+	// Unrecognized response is a panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "MonomialVector.Minus",
+			Input:        term1,
+		},
+	)
+}
+
+/*
 Multiply
 Description:
 
@@ -559,4 +609,30 @@ func (mv MonomialVector) ToPolynomialVector() PolynomialVector {
 
 	// Return
 	return pv
+}
+
+/*
+Degree
+Description:
+
+	Returns the MAXIMUM degree in the monomial vector.
+*/
+func (mv MonomialVector) Degree() int {
+	// Input Processing
+	err := mv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	maxDegree := 0
+	for _, m := range mv {
+		degree := m.Degree()
+		if degree > maxDegree {
+			maxDegree = degree
+		}
+	}
+
+	// Return
+	return maxDegree
 }

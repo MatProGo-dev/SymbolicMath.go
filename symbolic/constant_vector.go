@@ -138,6 +138,13 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 	case K:
 		// Return Addition
 		return kv.Plus(float64(right))
+	case Variable:
+		// Create a new polynomial vector
+		var pvOut PolynomialVector
+		for _, element := range kv {
+			pvOut = append(pvOut, element.Plus(right).(Polynomial))
+		}
+		return pvOut
 
 	case *mat.VecDense:
 		return kv.Plus(VecDenseToKVector(*right)) // Convert to KVector
@@ -164,6 +171,53 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 		errString := fmt.Sprintf("Unrecognized expression type %T for addition of KVector kv.Plus(%v)!", right, right)
 		panic(fmt.Errorf(errString))
 	}
+}
+
+/*
+Minus
+Description:
+
+	Subtracts the current expression from another and returns the resulting expression
+*/
+func (kv KVector) Minus(e interface{}) Expression {
+	// Input Processing
+	err := kv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(e) {
+		// Check right
+		eAsE, _ := ToExpression(e)
+		err = eAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check dimensions
+		err = smErrors.CheckDimensionsInSubtraction(kv, eAsE)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	// Algorithm
+	switch right := e.(type) {
+	case float64:
+		return kv.Minus(K(right)) // Reuse K case
+	case mat.VecDense:
+		return kv.Minus(VecDenseToKVector(right)) // Convert to KVector
+	case *mat.VecDense:
+		return kv.Minus(VecDenseToKVector(*right)) // Convert to KVector
+	}
+
+	// Default response is a panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "KVector.Minus",
+			Input:        e,
+		},
+	)
 }
 
 /*
@@ -526,4 +580,14 @@ Description:
 */
 func (kv KVector) ToPolynomialVector() PolynomialVector {
 	return kv.ToMonomialVector().ToPolynomialVector()
+}
+
+/*
+Degree
+Description:
+
+	The degree of a constant matrix is always 0.
+*/
+func (kv KVector) Degree() int {
+	return 0
 }

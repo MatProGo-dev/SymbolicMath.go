@@ -71,6 +71,29 @@ func CheckDimensionsInAddition(left, right MatrixLike) error {
 }
 
 /*
+CheckDimensionsInSubtraction
+Description:
+
+	This function checks that the dimensions of the left and right expressions
+*/
+func CheckDimensionsInSubtraction(left, right MatrixLike) error {
+	// Check that the size of columns in left and right agree
+	dimsAreMatched := (left.Dims()[0] == right.Dims()[0]) && (left.Dims()[1] == right.Dims()[1])
+	dimsAreMatched = dimsAreMatched || IsScalarExpression(left)
+	dimsAreMatched = dimsAreMatched || IsScalarExpression(right)
+
+	if !dimsAreMatched {
+		return DimensionError{
+			Operation: "Minus",
+			Arg1:      left,
+			Arg2:      right,
+		}
+	}
+	// If dimensions match, then return nothing.
+	return nil
+}
+
+/*
 CheckDimensionsInMultiplication
 Description:
 

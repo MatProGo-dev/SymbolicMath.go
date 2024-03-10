@@ -167,6 +167,57 @@ func (km KMatrix) Plus(e interface{}) Expression {
 }
 
 /*
+Minus
+Description:
+
+	Subtraction of the constant matrix with another expression.
+*/
+func (km KMatrix) Minus(e interface{}) Expression {
+	// Input Processing
+	err := km.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(e) {
+		rightAsE, _ := ToExpression(e)
+
+		// Check expression
+		err = rightAsE.Check()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check Dimensions
+		err = smErrors.CheckDimensionsInSubtraction(km, rightAsE)
+		if err != nil {
+			panic(err)
+		}
+
+		// Use Expression method
+		return Minus(km, rightAsE)
+	}
+
+	// Algorithm
+	switch right := e.(type) {
+	case float64:
+		return km.Minus(K(right)) // Reuse K case
+	case mat.Dense:
+		return km.Minus(DenseToKMatrix(right)) // Reuse KMatrix case
+	case *mat.Dense:
+		return km.Minus(*right) // Reuse mat.Dense case
+	}
+
+	// If we reach this point, the input is not recognized
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "KMatrix.Minus",
+			Input:        e,
+		},
+	)
+}
+
+/*
 Multiply
 Description:
 
@@ -611,4 +662,14 @@ func (km KMatrix) ToPolynomialMatrix() PolynomialMatrix {
 
 	// Return
 	return pm
+}
+
+/*
+Degree
+Description:
+
+	The degree of a constant matrix is always 0.
+*/
+func (km KMatrix) Degree() int {
+	return 0
 }

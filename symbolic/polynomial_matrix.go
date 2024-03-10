@@ -202,6 +202,50 @@ func (pm PolynomialMatrix) Plus(e interface{}) Expression {
 }
 
 /*
+Minus
+Description:
+
+	Subtracts another expression from the given polynomial matrix
+	and returns the result.
+*/
+func (pm PolynomialMatrix) Minus(e interface{}) Expression {
+	// Input Processing
+	// - Check that pm is valid
+	// - Check that the input expression (if it is an expression)
+	//   + is valid
+	//	 + has the same dimensions as pm
+
+	err := pm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if IsExpression(e) {
+		eAsE, _ := ToExpression(e)
+		err = eAsE.Check()
+		if err != nil {
+			panic(fmt.Errorf("error in second argument to Minus: %v", err))
+		}
+
+		err = smErrors.CheckDimensionsInSubtraction(pm, eAsE)
+		if err != nil {
+			panic(err)
+		}
+
+		// Perform the subtraction with Expression's Minus() function
+		return Minus(pm, eAsE)
+	}
+
+	// If type isn't recognized, then panic
+	panic(
+		smErrors.UnsupportedInputError{
+			FunctionName: "PolynomialMatrix.Minus",
+			Input:        e,
+		},
+	)
+}
+
+/*
 Multiply
 Description:
 
@@ -566,4 +610,30 @@ func (pm PolynomialMatrix) String() string {
 
 	// Return the string
 	return out
+}
+
+/*
+Degree
+Description:
+
+	The degree of the polynomial matrix
+	is the maximum degree of the entries.
+*/
+func (pm PolynomialMatrix) Degree() int {
+	// Input Processing
+	err := pm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	maxDegree := 0
+	for _, row := range pm {
+		for _, p := range row {
+			if p.Degree() > maxDegree {
+				maxDegree = p.Degree()
+			}
+		}
+	}
+	return maxDegree
 }

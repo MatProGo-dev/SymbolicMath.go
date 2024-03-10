@@ -256,6 +256,47 @@ func TestPolynomialVector_AtVec2(t *testing.T) {
 }
 
 /*
+TestPolynomialVector_AtVec3
+Description:
+
+	Verifies that the AtVec method panics when called on a polynomial vector
+	that has not been properly initialized.
+*/
+func TestPolynomialVector_AtVec3(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected AtVec to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected AtVec to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if rAsE.Error() != pv.Check().Error() {
+			t.Errorf(
+				"Expected AtVec to panic with error 'polynomial vector has no polynomials'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv.AtVec(0)
+
+}
+
+/*
 TestPolynomialVector_Variables1
 Description:
 
@@ -612,6 +653,86 @@ func TestPolynomialVector_LinearCoeff4(t *testing.T) {
 }
 
 /*
+TestPolynomialVector_LinearCoeff5
+Description:
+
+	This test verifies that the LinearCoeff method returns
+	a length 2 slice when we provide a varSlice of length 2.
+*/
+func TestPolynomialVector_LinearCoeff5(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	pv := symbolic.PolynomialVector{symbolic.NewVariable().ToPolynomial()}
+
+	v2 := symbolic.NewVariable()
+
+	vSlice3 := []symbolic.Variable{v1, v2}
+
+	// Test
+	linearCoeff := pv.LinearCoeff(vSlice3)
+	nx, ny := linearCoeff.Dims()
+	if ny != len(vSlice3) {
+		t.Errorf(
+			"Expected linearCoeff to have 2 columns; received %v",
+			ny,
+		)
+	}
+
+	if nx != pv.Len() {
+		t.Errorf(
+			"Expected linearCoeff to have %v rows; received %v",
+			pv.Len(),
+			nx,
+		)
+	}
+}
+
+/*
+TestPolynomialVector_LinearCoeff6
+Description:
+
+	This test verifies that the LinearCoeff method panics
+	if multiple varSlices are provided to the LinearCoeff.
+*/
+func TestPolynomialVector_LinearCoeff6(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	pv := symbolic.PolynomialVector{symbolic.NewVariable().ToPolynomial()}
+
+	v2 := symbolic.NewVariable()
+
+	vSlice3 := []symbolic.Variable{v1, v2}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected LinearCoeff to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected LinearCoeff to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if !strings.Contains(rAsE.Error(), "Too many inputs provided to LinearCoeff()") {
+			t.Errorf(
+				"Expected LinearCoeff to panic with error 'only one varSlice'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv.LinearCoeff(vSlice3, vSlice3)
+}
+
+/*
 TestPolynomialVector_Plus1
 Description:
 
@@ -804,6 +925,370 @@ func TestPolynomialVector_Plus6(t *testing.T) {
 			)
 		}
 	}
+}
+
+/*
+TestPolynomialVector_Plus7
+Description:
+
+	Tests that a polynomial vector added to a polynomial vector of incompatible size
+	results in a panic.
+*/
+func TestPolynomialVector_Plus7(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
+	}
+	pv2 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 2; ii++ {
+		pv2 = append(pv2, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Plus to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Plus to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		expectedError := smErrors.CheckDimensionsInAddition(pv1, pv2)
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"Expected Plus to panic with error 'incompatible sizes'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv1.Plus(pv2)
+}
+
+/*
+TestPolynomialVector_Plus8
+Description:
+
+	Tests that the Plus() method panics when the second input to it (not the receiver) is not
+	an expression (or like an expression). In this case, the second input is a string.
+*/
+func TestPolynomialVector_Plus8(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv = append(pv, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Plus to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Plus to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		expectedError := smErrors.UnsupportedInputError{
+			FunctionName: "PolynomialVector.Plus",
+			Input:        "hello",
+		}
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"Expected Plus to panic with error 'unsupported type'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv.Plus("hello")
+}
+
+/*
+TestPolynomialVector_Minus1
+Description:
+
+	This test verifies that the Minus method throws a panic
+	if it is called with a receiver PolynomialVector that isn't
+	propertly initialized.
+*/
+func TestPolynomialVector_Minus1(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	pv2 := symbolic.PolynomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Minus to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Minus to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if rAsE.Error() != pv1.Check().Error() {
+			t.Errorf(
+				"Expected Minus to panic with error 'polynomial vector has no polynomials'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv1.Minus(pv2)
+
+}
+
+/*
+TestPolynomialVector_Minus2
+Description:
+
+	This test verifies that the Minus method panics if a well-defined polynomial
+	vector is given as the receiver and a second monomial vector is given as the
+	second input. The second input is not well-defined.
+*/
+func TestPolynomialVector_Minus2(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
+	}
+	mv2 := symbolic.MonomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Minus to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Minus to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if !strings.Contains(rAsE.Error(), mv2.Check().Error()) {
+			t.Errorf(
+				"Expected Minus to panic with error 'polynomial vector has no polynomials'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv1.Minus(mv2)
+}
+
+/*
+TestPolynomialVector_Minus3
+Description:
+
+	Verifies that the Minus method panics when the inputs to the method do not match
+	in terms of dimensions.
+*/
+func TestPolynomialVector_Minus3(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
+	}
+	pv2 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 2; ii++ {
+		pv2 = append(pv2, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Minus to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Minus to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		expectedError := smErrors.CheckDimensionsInSubtraction(pv1, pv2)
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"Expected Minus to panic with error 'incompatible sizes'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv1.Minus(pv2)
+}
+
+/*
+TestPolynomialVector_Minus4
+Description:
+
+	Tests that the Minus() method returns a valid polynomial vector
+	when we compute the difference between a polynomial vector and a mat.VecDense object.
+*/
+func TestPolynomialVector_Minus4(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
+	}
+	v2 := symbolic.OnesVector(20)
+
+	// Test
+	pv3, tf := pv1.Minus(v2).(symbolic.PolynomialVector)
+	if !tf {
+		t.Errorf(
+			"Expected Minus to return a polynomial vector; received %T",
+			pv3,
+		)
+	}
+	// Check that each polynomial contains two monomials
+	for _, polynomial := range pv3 {
+		if len(polynomial.Monomials) != 2 {
+			t.Errorf(
+				"Expected polynomial.Monomials to have length 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+	}
+
+	// Check the length
+	if len(pv3) != 20 {
+		t.Errorf(
+			"Expected pv3 to have length 20; received %v",
+			len(pv3),
+		)
+	}
+}
+
+/*
+TestPolynomialVector_Minus5
+Description:
+
+	Tests that the Minus() method returns a valid polynomial vector
+	when we compute the difference between a polynomial vector and a
+	float64.
+*/
+func TestPolynomialVector_Minus5(t *testing.T) {
+	// Constants
+	pv1 := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
+	}
+	f2 := 3.14
+
+	// Test
+	pv3, tf := pv1.Minus(f2).(symbolic.PolynomialVector)
+	if !tf {
+		t.Errorf(
+			"Expected Minus to return a polynomial vector; received %T",
+			pv3,
+		)
+	}
+	// Check that each polynomial contains two monomials
+	for _, polynomial := range pv3 {
+		if len(polynomial.Monomials) != 2 {
+			t.Errorf(
+				"Expected polynomial.Monomials to have length 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+	}
+
+	// Check the length
+	if len(pv3) != 20 {
+		t.Errorf(
+			"Expected pv3 to have length 20; received %v",
+			len(pv3),
+		)
+	}
+
+}
+
+/*
+TestPolynomialVector_Minus6
+Description:
+
+	Tests that the Minus() method panics when the second input to it (not the receiver) is
+	not recognized as an expression or expression-like.
+*/
+func TestPolynomialVector_Minus6(t *testing.T) {
+	// Constants
+	pv := symbolic.PolynomialVector{}
+	for ii := 0; ii < 20; ii++ {
+		pv = append(pv, symbolic.NewVariable().ToPolynomial())
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected Minus to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected Minus to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		expectedError := smErrors.UnsupportedInputError{
+			FunctionName: "PolynomialVector.Minus",
+			Input:        "hello",
+		}
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"Expected Minus to panic with error 'unsupported type'; received '%v'",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	pv.Minus("hello")
 }
 
 /*

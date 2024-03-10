@@ -1,10 +1,5 @@
 package symbolic
 
-import (
-	"fmt"
-	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
-)
-
 // ScalarConstraint represnts a linear constraint of the form x <= y, x >= y, or
 // x == y. ScalarConstraint uses a left and right hand side expressions along with a
 // constraint sense (<=, >=, ==) to represent a generalized linear constraint
@@ -26,34 +21,11 @@ func (sc ScalarConstraint) Right() Expression {
 IsLinear
 Description:
 
-	Describes whether or not a given linear constraint is
+	Describes whether a given scalar constraint is
 	linear or not.
 */
 func (sc ScalarConstraint) IsLinear() bool {
-	// Check that both sides are polynomial like
-	if !IsPolynomialLike(sc.LeftHandSide) {
-		panic(
-			smErrors.UnsupportedInputError{
-				FunctionName: "ScalarConstraint.IsLinear",
-				Input:        sc.LeftHandSide,
-			},
-		)
-	}
-
-	if !IsPolynomialLike(sc.RightHandSide) {
-		panic(
-			smErrors.UnsupportedInputError{
-				FunctionName: "ScalarConstraint.IsLinear",
-				Input:        sc.RightHandSide,
-			},
-		)
-	}
-
-	// Convert left and right hand sides to polynomial like
-	leftAsPLS, _ := ToPolynomialLikeScalar(sc.LeftHandSide)
-	rightAsPLS, _ := ToPolynomialLikeScalar(sc.RightHandSide)
-
-	return IsLinear(leftAsPLS) && IsLinear(rightAsPLS)
+	return IsLinear(sc.RightHandSide) && IsLinear(sc.LeftHandSide)
 }
 
 /*
@@ -63,25 +35,24 @@ Description:
 	Moves all of the variables of the ScalarConstraint to its
 	left hand side.
 */
-func (sc ScalarConstraint) Simplify() (ScalarConstraint, error) {
+func (sc ScalarConstraint) Simplify() ScalarConstraint {
 	// Create LHS
 	newLHS := sc.LeftHandSide
 
-	// Algorithm
-	switch right := sc.RightHandSide.(type) {
-	case K:
-		return sc, nil
-	case Variable:
-		newLHS := newLHS.Plus(right.Multiply(-1.0))
-		newLHSAsSE, _ := ToScalarExpression(newLHS)
+	// If RHS is a constant, then simply return the constraint
+	if _, ok := sc.RightHandSide.(K); ok {
+		return sc
+	}
 
-		return ScalarConstraint{
-			LeftHandSide:  newLHSAsSE,
-			RightHandSide: K(0),
-			Sense:         sc.Sense,
-		}, nil
-	default:
-		return sc, fmt.Errorf("unexpected type of right hand side: %T", right)
+	// Algorithm
+	newLHS = newLHS.Minus(sc.RightHandSide).Plus(
+		sc.RightHandSide.Constant(),
+	).(ScalarExpression) // This should be a scalar expression
+
+	return ScalarConstraint{
+		LeftHandSide:  newLHS,
+		RightHandSide: K(sc.RightHandSide.Constant()),
+		Sense:         sc.Sense,
 	}
 
 }
