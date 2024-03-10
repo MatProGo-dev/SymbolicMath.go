@@ -1652,3 +1652,145 @@ func TestPolynomialMatrix_DerivativeWrt3(t *testing.T) {
 	}
 
 }
+
+/*
+TestPolynomialMatrix_At1
+Description:
+
+	Tests that the At() method properly panics when an improperly
+	initialized matrix of polynomials is used to call it.
+*/
+func TestPolynomialMatrix_At1(t *testing.T) {
+	// Constants
+	var pm symbolic.PolynomialMatrix
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm.At(0,0) to panic; received %v",
+				pm.At(0, 0),
+			)
+		}
+	}()
+
+	pm.At(0, 0)
+}
+
+/*
+TestPolynomialMatrix_At2
+Description:
+
+	Tests that the At() method properly panics when one attempts to get
+	an element from a well-defined matrix of polynomials that is out of bounds.
+*/
+func TestPolynomialMatrix_At2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	p1 := v1.ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1, p1},
+		{p1, p1},
+		{p1, p1},
+	}
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm1.At(3,0) to panic; received %v",
+				pm1.At(3, 0),
+			)
+		}
+	}()
+
+	// Test
+	pm1.At(3, 0)
+}
+
+/*
+TestPolynomialMatrix_Constant1
+Description:
+
+	Tests that the Constant() method properly panics when an improperly
+	initialized matrix of polynomials is used to call it.
+*/
+func TestPolynomialMatrix_Constant1(t *testing.T) {
+	// Constants
+	var pm symbolic.PolynomialMatrix
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm.Constant() to panic; received %v",
+				pm.Constant(),
+			)
+		}
+	}()
+
+	pm.Constant()
+}
+
+/*
+TestPolynomialMatrix_Constant2
+Description:
+
+	Tests that the Constant() method properly returns the constant
+	value of a well-defined polynomial matrix containing ones.
+*/
+func TestPolynomialMatrix_Constant2(t *testing.T) {
+	// Constants
+	var pm symbolic.PolynomialMatrix = symbolic.NewVariableMatrix(3, 2).ToPolynomialMatrix().Plus(
+		1.0,
+	).(symbolic.PolynomialMatrix)
+
+	// Test
+	constant0 := pm.Constant()
+
+	// Verify that matrix is almost equal to matrix of all ones.
+	ones := symbolic.OnesMatrix(3, 2)
+	if !mat.EqualApprox(&constant0, &ones, 1e-14) {
+		t.Errorf(
+			"expected pm.Constant() to be a matrix of all ones; received %v",
+			constant0,
+		)
+	}
+}
+
+/*
+TestPolynomialMatrix_String1
+Description:
+
+	Tests that the String() method properly returns a string
+	that is composed of each of the polynomials in the matrix.
+*/
+func TestPolynomialMatrix_String1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	p1 := v1.ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1, p1},
+		{p1, p1},
+		{p1, p1},
+	}
+
+	// Test
+	pm1String := pm1.String()
+
+	// Verify that the string contains the string representation of each polynomial
+	for _, pRow := range pm1 {
+		for _, p := range pRow {
+			if !strings.Contains(pm1String, p.String()) {
+				t.Errorf(
+					"expected pm1String to contain p.String(); received %v",
+					pm1String,
+				)
+			}
+		}
+
+	}
+}
