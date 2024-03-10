@@ -770,6 +770,78 @@ func TestPolynomialMatrix_Minus3(t *testing.T) {
 }
 
 /*
+TestPolynomialMatrix_Minus4
+Description:
+
+	Tests that the Minus() method properly subtracts a polynomial matrix (Each with 1 monomial)
+	with a float64. The result should be a polynomial matrix with
+	each polynomial containing two monomials.
+*/
+func TestPolynomialMatrix_Minus4(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	p1 := v1.ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1},
+		{p1},
+		{p1},
+	}
+
+	// Test
+	pm2 := pm1.Minus(1.0)
+
+	pm2AsPM, tf := pm2.(symbolic.PolynomialMatrix)
+	if !tf {
+		t.Errorf(
+			"expected pm2 to be a PolynomialMatrix; received %v",
+			pm2,
+		)
+	}
+
+	for _, pmRow := range pm2AsPM {
+		for _, p := range pmRow {
+			if len(p.Monomials) != 2 {
+				t.Errorf(
+					"expected len(p.Monomials) to be 2; received %v",
+					len(p.Monomials),
+				)
+			}
+		}
+	}
+}
+
+/*
+TestPolynomialMatrix_Minus5
+Description:
+
+	Tests that the Minus() method properly panics when a well-defined polynomial matrix
+	calls the Minus() method on an object that is not an expression (in this case, a string).
+*/
+func TestPolynomialMatrix_Minus5(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1},
+		{p1},
+		{p1},
+	}
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm1.Minus(\"hi\") to panic; received %v",
+				pm1.Minus("hi"),
+			)
+		}
+	}()
+
+	// Test
+	pm1.Minus("hi")
+}
+
+/*
 TestPolynomialMatrix_Multiply1
 Description:
 
@@ -1480,4 +1552,103 @@ func TestPolynomialMatrix_Comparison1(t *testing.T) {
 			mcAsMC.RightHandSide,
 		)
 	}
+}
+
+/*
+TestPolynomialMatrix_DerivativeWrt1
+Description:
+
+	Tests that the DerivativeWrt() method properly panics
+	when an improperly initialized matrix of polynomials is used to call it.
+*/
+func TestPolynomialMatrix_DerivativeWrt1(t *testing.T) {
+	// Constants
+	var pm symbolic.PolynomialMatrix
+	v1 := symbolic.NewVariable()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm.DerivativeWrt(pm) to panic; received %v",
+				pm.DerivativeWrt(v1),
+			)
+		}
+	}()
+
+	pm.DerivativeWrt(v1)
+}
+
+/*
+TestPolynomialMatrix_DerivativeWrt2
+Description:
+
+	Tests that the DerivativeWrt() method properly panics when a
+	well-defined polynomial matrix is used to call it with an
+	a variable that is not well-defiend.
+*/
+func TestPolynomialMatrix_DerivativeWrt2(t *testing.T) {
+	// Constants
+	var pm symbolic.PolynomialMatrix = symbolic.NewVariableMatrix(3, 2).ToPolynomialMatrix()
+	v1 := symbolic.Variable{}
+
+	// Create panic checking logic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected pm.DerivativeWrt(\"hi\") to panic; received %v",
+				pm.DerivativeWrt(v1),
+			)
+		}
+	}()
+
+	// Test
+	pm.DerivativeWrt(v1)
+}
+
+/*
+TestPolynomialMatrix_DerivativeWrt3
+Description:
+
+	Tests that the DerivativeWrt() method properly returns a
+	PolynomialMatrix when a valid polynomial matrix is used to call it
+	with a valid variable. In this case, each polynomial in the matrix
+	contains two monomials. The result should be a polynomial matrix
+	with each polynomial containing one monomial.
+*/
+func TestPolynomialMatrix_DerivativeWrt3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	p1 := v1.ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1.Minus(3.14).(symbolic.Polynomial), p1.Minus(3.14).(symbolic.Polynomial)},
+		{p1.Minus(3.14).(symbolic.Polynomial), p1.Minus(3.14).(symbolic.Polynomial)},
+		{p1.Minus(3.14).(symbolic.Polynomial), p1.Minus(3.14).(symbolic.Polynomial)},
+	}
+
+	// Test
+	pm2 := pm1.DerivativeWrt(v1)
+
+	pm2AsPM, tf := pm2.(symbolic.PolynomialMatrix)
+	if !tf {
+		t.Errorf(
+			"expected pm2 to be a PolynomialMatrix; received %v",
+			pm2,
+		)
+	}
+
+	// Check that each polynomial in pm2 contains one monomial
+	for _, pm2Row := range pm2AsPM {
+		for _, p := range pm2Row {
+			if len(p.Monomials) != 1 {
+				t.Errorf(
+					"expected len(p.Monomials) to be 1; received %v",
+					len(p.Monomials),
+				)
+			}
+		}
+	}
+
 }
