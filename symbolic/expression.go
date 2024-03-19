@@ -55,6 +55,12 @@ type Expression interface {
 
 	// String returns a string representation of the expression
 	String() string
+
+	// Substitute returns the expression with the variable vIn replaced with the expression eIn
+	Substitute(vIn Variable, eIn Expression) Expression
+
+	// SubstituteAccordingToMap returns the expression with the variables in the map replaced with the corresponding expressions
+	SubstituteAccordingTo(subMap map[Variable]Expression) Expression
 }
 
 /*
