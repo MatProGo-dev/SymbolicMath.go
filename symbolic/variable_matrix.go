@@ -697,3 +697,13 @@ Description:
 func (vm VariableMatrix) Degree() int {
 	return 1
 }
+
+/*
+Power
+Description:
+
+	This function raises the variable matrix to a given power.
+*/
+func (vm VariableMatrix) Power(exponent int) Expression {
+	return MatrixPowerTemplate(vm, exponent)
+}

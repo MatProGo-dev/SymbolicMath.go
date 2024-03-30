@@ -693,3 +693,13 @@ Description:
 func (km KMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	return km
 }
+
+/*
+Power
+Description:
+
+	Raises the constant matrix to the power of the input integer.
+*/
+func (km KMatrix) Power(exponent int) Expression {
+	return MatrixPowerTemplate(km, exponent)
+}

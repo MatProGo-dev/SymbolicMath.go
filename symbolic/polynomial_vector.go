@@ -594,3 +594,13 @@ func (pv PolynomialVector) Degree() int {
 
 	return maxDegree
 }
+
+/*
+Power
+Description:
+
+	Computes the power of the polynomial vector.
+*/
+func (pv PolynomialVector) Power(exponent int) Expression {
+	return VectorPowerTemplate(pv, exponent)
+}

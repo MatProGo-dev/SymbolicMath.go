@@ -649,3 +649,13 @@ func (mm MonomialMatrix) Degree() int {
 	// Return
 	return maxDegree
 }
+
+/*
+Power
+Description:
+
+	Returns the monomial matrix raised to the power of the input integer.
+*/
+func (mm MonomialMatrix) Power(exponent int) Expression {
+	return MatrixPowerTemplate(mm, exponent)
+}

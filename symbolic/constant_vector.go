@@ -611,3 +611,13 @@ Description:
 func (kv KVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	return kv
 }
+
+/*
+Power
+Description:
+
+	Raises the scalar expression to the power of the input integer.
+*/
+func (kv KVector) Power(exponent int) Expression {
+	return VectorPowerTemplate(kv, exponent)
+}

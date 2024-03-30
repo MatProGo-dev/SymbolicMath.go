@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -67,6 +68,16 @@ type MatrixExpression interface {
 
 	// String returns a string representation of the expression
 	String() string
+
+	// Substitute returns the expression with the variable vIn replaced with the expression eIn
+	Substitute(vIn Variable, eIn Expression) Expression
+
+	// SubstituteAccordingTo returns the expression with the variables in the map replaced with the corresponding expressions
+	SubstituteAccordingTo(subMap map[Variable]Expression) Expression
+
+	// Power
+	// Raises the scalar expression to the power of the input integer
+	Power(exponent int) Expression
 }
 
 /*
@@ -127,4 +138,48 @@ func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 			e,
 		)
 	}
+}
+
+/*
+IsSquare
+Description:
+
+	Determines whether the input matrix expression is square.
+*/
+func IsSquare(e MatrixExpression) bool {
+	dims := e.Dims()
+	return dims[0] == dims[1]
+}
+
+/*
+MatrixPowerTemplate
+Description:
+
+	Template for the matrix power function.
+*/
+func MatrixPowerTemplate(me MatrixExpression, exponent int) MatrixExpression {
+	// Input Processing
+	err := me.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check if the matrix is square
+	if !IsSquare(me) {
+		panic(fmt.Errorf("matrix is not square; cannot raise to power"))
+	}
+
+	// Check if the power is non-negative
+	if exponent < 0 {
+		panic(smErrors.NegativeExponentError{
+			Exponent: exponent,
+		})
+	}
+
+	// Algorithm
+	var out MatrixExpression = K(0).Plus(Identity(me.Dims()[0])).(MatrixExpression)
+	for i := 0; i < exponent; i++ {
+		out = out.Multiply(me).(MatrixExpression)
+	}
+	return out
 }

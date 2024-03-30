@@ -584,3 +584,51 @@ Description:
 func (vv VariableVector) Degree() int {
 	return 1
 }
+
+/*
+Substitute
+Description:
+
+	Substitute returns the expression with the variable vIn replaced with the expression eIn
+*/
+func (vv VariableVector) Substitute(vIn Variable, eIn Expression) Expression {
+	// Input Processing
+	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = eIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Constants
+
+	// Algorithm
+	var out VariableVector
+	for _, element := range vv {
+		if element.ID == vIn.ID {
+			out = append(out, eIn)
+		} else {
+			out = append(out, element)
+		}
+	}
+
+	return out
+}
+
+/*
+Power
+Description:
+
+	Raises the variable vector to the power of the input integer
+*/
+func (vv VariableVector) Power(exponent int) Expression {
+	return VectorPowerTemplate(vv, exponent)
+}

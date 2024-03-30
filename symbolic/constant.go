@@ -399,3 +399,13 @@ Description:
 func (c K) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	return c
 }
+
+/*
+Power
+Description:
+
+	Computes the power of the constant.
+*/
+func (c K) Power(exponent int) Expression {
+	return ScalarPowerTemplate(c, exponent)
+}

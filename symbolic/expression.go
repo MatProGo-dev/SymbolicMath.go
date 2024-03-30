@@ -61,6 +61,10 @@ type Expression interface {
 
 	// SubstituteAccordingToMap returns the expression with the variables in the map replaced with the corresponding expressions
 	SubstituteAccordingTo(subMap map[Variable]Expression) Expression
+
+	// Power
+	// Raises the scalar expression to the power of the input integer
+	Power(exponent int) Expression
 }
 
 /*

@@ -637,3 +637,13 @@ func (pm PolynomialMatrix) Degree() int {
 	}
 	return maxDegree
 }
+
+/*
+Power
+Description:
+
+	Raises the polynomial matrix to the power of the input integer.
+*/
+func (pm PolynomialMatrix) Power(exponent int) Expression {
+	return MatrixPowerTemplate(pm, exponent)
+}

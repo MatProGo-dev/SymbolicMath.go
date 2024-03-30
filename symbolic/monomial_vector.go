@@ -636,3 +636,13 @@ func (mv MonomialVector) Degree() int {
 	// Return
 	return maxDegree
 }
+
+/*
+Power
+Description:
+
+	This function raises the monomial vector to the input power.
+*/
+func (mv MonomialVector) Power(exponent int) Expression {
+	return VectorPowerTemplate(mv, exponent)
+}

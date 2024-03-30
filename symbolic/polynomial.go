@@ -752,3 +752,46 @@ func (p Polynomial) String() string {
 	// Return
 	return polynomialString
 }
+
+/*
+Substitute
+Description:
+
+	This method substitutes the variable vIn with the expression eIn.
+*/
+func (p Polynomial) Substitute(vIn Variable, eIn Expression) Expression {
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = eIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var out Expression = K(0.0)
+	for _, monomial := range p.Monomials {
+		newMonomial := monomial.Substitute(vIn, eIn)
+		out = out.Plus(newMonomial)
+	}
+
+	return out
+}
+
+/*
+Power
+Description:
+
+	Computes the power of the constant.
+*/
+func (p Polynomial) Power(exponent int) Expression {
+	return ScalarPowerTemplate(p, exponent)
+}

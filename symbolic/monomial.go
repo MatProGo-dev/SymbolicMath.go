@@ -663,3 +663,56 @@ func (m Monomial) Copy() Monomial {
 	// Return
 	return mCopy
 }
+
+/*
+Substitute
+Description:
+
+	Substitutes all occurrences of variable vIn with the expression eIn.
+*/
+func (m Monomial) Substitute(vIn Variable, eIn Expression) Expression {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = eIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	// Find the index of the variable in the monomial
+	foundIndex, _ := FindInSlice(vIn, m.VariableFactors)
+
+	// If the variable is not in the monomial, then return the monomial
+	if foundIndex == -1 {
+		return m
+	}
+
+	// If the variable is in the monomial,
+	// then compute the product of the monomial with the expression
+	var prod Expression = K(m.Coefficient)
+	for ii, variable := range m.VariableFactors {
+		prod = prod.Multiply(variable.Substitute(vIn, eIn).Power(m.Exponents[ii]))
+	}
+
+	// Return
+	return prod
+}
+
+/*
+Power
+Description:
+
+	Computes the power of the monomial.
+*/
+func (m Monomial) Power(exponent int) Expression {
+	return ScalarPowerTemplate(m, exponent)
+}

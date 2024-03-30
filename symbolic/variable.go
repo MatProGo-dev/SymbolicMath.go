@@ -552,3 +552,65 @@ Description:
 func (v Variable) String() string {
 	return v.Name
 }
+
+/*
+Substitute
+Description:
+
+	Substitutes the variable vIn with the expression eIn.
+*/
+func (v Variable) Substitute(vIn Variable, eIn Expression) Expression {
+	// Input Processing
+	err := v.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = eIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	if v.ID == vIn.ID {
+		return eIn
+	} else {
+		return v
+	}
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes the variable in the map with the corresponding expression.
+*/
+func (v Variable) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+	// Input Processing
+	err := v.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	if e, ok := subMap[v]; ok {
+		return e
+	} else {
+		return v
+	}
+}
+
+/*
+Power
+Description:
+
+	Computes the power of the variable.
+*/
+func (v Variable) Power(exponent int) Expression {
+	return ScalarPowerTemplate(v, exponent)
+}

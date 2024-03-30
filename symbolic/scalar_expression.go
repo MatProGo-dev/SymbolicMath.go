@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -62,6 +63,10 @@ type ScalarExpression interface {
 
 	// String returns a string representation of the expression
 	String() string
+
+	// Power
+	// Raises the scalar expression to the power of the input integer
+	Power(exponent int) Expression
 }
 
 // NewExpr returns a new expression with a single additive constant value, c,
@@ -132,4 +137,32 @@ func ToScalarExpression(e interface{}) (ScalarExpression, error) {
 			e,
 		)
 	}
+}
+
+/*
+ScalarPowerTemplate
+Description:
+
+	Defines the template for the scalar power operation.
+*/
+func ScalarPowerTemplate(base ScalarExpression, exponent int) Expression {
+	// Setup
+
+	// Input Processing
+	err := base.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	if exponent < 0 {
+		panic(smErrors.NegativeExponentError{Exponent: exponent})
+	}
+
+	// Algorithm
+	var result Expression = K(1.0)
+	for i := 0; i < exponent; i++ {
+		result = result.Multiply(base)
+	}
+
+	return result
 }
