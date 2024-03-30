@@ -673,3 +673,23 @@ Description:
 func (km KMatrix) Degree() int {
 	return 0
 }
+
+/*
+Substitute
+Description:
+
+	Substitutes all occurrences of variable vIn with the expression eIn.
+*/
+func (km KMatrix) Substitute(vIn Variable, eIn Expression) Expression {
+	return km
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes all occurrences of the variables in the map with the corresponding expressions.
+*/
+func (km KMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+	return km
+}

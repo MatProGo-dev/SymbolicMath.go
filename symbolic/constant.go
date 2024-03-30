@@ -379,3 +379,23 @@ Description:
 func (c K) String() string {
 	return fmt.Sprintf("%v", float64(c))
 }
+
+/*
+Substitute
+Description:
+
+	Substitutes the variable vIn with the expression eIn.
+*/
+func (c K) Substitute(vIn Variable, eIn Expression) Expression {
+	return c
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes the variables in the map with the corresponding expressions.
+*/
+func (c K) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+	return c
+}

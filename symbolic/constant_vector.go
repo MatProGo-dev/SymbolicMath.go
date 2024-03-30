@@ -591,3 +591,23 @@ Description:
 func (kv KVector) Degree() int {
 	return 0
 }
+
+/*
+Substitute
+Description:
+
+	Substitutes all occurrences of variable vIn with the expression eIn.
+*/
+func (kv KVector) Substitute(vIn Variable, eIn Expression) Expression {
+	return kv
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes all occurrences of the variables in the map with the corresponding expressions.
+*/
+func (kv KVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+	return kv
+}
