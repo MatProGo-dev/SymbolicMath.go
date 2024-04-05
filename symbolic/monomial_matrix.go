@@ -666,16 +666,22 @@ Description:
 
 	Substitutes the variables in the monomial matrix according to the map provided in substitutions.
 */
-func (mm MonomialMatrix) SubstituteAccordingTo(substitutions map[Variable]ScalarExpression) Expression {
+func (mm MonomialMatrix) SubstituteAccordingTo(substitutions map[Variable]Expression) Expression {
 	// Input Processing
 	err := mm.Check()
 	if err != nil {
 		panic(err)
 	}
 
+	err = CheckSubstitutionMap(substitutions)
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
 	var out MatrixExpression = mm
-	for v, se := range substitutions {
-		postSub := out.Substitute(v, se)
+	for v, expr := range substitutions {
+		postSub := out.Substitute(v, expr.(ScalarExpression))
 		out = postSub.(MatrixExpression)
 	}
 	return out

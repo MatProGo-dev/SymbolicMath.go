@@ -590,9 +590,14 @@ Description:
 
 	Substitutes the variable in the map with the corresponding expression.
 */
-func (v Variable) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+func (v Variable) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := v.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
 	if err != nil {
 		panic(err)
 	}

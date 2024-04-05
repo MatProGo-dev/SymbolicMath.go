@@ -758,6 +758,41 @@ func TestConstant_Minus3(t *testing.T) {
 }
 
 /*
+TestConstant_Minus4
+Description:
+
+	Tests that the Minus() method properly subtracts a float64 from a well-defined constant K.
+*/
+func TestConstant_Minus4(t *testing.T) {
+	// Setup
+	k1 := symbolic.K(3.14)
+	i1 := 2.0
+
+	// Test
+	res := k1.Minus(i1)
+
+	// Check that result is a constant
+	if _, tf := res.(symbolic.K); !tf {
+		t.Errorf(
+			"expected Minus() to return a K; received %T",
+			res,
+		)
+	}
+
+	// Check that the proper result is revealed.
+	if !floats.EqualApprox(
+		[]float64{float64(res.(symbolic.K))},
+		[]float64{1.14},
+		0.001,
+	) {
+		t.Errorf(
+			"expected constant to be 1.14; received %v",
+			res,
+		)
+	}
+}
+
+/*
 TestConstant_LessEq1
 Description:
 
@@ -1354,6 +1389,77 @@ func TestConstant_DerivativeWrt1(t *testing.T) {
 		t.Errorf(
 			"expected DerivativeWrt() to return a K 0.0; received %v",
 			derivative,
+		)
+	}
+}
+
+/*
+TestConstant_Substitute1
+Description:
+
+	Tests that the Substitute() method properly returns
+	a constant when called with a variable that we want to replace with a new variable.
+*/
+func TestConstant_Substitute1(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+
+	// Test
+	substituted := k1.Substitute(symbolic.NewVariable(), symbolic.NewVariable())
+
+	// Verifies that the value of substituted is the same as k1
+	if float64(substituted.(symbolic.K)) != 3.14 {
+		t.Errorf(
+			"expected Substitute() to return a K 3.14; received %v",
+			substituted,
+		)
+	}
+}
+
+/*
+TestConstant_Substitute2
+Description:
+
+	Tests that the Substitute() method properly returns
+	a constant when called with a variable that we want to replace with a constant.
+*/
+func TestConstant_Substitute2(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+
+	// Test
+	substituted := k1.Substitute(symbolic.NewVariable(), symbolic.K(2.71))
+
+	// Verifies that the value of substituted is the same as k1
+	if float64(substituted.(symbolic.K)) != 3.14 {
+		t.Errorf(
+			"expected Substitute() to return a K 3.14; received %v",
+			substituted,
+		)
+	}
+}
+
+/*
+TestConstant_SubstituteAccordingTo1
+Description:
+
+	Tests that the SubstituteAccordingTo() method properly returns
+	a constant when called with a map that does not contain the variable
+*/
+func TestConstant_SubstituteAccordingTo1(t *testing.T) {
+	// Constants
+	k1 := symbolic.K(3.14)
+
+	// Test
+	substituted := k1.SubstituteAccordingTo(map[symbolic.Variable]symbolic.Expression{
+		symbolic.NewVariable(): symbolic.NewVariable().Minus(1.0),
+	})
+
+	// Verifies that the value of substituted is the same as k1
+	if float64(substituted.(symbolic.K)) != 3.14 {
+		t.Errorf(
+			"expected SubstituteAccordingTo() to return a K 3.14; received %v",
+			substituted,
 		)
 	}
 }

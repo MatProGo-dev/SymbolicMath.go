@@ -654,9 +654,14 @@ Description:
 
 	Substitutes the variables in the polynomial matrix with the corresponding expressions in the map.
 */
-func (pm PolynomialMatrix) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+func (pm PolynomialMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := pm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
 	if err != nil {
 		panic(err)
 	}
@@ -664,7 +669,7 @@ func (pm PolynomialMatrix) SubstituteAccordingTo(subMap map[Variable]ScalarExpre
 	// Algorithm
 	var out MatrixExpression = pm
 	for v, e := range subMap {
-		outSubbed := out.Substitute(v, e)
+		outSubbed := out.Substitute(v, e.(ScalarExpression))
 		out = outSubbed.(MatrixExpression)
 	}
 

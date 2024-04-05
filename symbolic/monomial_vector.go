@@ -653,17 +653,22 @@ Description:
 
 	This function substitutes all instances of variables in the substitutions map with their corresponding expressions.
 */
-func (mv MonomialVector) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+func (mv MonomialVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := mv.Check()
 	if err != nil {
 		panic(err)
 	}
 
+	err = CheckSubstitutionMap(subMap)
+	if err != nil {
+		panic(err)
+	}
+
 	// Setup
 	var out VectorExpression = mv
-	for varKey, seValue := range subMap {
-		postSub := out.Substitute(varKey, seValue)
+	for varKey, expr := range subMap {
+		postSub := out.Substitute(varKey, expr.(ScalarExpression))
 		out = postSub.(VectorExpression)
 	}
 	return out

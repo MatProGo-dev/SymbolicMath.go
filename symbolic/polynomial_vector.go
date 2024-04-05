@@ -611,9 +611,14 @@ Description:
 
 	Substitutes the variables in the polynomial vector with the expressions in the map.
 */
-func (pv PolynomialVector) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+func (pv PolynomialVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Checking
 	err := pv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
 	if err != nil {
 		panic(err)
 	}
@@ -621,7 +626,7 @@ func (pv PolynomialVector) SubstituteAccordingTo(subMap map[Variable]ScalarExpre
 	// Algorithm
 	var result VectorExpression = pv
 	for tempVar, tempExpr := range subMap {
-		resultSubbed := result.Substitute(tempVar, tempExpr)
+		resultSubbed := result.Substitute(tempVar, tempExpr.(ScalarExpression))
 		result = resultSubbed.(VectorExpression)
 	}
 

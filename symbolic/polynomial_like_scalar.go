@@ -70,7 +70,7 @@ type PolynomialLikeScalar interface {
 	Substitute(v Variable, se ScalarExpression) Expression
 
 	// SubstituteAccordingTo replaces the variables in the expression with the expressions in the map
-	SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression
+	SubstituteAccordingTo(subMap map[Variable]Expression) Expression
 
 	// Power raises the expression to the power of the input integer
 	Power(exponent int) Expression

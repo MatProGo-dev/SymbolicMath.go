@@ -792,9 +792,14 @@ Description:
 
 	This method substitutes the variables in the map with the corresponding expressions.
 */
-func (p Polynomial) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+func (p Polynomial) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
 	if err != nil {
 		panic(err)
 	}

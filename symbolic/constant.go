@@ -396,7 +396,7 @@ Description:
 
 	Substitutes the variables in the map with the corresponding expressions.
 */
-func (c K) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+func (c K) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	return c
 }
 

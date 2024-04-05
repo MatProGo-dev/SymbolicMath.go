@@ -608,7 +608,7 @@ Description:
 
 	Substitutes all occurrences of the variables in the map with the corresponding expressions.
 */
-func (kv KVector) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+func (kv KVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	return kv
 }
 

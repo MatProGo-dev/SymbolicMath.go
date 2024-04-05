@@ -714,9 +714,14 @@ Description:
 
 	This function substitutes the variables in the map with the corresponding expressions.
 */
-func (vm VariableMatrix) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+func (vm VariableMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := vm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
 	if err != nil {
 		panic(err)
 	}
@@ -724,7 +729,7 @@ func (vm VariableMatrix) SubstituteAccordingTo(subMap map[Variable]ScalarExpress
 	// Algorithm
 	var out MatrixExpression = vm
 	for v, e := range subMap {
-		outSubbed := out.Substitute(v, e)
+		outSubbed := out.Substitute(v, e.(ScalarExpression))
 		out = outSubbed.(MatrixExpression)
 	}
 

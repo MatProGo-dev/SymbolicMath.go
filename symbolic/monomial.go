@@ -713,9 +713,14 @@ Description:
 
 	Substitutes all occurrences of the variables in the map with the corresponding expressions.
 */
-func (m Monomial) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+func (m Monomial) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
 	if err != nil {
 		panic(err)
 	}
@@ -726,7 +731,7 @@ func (m Monomial) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Ex
 
 	// Iterate through each variable in the monomial
 	for tempVar, tempExp := range subMap {
-		out = out.Substitute(tempVar, tempExp)
+		out = out.Substitute(tempVar, tempExp.(ScalarExpression))
 	}
 
 	// Return

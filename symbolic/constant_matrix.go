@@ -690,7 +690,7 @@ Description:
 
 	Substitutes all occurrences of the variables in the map with the corresponding expressions.
 */
-func (km KMatrix) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+func (km KMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	return km
 }
 

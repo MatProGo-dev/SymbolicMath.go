@@ -601,9 +601,14 @@ Description:
 
 	Substitute replaces all instances of the variables in the map with the corresponding expressions.
 */
-func (vv VariableVector) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+func (vv VariableVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
 	if err != nil {
 		panic(err)
 	}
@@ -611,7 +616,7 @@ func (vv VariableVector) SubstituteAccordingTo(subMap map[Variable]ScalarExpress
 	// Algorithm
 	var out VectorExpression = vv
 	for tempVar, tempExpr := range subMap {
-		outSubbed := out.Substitute(tempVar, tempExpr)
+		outSubbed := out.Substitute(tempVar, tempExpr.(ScalarExpression))
 		out = outSubbed.(VectorExpression)
 	}
 

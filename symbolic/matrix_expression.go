@@ -73,7 +73,7 @@ type MatrixExpression interface {
 	Substitute(vIn Variable, eIn ScalarExpression) Expression
 
 	// SubstituteAccordingTo returns the expression with the variables in the map replaced with the corresponding expressions
-	SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression
+	SubstituteAccordingTo(subMap map[Variable]Expression) Expression
 
 	// Power
 	// Raises the scalar expression to the power of the input integer

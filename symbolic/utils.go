@@ -157,3 +157,52 @@ func CheckDimensionsInComparison(left, right Expression, senseIn ConstrSense) er
 	// If dimensions match, then return nothing.
 	return nil
 }
+
+/*
+CheckSubstitutionMap
+Description:
+
+	This function verifies that the input substitution map is valid. i.e., the map should contain:
+		1. Valid variables as keys
+		2. Valid expressions as values
+		3. The values should also be scalar expressions
+*/
+func CheckSubstitutionMap(subMap map[Variable]Expression) error {
+	var err error
+	// Check each key, value pair in the map
+	for tempVar, tempExpr := range subMap {
+		// Verify that the key is a valid variable
+		err = tempVar.Check()
+		if err != nil {
+			return fmt.Errorf(
+				"key %v in the substitution map is not a valid variable: %v",
+				tempVar,
+				err,
+			)
+		}
+
+		// Verify that the value is a valid expression
+		err = tempExpr.Check()
+		if err != nil {
+			return fmt.Errorf(
+				"value %v in the substitution map[%v] is not a valid expression: %v",
+				tempExpr,
+				tempVar,
+				err,
+			)
+		}
+
+		// Verify that the value is a scalar expression
+		if !IsScalarExpression(tempExpr) {
+			return fmt.Errorf(
+				"value %v in the substitution map[%v] is not a scalar expression (received %T)",
+				tempExpr,
+				tempVar,
+				tempExpr,
+			)
+		}
+	}
+
+	// All checks passed
+	return nil
+}
