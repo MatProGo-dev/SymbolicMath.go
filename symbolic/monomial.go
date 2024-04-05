@@ -670,7 +670,7 @@ Description:
 
 	Substitutes all occurrences of variable vIn with the expression eIn.
 */
-func (m Monomial) Substitute(vIn Variable, eIn Expression) Expression {
+func (m Monomial) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	// Input Processing
 	err := m.Check()
 	if err != nil {
@@ -705,6 +705,32 @@ func (m Monomial) Substitute(vIn Variable, eIn Expression) Expression {
 
 	// Return
 	return prod
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes all occurrences of the variables in the map with the corresponding expressions.
+*/
+func (m Monomial) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	// Create the monomial
+	var out Expression = K(0.0)
+
+	// Iterate through each variable in the monomial
+	for tempVar, tempExp := range subMap {
+		out = out.Substitute(tempVar, tempExp)
+	}
+
+	// Return
+	return out
 }
 
 /*

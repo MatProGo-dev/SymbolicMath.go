@@ -64,6 +64,12 @@ type ScalarExpression interface {
 	// String returns a string representation of the expression
 	String() string
 
+	// Substitute replaces the variable vIn with the expression eIn
+	Substitute(vIn Variable, seIn ScalarExpression) Expression
+
+	// SubstituteAccordingTo returns the expression with the variables in the map replaced with the corresponding expressions
+	SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression
+
 	// Power
 	// Raises the scalar expression to the power of the input integer
 	Power(exponent int) Expression

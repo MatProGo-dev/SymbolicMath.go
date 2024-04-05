@@ -591,36 +591,32 @@ Description:
 
 	Substitute returns the expression with the variable vIn replaced with the expression eIn
 */
-func (vv VariableVector) Substitute(vIn Variable, eIn Expression) Expression {
+func (vv VariableVector) Substitute(vIn Variable, seIn ScalarExpression) Expression {
+	return VectorSubstituteTemplate(vv, vIn, seIn)
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitute replaces all instances of the variables in the map with the corresponding expressions.
+*/
+func (vv VariableVector) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
 	// Input Processing
 	err := vv.Check()
 	if err != nil {
 		panic(err)
 	}
 
-	err = vIn.Check()
-	if err != nil {
-		panic(err)
-	}
-
-	err = eIn.Check()
-	if err != nil {
-		panic(err)
-	}
-
-	// Constants
-
 	// Algorithm
-	var out VariableVector
-	for _, element := range vv {
-		if element.ID == vIn.ID {
-			out = append(out, eIn)
-		} else {
-			out = append(out, element)
-		}
+	var out VectorExpression = vv
+	for tempVar, tempExpr := range subMap {
+		outSubbed := out.Substitute(tempVar, tempExpr)
+		out = outSubbed.(VectorExpression)
 	}
 
 	return out
+
 }
 
 /*

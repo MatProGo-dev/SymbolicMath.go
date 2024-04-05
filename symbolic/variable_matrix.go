@@ -699,6 +699,39 @@ func (vm VariableMatrix) Degree() int {
 }
 
 /*
+Substitute
+Description:
+
+	This function substitutes the variable vIn with the expression eIn.
+*/
+func (vm VariableMatrix) Substitute(vIn Variable, eIn ScalarExpression) Expression {
+	return MatrixSubstituteTemplate(vm, vIn, eIn)
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	This function substitutes the variables in the map with the corresponding expressions.
+*/
+func (vm VariableMatrix) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+	// Input Processing
+	err := vm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var out MatrixExpression = vm
+	for v, e := range subMap {
+		outSubbed := out.Substitute(v, e)
+		out = outSubbed.(MatrixExpression)
+	}
+
+	return out
+}
+
+/*
 Power
 Description:
 

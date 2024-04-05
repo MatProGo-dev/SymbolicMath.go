@@ -65,6 +65,15 @@ type PolynomialLikeScalar interface {
 
 	// String returns a string representation of the expression
 	String() string
+
+	// Substitute replaces the variable v with the expression e
+	Substitute(v Variable, se ScalarExpression) Expression
+
+	// SubstituteAccordingTo replaces the variables in the expression with the expressions in the map
+	SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression
+
+	// Power raises the expression to the power of the input integer
+	Power(exponent int) Expression
 }
 
 /*

@@ -559,7 +559,7 @@ Description:
 
 	Substitutes the variable vIn with the expression eIn.
 */
-func (v Variable) Substitute(vIn Variable, eIn Expression) Expression {
+func (v Variable) Substitute(vIn Variable, seIn ScalarExpression) Expression {
 	// Input Processing
 	err := v.Check()
 	if err != nil {
@@ -571,14 +571,14 @@ func (v Variable) Substitute(vIn Variable, eIn Expression) Expression {
 		panic(err)
 	}
 
-	err = eIn.Check()
+	err = seIn.Check()
 	if err != nil {
 		panic(err)
 	}
 
 	// Algorithm
 	if v.ID == vIn.ID {
-		return eIn
+		return seIn
 	} else {
 		return v
 	}
@@ -590,7 +590,7 @@ Description:
 
 	Substitutes the variable in the map with the corresponding expression.
 */
-func (v Variable) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+func (v Variable) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
 	// Input Processing
 	err := v.Check()
 	if err != nil {

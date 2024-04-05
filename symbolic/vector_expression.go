@@ -81,6 +81,15 @@ type VectorExpression interface {
 
 	// String returns a string representation of the expression
 	String() string
+
+	// Substitute returns the expression with the variable vIn replaced with the expression eIn
+	Substitute(vIn Variable, eIn ScalarExpression) Expression
+
+	// SubstituteAccordingTo returns the expression with the variables in the map replaced with the corresponding expressions
+	SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression
+
+	// Power returns the expression raised to the power of the input exponent
+	Power(exponent int) Expression
 }
 
 ///*
@@ -178,29 +187,32 @@ Description:
 
 	Converts the input expression to a valid type that implements "VectorExpression".
 */
-func ConcretizeVectorExpression(vectorIn []Expression) (VectorExpression, error) {
+func ConcretizeVectorExpression(sliceIn []ScalarExpression) VectorExpression {
 	// Input Processing
-	if len(vectorIn) == 0 {
-		return VecDenseToKVector(OnesVector(1)), fmt.Errorf(
-			"the input interface is of type %T, which is not recognized as a VectorExpression.",
-			vectorIn,
+	if len(sliceIn) == 0 {
+		panic(
+			fmt.Errorf(
+				"the input slice is empty, which is not recognized as a VectorExpression.",
+			),
 		)
 	}
 
 	// Check the type of all expressions
 	var (
 		containsConstant   bool = false
-		containsVariable   bool = false
+		isAllVariables     bool = true
 		containsMonomial   bool = false
 		containsPolynomial bool = false
 	)
 
-	for _, expr := range vectorIn {
+	for _, expr := range sliceIn {
+		if _, tf := expr.(Variable); !tf {
+			isAllVariables = false
+		}
+
 		switch expr.(type) {
 		case K:
 			containsConstant = true
-		case Variable:
-			containsVariable = true
 		case Monomial:
 			containsMonomial = true
 		case Polynomial:
@@ -214,12 +226,144 @@ func ConcretizeVectorExpression(vectorIn []Expression) (VectorExpression, error)
 
 	// Convert
 	switch {
-	case containsConstant && !containsVariable && !containsMonomial && !containsPolynomial:
-		// Convert to a constant vector
-		for i, i2 := range collection {
+	case containsPolynomial:
+		// Convert to a polynomial vector
+		var out PolynomialVector
+		for _, e_ii := range sliceIn {
+			switch tempE := e_ii.(type) {
+			case Polynomial:
+				out = append(out, tempE)
+			case Monomial:
+				out = append(out, tempE.ToPolynomial())
+			case Variable:
+				out = append(out, tempE.ToPolynomial())
+			case K:
+				out = append(out, tempE.ToPolynomial())
+			default:
+				panic(
+					smErrors.UnsupportedInputError{
+						FunctionName: "ConcretizeVectorExpression",
+						Input:        tempE,
+					},
+				)
+			}
+		}
 
+		return out
+
+	case containsMonomial:
+		// Convert to a monomial vector
+		var out MonomialVector
+		for _, e_ii := range sliceIn {
+			switch tempE := e_ii.(type) {
+			case Monomial:
+				out = append(out, tempE)
+			case Variable:
+				out = append(out, tempE.ToMonomial())
+			case K:
+				out = append(out, tempE.ToMonomial())
+			default:
+				panic(
+					smErrors.UnsupportedInputError{
+						FunctionName: "ConcretizeVectorExpression",
+						Input:        tempE,
+					},
+				)
+			}
+		}
+
+		return out
+
+	case isAllVariables:
+		// Convert to a variable vector
+		var out VariableVector
+		for _, e_ii := range sliceIn {
+			switch tempE := e_ii.(type) {
+			case Variable:
+				out = append(out, tempE)
+			default:
+				panic(
+					smErrors.UnsupportedInputError{
+						FunctionName: "ConcretizeVectorExpression",
+						Input:        tempE,
+					},
+				)
+			}
+		}
+
+		return out
+
+	case containsConstant:
+		// Convert to a constant vector
+		var out KVector
+		for ii, i2 := range sliceIn {
+			i2AsK, tf := i2.(K)
+			if !tf {
+				panic(
+					fmt.Errorf(
+						"unexpected expression type in vector expression at %v: %T",
+						ii,
+						i2,
+					),
+				)
+			}
+			out = append(out, i2AsK)
+		}
+
+		return out
+
+	default:
+		panic(
+			fmt.Errorf(
+				"unrecognized vector expression type in ConcretizeVectorExpression.\n"+
+					"containsConstant = %v\n"+
+					"isAllVariables = %v\n"+
+					"containsMonomial = %v\n"+
+					"containsPolynomial = %v\n",
+				containsConstant,
+				isAllVariables,
+				containsMonomial,
+				containsPolynomial,
+			),
+		)
+	}
+}
+
+/*
+VectorSubstituteTemplate
+Description:
+
+	Defines the template for the vector substitution operation.
+*/
+func VectorSubstituteTemplate(ve VectorExpression, vIn Variable, se ScalarExpression) VectorExpression {
+	// Input Processing
+	var err error
+	for ii := 0; ii < ve.Len(); ii++ {
+		err = ve.AtVec(ii).Check()
+		if err != nil {
+			panic(fmt.Errorf("idx #%v produced error: %v", ii, err))
 		}
 	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = se.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var result []ScalarExpression
+	for ii := 0; ii < ve.Len(); ii++ {
+		eltII := ve.AtVec(ii)
+		postSub := eltII.Substitute(vIn, se)
+		result = append(result, postSub.(ScalarExpression))
+	}
+
+	return ConcretizeVectorExpression(result)
 }
 
 /*

@@ -651,6 +651,37 @@ func (mm MonomialMatrix) Degree() int {
 }
 
 /*
+Substitute
+Description:
+
+	Substitutes the variable v with the expression e in the monomial matrix.
+*/
+func (mm MonomialMatrix) Substitute(v Variable, se ScalarExpression) Expression {
+	return MatrixSubstituteTemplate(mm, v, se)
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes the variables in the monomial matrix according to the map provided in substitutions.
+*/
+func (mm MonomialMatrix) SubstituteAccordingTo(substitutions map[Variable]ScalarExpression) Expression {
+	// Input Processing
+	err := mm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	var out MatrixExpression = mm
+	for v, se := range substitutions {
+		postSub := out.Substitute(v, se)
+		out = postSub.(MatrixExpression)
+	}
+	return out
+}
+
+/*
 Power
 Description:
 

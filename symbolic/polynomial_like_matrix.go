@@ -70,6 +70,15 @@ type PolynomialLikeMatrix interface {
 
 	// Degree returns the degree of the expression
 	Degree() int
+
+	// Substitute returns the expression with the variable vIn replaced with the expression eIn
+	Substitute(vIn Variable, eIn ScalarExpression) Expression
+
+	// SubstitueAccordingTo returns the expression with the variables in the map replaced with the corresponding expressions
+	SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression
+
+	// Power returns the expression raised to the power of the input exponent
+	Power(exponent int) Expression
 }
 
 /*

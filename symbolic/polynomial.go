@@ -759,7 +759,7 @@ Description:
 
 	This method substitutes the variable vIn with the expression eIn.
 */
-func (p Polynomial) Substitute(vIn Variable, eIn Expression) Expression {
+func (p Polynomial) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	// Input Processing
 	err := p.Check()
 	if err != nil {
@@ -780,6 +780,29 @@ func (p Polynomial) Substitute(vIn Variable, eIn Expression) Expression {
 	var out Expression = K(0.0)
 	for _, monomial := range p.Monomials {
 		newMonomial := monomial.Substitute(vIn, eIn)
+		out = out.Plus(newMonomial)
+	}
+
+	return out
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	This method substitutes the variables in the map with the corresponding expressions.
+*/
+func (p Polynomial) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var out Expression = K(0.0)
+	for _, monomial := range p.Monomials {
+		newMonomial := monomial.SubstituteAccordingTo(subMap)
 		out = out.Plus(newMonomial)
 	}
 

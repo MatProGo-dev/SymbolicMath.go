@@ -386,7 +386,7 @@ Description:
 
 	Substitutes the variable vIn with the expression eIn.
 */
-func (c K) Substitute(vIn Variable, eIn Expression) Expression {
+func (c K) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	return c
 }
 
@@ -396,7 +396,7 @@ Description:
 
 	Substitutes the variables in the map with the corresponding expressions.
 */
-func (c K) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+func (c K) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
 	return c
 }
 

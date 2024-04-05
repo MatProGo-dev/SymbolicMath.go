@@ -57,10 +57,10 @@ type Expression interface {
 	String() string
 
 	// Substitute returns the expression with the variable vIn replaced with the expression eIn
-	Substitute(vIn Variable, eIn Expression) Expression
+	Substitute(vIn Variable, eIn ScalarExpression) Expression
 
 	// SubstituteAccordingToMap returns the expression with the variables in the map replaced with the corresponding expressions
-	SubstituteAccordingTo(subMap map[Variable]Expression) Expression
+	SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression
 
 	// Power
 	// Raises the scalar expression to the power of the input integer

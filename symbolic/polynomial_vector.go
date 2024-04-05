@@ -596,6 +596,39 @@ func (pv PolynomialVector) Degree() int {
 }
 
 /*
+Substitute
+Description:
+
+	Substitutes the variable vIn with the expression eIn in the polynomial vector.
+*/
+func (pv PolynomialVector) Substitute(vIn Variable, eIn ScalarExpression) Expression {
+	return VectorSubstituteTemplate(pv, vIn, eIn)
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes the variables in the polynomial vector with the expressions in the map.
+*/
+func (pv PolynomialVector) SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression {
+	// Input Checking
+	err := pv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var result VectorExpression = pv
+	for tempVar, tempExpr := range subMap {
+		resultSubbed := result.Substitute(tempVar, tempExpr)
+		result = resultSubbed.(VectorExpression)
+	}
+
+	return result
+}
+
+/*
 Power
 Description:
 

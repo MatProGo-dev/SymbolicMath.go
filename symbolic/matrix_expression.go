@@ -70,10 +70,10 @@ type MatrixExpression interface {
 	String() string
 
 	// Substitute returns the expression with the variable vIn replaced with the expression eIn
-	Substitute(vIn Variable, eIn Expression) Expression
+	Substitute(vIn Variable, eIn ScalarExpression) Expression
 
 	// SubstituteAccordingTo returns the expression with the variables in the map replaced with the corresponding expressions
-	SubstituteAccordingTo(subMap map[Variable]Expression) Expression
+	SubstituteAccordingTo(subMap map[Variable]ScalarExpression) Expression
 
 	// Power
 	// Raises the scalar expression to the power of the input integer
@@ -182,4 +182,228 @@ func MatrixPowerTemplate(me MatrixExpression, exponent int) MatrixExpression {
 		out = out.Multiply(me).(MatrixExpression)
 	}
 	return out
+}
+
+/*
+MatrixSubstituteTemplate
+Description:
+
+	Template for the matrix substitute function.
+*/
+func MatrixSubstituteTemplate(me MatrixExpression, vIn Variable, seIn ScalarExpression) MatrixExpression {
+	// Input Processing
+	err := me.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = seIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var out [][]ScalarExpression
+	for ii := 0; ii < me.Dims()[0]; ii++ {
+		var tempRow []ScalarExpression
+		for jj := 0; jj < me.Dims()[1]; jj++ {
+			newElt := me.At(ii, jj).Substitute(vIn, seIn)
+			tempRow = append(tempRow, newElt.(ScalarExpression))
+		}
+		out = append(out, tempRow)
+	}
+	return ConcretizeMatrixExpression(out)
+}
+
+/*
+ConcretizeMatrixExpression
+Description:
+
+	Converts the input expression to a valid type that implements "MatrixExpression".
+*/
+func ConcretizeMatrixExpression(sliceIn [][]ScalarExpression) MatrixExpression {
+	// Input Processing
+	if len(sliceIn) == 0 {
+		panic(
+			fmt.Errorf(
+				"the input slice is empty, which is not recognized as a VectorExpression.",
+			),
+		)
+	}
+
+	// Check the number of columns in each row
+	numCols := len(sliceIn[0])
+	for ii, row := range sliceIn {
+		if len(row) != numCols {
+			panic(
+				fmt.Errorf(
+					"all rows in the input slice must have the same number of columns, but row %v has %v columns (expected %v).",
+					ii,
+					len(row),
+					numCols,
+				),
+			)
+
+		}
+	}
+
+	// Check the type of all expressions
+	var (
+		containsConstant   bool = false
+		isAllVariables     bool = true
+		containsMonomial   bool = false
+		containsPolynomial bool = false
+	)
+
+	for ii, row := range sliceIn {
+		for jj, elt := range row {
+			// Check each element in row
+			if _, tf := elt.(Variable); !tf {
+				isAllVariables = false
+			}
+
+			switch elt.(type) {
+			case K:
+				containsConstant = true
+			case Monomial:
+				containsMonomial = true
+			case Polynomial:
+				containsPolynomial = true
+			default:
+				panic(
+					fmt.Errorf(
+						"unexpected expression type in matrix expression at [%v,%v]: %T",
+						ii, jj,
+						elt,
+					),
+				)
+			}
+		}
+	}
+
+	// Convert
+	switch {
+	case containsPolynomial:
+		// Convert to a polynomial vector
+		var out PolynomialMatrix
+		for _, row_ii := range sliceIn {
+			var tempRow []Polynomial
+			for _, elt := range row_ii {
+				switch tempE := elt.(type) {
+				case Polynomial:
+					tempRow = append(tempRow, tempE)
+				case Monomial:
+					tempRow = append(tempRow, tempE.ToPolynomial())
+				case Variable:
+					tempRow = append(tempRow, tempE.ToPolynomial())
+				case K:
+					tempRow = append(tempRow, tempE.ToPolynomial())
+				default:
+					panic(
+						smErrors.UnsupportedInputError{
+							FunctionName: "ConcretizeVectorExpression",
+							Input:        tempE,
+						},
+					)
+				}
+			}
+			out = append(out, tempRow)
+		}
+
+		return out
+
+	case containsMonomial:
+		// Convert to a monomial vector
+		var out MonomialMatrix
+		for _, row_ii := range sliceIn {
+			var tempRow []Monomial
+			for _, elt := range row_ii {
+				switch tempE := elt.(type) {
+				case Monomial:
+					tempRow = append(tempRow, tempE)
+				case Variable:
+					tempRow = append(tempRow, tempE.ToMonomial())
+				case K:
+					tempRow = append(tempRow, tempE.ToMonomial())
+				default:
+					panic(
+						smErrors.UnsupportedInputError{
+							FunctionName: "ConcretizeVectorExpression",
+							Input:        tempE,
+						},
+					)
+				}
+			}
+			out = append(out, tempRow)
+		}
+
+		return out
+
+	case isAllVariables:
+		// Convert to a variable vector
+		var out VariableMatrix
+		for _, row_ii := range sliceIn {
+			var tempRow []Variable
+			for _, elt := range row_ii {
+				switch tempE := elt.(type) {
+				case Variable:
+					tempRow = append(tempRow, tempE)
+				default:
+					panic(
+						smErrors.UnsupportedInputError{
+							FunctionName: "ConcretizeVectorExpression",
+							Input:        tempE,
+						},
+					)
+				}
+			}
+			out = append(out, tempRow)
+		}
+
+		return out
+
+	case containsConstant:
+		// Convert to a constant vector
+		var out KMatrix
+		for ii, row_ii := range sliceIn {
+			var tempRow []K
+			for jj, elt := range row_ii {
+				eltAsK, tf := elt.(K)
+				if !tf {
+					panic(
+						fmt.Errorf(
+							"unexpected expression type in vector expression at entry [%v,%v]: %T",
+							ii, jj,
+							elt,
+						),
+					)
+				}
+				tempRow = append(tempRow, eltAsK)
+			}
+
+			out = append(out, tempRow)
+		}
+
+		return out
+
+	default:
+		panic(
+			fmt.Errorf(
+				"unrecognized vector expression type in ConcretizeMatrixExpression.\n"+
+					"containsConstant = %v\n"+
+					"isAllVariables = %v\n"+
+					"containsMonomial = %v\n"+
+					"containsPolynomial = %v\n",
+				containsConstant,
+				isAllVariables,
+				containsMonomial,
+				containsPolynomial,
+			),
+		)
+	}
 }
