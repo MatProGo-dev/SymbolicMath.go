@@ -793,6 +793,47 @@ func TestConstant_Minus4(t *testing.T) {
 }
 
 /*
+TestConstant_Minus5
+Description:
+
+	Tests that the Minus() method properly panics when called with an expression that is not well-defined.
+	(in this case, it's a variable with a lower bound greater than the upper bound).
+*/
+func TestConstant_Minus5(t *testing.T) {
+	// Setup
+	k1 := symbolic.K(3.14)
+	v1 := symbolic.Variable{
+		Lower: 1,
+		Upper: 0,
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Minus() to panic when given a bad symbolic.Variable; received nothing",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := fmt.Errorf("lower bound (%v) of variable must be less than upper bound (%v)", v1.Lower, v1.Upper)
+		if !strings.Contains(
+			rAsError.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"expected Minus() to panic with error \"%v\"; received %v",
+				expectedError,
+				rAsError,
+			)
+		}
+	}()
+
+	k1.Minus(v1)
+}
+
+/*
 TestConstant_LessEq1
 Description:
 
