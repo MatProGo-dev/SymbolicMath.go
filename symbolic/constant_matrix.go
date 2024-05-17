@@ -142,6 +142,23 @@ func (km KMatrix) Plus(e interface{}) Expression {
 
 		return km.Plus(rightAsVM) // Reuse VariableMatrix case
 
+	case mat.Dense:
+		return km.Plus(DenseToKMatrix(right)) // Reuse KMatrix case
+
+	case *mat.Dense:
+		return km.Plus(*right) // Reuse mat.Dense case
+
+	case KMatrix:
+		// Create the result matrix
+		var result KMatrix = make([][]K, nR)
+		for rIndex := 0; rIndex < nR; rIndex++ {
+			result[rIndex] = make([]K, nC)
+			for cIndex := 0; cIndex < nC; cIndex++ {
+				result[rIndex][cIndex] = km[rIndex][cIndex] + right[rIndex][cIndex]
+			}
+		}
+		return result
+
 	case VariableMatrix:
 		// Create the result matrix
 		var result PolynomialMatrix = make([][]Polynomial, nR)

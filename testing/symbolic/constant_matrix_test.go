@@ -11,6 +11,8 @@ import (
 	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"math"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -1178,6 +1180,164 @@ func TestKMatrix_String1(t *testing.T) {
 					elt,
 					str,
 				)
+			}
+		}
+	}
+}
+
+/*
+TestKMatrix_DerivativeWrt1
+Description:
+
+	Tests that the DerivativeWrt() method properly returns a matrix of all
+	zeros when the KMatrix is any nonzero constant.
+*/
+func TestKMatrix_DerivativeWrt1(t *testing.T) {
+	// Setup
+	A := getKMatrix.From([][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+	})
+
+	// Verify that derivative is a KMatrix as well
+	derivative := A.DerivativeWrt(symbolic.NewVariable())
+	if _, ok := derivative.(symbolic.KMatrix); !ok {
+		t.Errorf("Expected derivative to be a KMatrix; got %T", derivative)
+	}
+
+	// Verify that the derivative is all zeros
+	nR, nC := A.Dims()[0], A.Dims()[1]
+	for rowIndex := 0; rowIndex < nR; rowIndex++ {
+		for colIndex := 0; colIndex < nC; colIndex++ {
+			if elt := float64(derivative.(symbolic.KMatrix).At(rowIndex, colIndex).(symbolic.K)); elt != 0.0 {
+				t.Errorf("Expected derivative to be all zeros; got %v", derivative)
+			}
+		}
+	}
+}
+
+/*
+TestKMatrix_Degree1
+Description:
+
+	Tests that the Degree() method properly returns the degree of the KMatrix. (zero)
+*/
+func TestKMatrix_Degree1(t *testing.T) {
+	// Setup
+	A := getKMatrix.From([][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+	})
+
+	// Verify that the degree is zero
+	if deg := A.Degree(); deg != 0 {
+		t.Errorf("Expected degree to be 0; got %v", deg)
+	}
+}
+
+/*
+TestKMatrix_Substitute1
+Description:
+
+	Tests that the Substitute() method properly runs the substitute method when given
+	a variable to substite for and an expression to substitute with. In this case, the substitution SHOULD
+	NOT CHANGE ANYTHING.
+*/
+func TestKMatrix_Substitute1(t *testing.T) {
+	// Setup
+	A := getKMatrix.From([][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+	})
+
+	// Substitute
+	sub := A.Substitute(symbolic.NewVariable(), symbolic.NewVariable())
+
+	// Verify that the result is the same as the original
+	if !reflect.DeepEqual(A, sub) {
+		t.Errorf("Expected substitution to not change anything; got %v", sub)
+	}
+}
+
+/*
+TestKMatrix_SubstituteAccordingTo1
+Description:
+
+	Tests that the SubstituteAccordingTo() method properly runs the substitute method when given
+	a map of substitutions. In this case, the substitution SHOULD NOT CHANGE ANYTHING.
+*/
+func TestKMatrix_SubstituteAccordingTo1(t *testing.T) {
+	// Setup
+	A := getKMatrix.From([][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+	})
+
+	// Substitute
+	sub := A.SubstituteAccordingTo(
+		map[symbolic.Variable]symbolic.Expression{
+			symbolic.NewVariable(): symbolic.NewVariable(),
+		})
+
+	// Verify that the result is the same as the original
+	if !reflect.DeepEqual(A, sub) {
+		t.Errorf("Expected substitution to not change anything; got %v", sub)
+	}
+}
+
+/*
+TestKMatrix_Power1
+Description:
+
+	Tests that the Power() method properly raises the KMatrix to the power of 1.
+*/
+func TestKMatrix_Power1(t *testing.T) {
+	// Setup
+	A := getKMatrix.From([][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+		{7, 8, 9},
+	})
+
+	// Power
+	pow := A.Power(1)
+
+	// Verify that the result is the same as the original
+	if !reflect.DeepEqual(A, pow) {
+		t.Errorf("Expected power to not change anything; got %v", pow)
+	}
+}
+
+/*
+TestKMatrix_Power2
+Description:
+
+	Tests that the Power() method properly raises the KMatrix to the power of 2.
+*/
+func TestKMatrix_Power2(t *testing.T) {
+	// Setup
+	A := getKMatrix.From([][]float64{
+		{1, 0, 0},
+		{0, 2, 0},
+		{0, 0, 3},
+	})
+
+	// Power
+	pow := A.Power(2)
+
+	// Verify that the result is a diagonal matrix with
+	// the diagonal elements being the squares of the original
+	nR, nC := A.Dims()[0], A.Dims()[1]
+	for rowIndex := 0; rowIndex < nR; rowIndex++ {
+		for colIndex := 0; colIndex < nC; colIndex++ {
+			if rowIndex == colIndex {
+				if elt := float64(pow.(symbolic.KMatrix).At(rowIndex, colIndex).(symbolic.K)); elt != math.Pow(float64(A.At(rowIndex, colIndex).(symbolic.K)), 2) {
+					t.Errorf("Expected diagonal element to be squared; got %v", pow)
+				}
+			} else {
+				if elt := float64(pow.(symbolic.KMatrix).At(rowIndex, colIndex).(symbolic.K)); elt != 0 {
+					t.Errorf("Expected off-diagonal element to be zero; got %v", pow)
+				}
 			}
 		}
 	}

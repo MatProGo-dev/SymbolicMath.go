@@ -121,6 +121,10 @@ func (c K) Plus(rightIn interface{}) Expression {
 		// Convert to VectorExpression
 		ve, _ := ToVectorExpression(right)
 		return ve.Plus(c)
+	case mat.Dense:
+		return c.Plus(DenseToKMatrix(right))
+	case *mat.Dense:
+		return c.Plus(DenseToKMatrix(*right))
 	case KMatrix, VariableMatrix, MonomialMatrix, PolynomialMatrix:
 		// Convert to MatrixExpression
 		me, _ := ToMatrixExpression(right)

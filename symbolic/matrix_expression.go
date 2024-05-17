@@ -134,7 +134,8 @@ func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 		return e2, nil
 	default:
 		return DenseToKMatrix(ZerosMatrix(1, 1)), fmt.Errorf(
-			"unexpected vector expression conversion requested for type %T!",
+			"unexpected matrix expression conversion requested for object \"%v\" of type %T!",
+			e,
 			e,
 		)
 	}
