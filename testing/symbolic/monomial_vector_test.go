@@ -6,6 +6,7 @@ import (
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"gonum.org/v1/gonum/mat"
+	"math"
 	"strings"
 	"testing"
 )
@@ -1720,4 +1721,146 @@ func TestMonomialVector_Derivative4(t *testing.T) {
 		)
 	}
 
+}
+
+/*
+TestMonomialVector_Degree1
+Description:
+
+	Verifies that the Degree() method panics when this is called with a MonomialVector that is not well-defined.
+*/
+func TestMonomialVector_Degree1(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Degree() to panic; received %v",
+				mv.Degree(),
+			)
+		}
+
+		err := r.(error)
+		expectedError := mv.Check()
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected error to be %v; received %v",
+				expectedError,
+				err,
+			)
+		}
+
+	}()
+
+	mv.Degree()
+	t.Errorf("Test should panic before this is reached!")
+}
+
+/*
+TestMonomialVector_Degree2
+Description:
+
+	Verifies that the Degree() method returns the correct value when called with a well-defined MonomialVector.
+	This should be the maximum of all of the monomials inside the vector.
+*/
+func TestMonomialVector_Degree2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{2},
+	}
+	m2 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v2},
+		Exponents:       []int{1},
+	}
+	mv := symbolic.MonomialVector{m1, m2}
+
+	// Test
+	degree := mv.Degree()
+
+	// Verify that the degree is correct
+	if degree != 2 {
+		t.Errorf(
+			"expected degree to be 2; received %v",
+			degree,
+		)
+	}
+}
+
+/*
+TestMonomialVector_Power1
+Description:
+
+	Verifies that the Power() method panics when called with a vector that has Len() greater
+	than 1.
+*/
+func TestMonomialVector_Power1(t *testing.T) {
+	// Constants
+	mv := symbolic.NewVariableVector(10).ToMonomialVector()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Power(3) to panic; received %v",
+				mv.Power(3),
+			)
+		}
+	}()
+
+	mv.Power(3)
+	t.Errorf("Test should panic before this is reached!")
+}
+
+/*
+TestMonomialVector_Power2
+Description:
+
+	Verifies that the Power() method returns the correct value when called with a vector
+	of Len() == 1. The result should be a monomial vector where each monomial is raised to
+	the power of the input integer.
+*/
+func TestMonomialVector_Power2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+	mv := symbolic.MonomialVector{m1}
+
+	// Test
+	power := mv.Power(3)
+
+	// Verify that the power is a monomial vector
+	if _, tf := power.(symbolic.Monomial); !tf {
+		t.Errorf(
+			"expected power to be a MonomialVector; received %T",
+			power,
+		)
+	}
+
+	// Verify that each monomial is raised to the power of 3
+	if power.(symbolic.Monomial).Exponents[0] != 3 {
+		t.Errorf(
+			"expected monomial.Exponents[0] to be 3; received %v",
+			power.(symbolic.Monomial).Exponents[0],
+		)
+	}
+
+	if power.(symbolic.Monomial).Coefficient != math.Pow(3.14, 3) {
+		t.Errorf(
+			"expected monomial.Coefficient to be 3.14^3; received %v",
+			power.(symbolic.Monomial).Coefficient,
+		)
+	}
 }
