@@ -201,6 +201,7 @@ func ConcretizeVectorExpression(sliceIn []ScalarExpression) VectorExpression {
 	var (
 		containsConstant   bool = false
 		isAllVariables     bool = true
+		containsVariable   bool = false
 		containsMonomial   bool = false
 		containsPolynomial bool = false
 	)
@@ -213,6 +214,8 @@ func ConcretizeVectorExpression(sliceIn []ScalarExpression) VectorExpression {
 		switch expr.(type) {
 		case K:
 			containsConstant = true
+		case Variable:
+			containsVariable = true
 		case Monomial:
 			containsMonomial = true
 		case Polynomial:
@@ -251,7 +254,7 @@ func ConcretizeVectorExpression(sliceIn []ScalarExpression) VectorExpression {
 
 		return out
 
-	case containsMonomial:
+	case containsMonomial || (containsConstant && containsVariable):
 		// Convert to a monomial vector
 		var out MonomialVector
 		for _, e_ii := range sliceIn {
