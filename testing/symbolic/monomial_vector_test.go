@@ -5,6 +5,7 @@ import (
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"gonum.org/v1/gonum/mat"
 	"strings"
 	"testing"
 )
@@ -849,6 +850,225 @@ func TestMonomialVector_Plus12(t *testing.T) {
 			"expected sum to be a PolynomialVector; received %T",
 			sum,
 		)
+	}
+}
+
+/*
+TestMonomialVector_Minus1
+Description:
+
+	Verifies that the Minus() method throws a panic when an improperly
+	initialized vector of monomials is given.
+*/
+func TestMonomialVector_Minus1(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Minus(3.14) to panic; received %v",
+				mv.Minus(3.14),
+			)
+		}
+	}()
+
+	mv.Minus(3.14)
+}
+
+/*
+TestMonomialVector_Minus2
+Description:
+
+	Verifies that the Minus() method throws a panic when a well-formed
+	vector of monomials is subtracted from an improperly initialized expression
+	(in this case a monomial matrix).
+*/
+func TestMonomialVector_Minus2(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{
+		symbolic.NewVariable().ToMonomial(),
+		symbolic.NewVariable().ToMonomial(),
+	}
+	pm := symbolic.MonomialMatrix{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Minus(pm) to panic; received %v",
+				mv.Minus(pm),
+			)
+		}
+	}()
+
+	mv.Minus(pm)
+}
+
+/*
+TestMonomialVector_Minus3
+Description:
+
+	Verifies that the Minus() method throws a panic when a well-formed
+	vector of monomials is subtracted from a well formed vector expression
+	OF THE WRONG DIMENSIONs.
+*/
+func TestMonomialVector_Minus3(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{
+		symbolic.NewVariable().ToMonomial(),
+		symbolic.NewVariable().ToMonomial(),
+	}
+	pm := symbolic.PolynomialMatrix{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Minus(pm) to panic; received %v",
+				mv.Minus(pm),
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected mv.Minus(pm) to panic with an error; received %v",
+				r,
+			)
+		}
+
+		if !strings.Contains(
+			rAsE.Error(),
+			smErrors.DimensionError{
+				Operation: "Minus",
+				Arg1:      mv,
+				Arg2:      pm,
+			}.Error(),
+		) {
+			t.Errorf(
+				"Expected mv.Minus(pm) to panic with an error containing \"dimensions\"; received %v",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	mv.Minus(pm)
+}
+
+/*
+TestMonomialVector_Minus4
+Description:
+
+	Verifies that the Minus() method returns the correct value when a
+	well-formed vector of monomials is subtracted from a float64.
+	The result should be a polynomial vector where each polynomial contains
+	two monomials, one that is a constant and one that is a variable.
+*/
+func TestMonomialVector_Minus4(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	mv := symbolic.MonomialVector{v1.ToMonomial(), v1.ToMonomial()}
+	f2 := 3.14
+
+	// Test
+	difference := mv.Minus(f2)
+
+	// Verify that the difference is a polynomial vector
+	if _, tf := difference.(symbolic.PolynomialVector); !tf {
+		t.Errorf(
+			"expected difference to be a PolynomialVector; received %T",
+			difference,
+		)
+	}
+
+	// Verify that each polynomial contains two monomials
+	for _, polynomial := range difference.(symbolic.PolynomialVector) {
+		if len(polynomial.Monomials) != 2 {
+			t.Errorf(
+				"expected len(polynomial.Monomials) to be 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+
+		for _, monomial := range polynomial.Monomials {
+			if (!monomial.IsConstant()) && (!monomial.IsVariable(v1)) {
+				t.Errorf("expected monomial to be a variable or a constant; received %v", monomial)
+			}
+		}
+
+	}
+}
+
+/*
+TestMonomialVector_Minus5
+Description:
+
+	Verifies that the Minus() method returns the correct value when a
+	well-formed vector of monomials is subtracted from a *mat.VecDense object
+	of appropriate dimension.
+*/
+func TestMonomialVector_Minus5(t *testing.T) {
+	// Setup
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	mv := symbolic.MonomialVector{v1.ToMonomial(), v2.ToMonomial()}
+
+	// Create a *mat.VecDense object
+	vec := mat.NewVecDense(2, []float64{1, 2})
+
+	// Test
+	difference := mv.Minus(vec)
+
+	// Verify that the difference is a polynomial vector
+	if _, tf := difference.(symbolic.PolynomialVector); !tf {
+		t.Errorf(
+			"expected difference to be a PolynomialVector; received %T",
+			difference,
+		)
+	}
+
+	// Verify that each polynomial contains two monomials
+	for ii, polynomial := range difference.(symbolic.PolynomialVector) {
+		if len(polynomial.Monomials) != 2 {
+			t.Errorf(
+				"expected len(polynomial.Monomials) to be 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+
+		// Verify that each monomial is the correct value
+		for _, monomial := range polynomial.Monomials {
+			if monomial.IsConstant() {
+				switch ii {
+				case 0:
+					if monomial.Coefficient != -1.0 {
+						t.Errorf(
+							"expected monomial.Coefficient to be -1.0; received %v",
+							monomial.Coefficient,
+						)
+					}
+				case 1:
+					if monomial.Coefficient != -2.0 {
+						t.Errorf(
+							"expected monomial.Coefficient to be -2.0; received %v",
+							monomial.Coefficient,
+						)
+					}
+				}
+
+			}
+		}
 	}
 }
 
