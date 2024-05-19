@@ -257,6 +257,7 @@ func ConcretizeMatrixExpression(sliceIn [][]ScalarExpression) MatrixExpression {
 	var (
 		containsConstant   bool = false
 		isAllVariables     bool = true
+		containsVariable   bool = false
 		containsMonomial   bool = false
 		containsPolynomial bool = false
 	)
@@ -271,6 +272,8 @@ func ConcretizeMatrixExpression(sliceIn [][]ScalarExpression) MatrixExpression {
 			switch elt.(type) {
 			case K:
 				containsConstant = true
+			case Variable:
+				containsVariable = true
 			case Monomial:
 				containsMonomial = true
 			case Polynomial:
@@ -318,7 +321,7 @@ func ConcretizeMatrixExpression(sliceIn [][]ScalarExpression) MatrixExpression {
 
 		return out
 
-	case containsMonomial:
+	case containsMonomial || (containsVariable && containsConstant):
 		// Convert to a monomial vector
 		var out MonomialMatrix
 		for _, row_ii := range sliceIn {
