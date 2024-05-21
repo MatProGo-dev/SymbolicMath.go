@@ -448,16 +448,14 @@ Description:
 
 	Creates a new binary variable.
 */
-func NewBinaryVariable(envs ...Environment) Variable {
+func NewBinaryVariable(envs ...*Environment) Variable {
 	// Constants
 
 	// Input Processing
-	var currentEnv Environment
+	var currentEnv = &BackgroundEnvironment
 	switch len(envs) {
 	case 1:
 		currentEnv = envs[0]
-	default:
-		currentEnv = BackgroundEnvironment
 	}
 
 	// Get New Index
