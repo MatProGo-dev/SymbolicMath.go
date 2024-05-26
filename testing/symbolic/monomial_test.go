@@ -545,7 +545,7 @@ func TestMonomial_Minus4(t *testing.T) {
 			)
 		}
 	}()
-	m1.Minus("x")
+	_ = m1.Minus(s2)
 }
 
 /*
@@ -1407,5 +1407,5 @@ func TestMonomial_String2(t *testing.T) {
 		}
 	}()
 
-	m1.String()
+	_ = m1.String()
 }
