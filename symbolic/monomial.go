@@ -159,12 +159,6 @@ func (m Monomial) Minus(e interface{}) Expression {
 		return Minus(m, rightAsE)
 	}
 
-	// Algorithm
-	switch right := e.(type) {
-	case float64:
-		return m.Minus(K(right)) // Reuse K case
-	}
-
 	// Unrecognized response is a panic
 	panic(
 		smErrors.UnsupportedInputError{

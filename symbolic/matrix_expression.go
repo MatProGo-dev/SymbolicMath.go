@@ -89,6 +89,8 @@ Description:
 func IsMatrixExpression(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
+	case *mat.Dense:
+		return true
 	case mat.Dense:
 		return true
 	case KMatrix:
