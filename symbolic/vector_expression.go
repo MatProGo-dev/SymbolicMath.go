@@ -167,6 +167,8 @@ func ToVectorExpression(e interface{}) (VectorExpression, error) {
 	switch e2 := e.(type) {
 	case KVector:
 		return e2, nil
+	case *mat.VecDense:
+		return VecDenseToKVector(*e2), nil
 	case mat.VecDense:
 		return VecDenseToKVector(e2), nil
 	case VariableVector:

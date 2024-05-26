@@ -124,6 +124,8 @@ func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 
 	// Convert
 	switch e2 := e.(type) {
+	case *mat.Dense:
+		return DenseToKMatrix(*e2), nil
 	case mat.Dense:
 		return DenseToKMatrix(e2), nil
 	case KMatrix:
