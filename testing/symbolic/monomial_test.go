@@ -8,6 +8,7 @@ Description:
 
 import (
 	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
 	"testing"
@@ -400,6 +401,151 @@ func TestMonomial_Plus8(t *testing.T) {
 			len(sumAsP.Monomials),
 		)
 	}
+}
+
+/*
+TestMonomial_Minus1
+Description:
+
+	Verifies that the Minus() method panics when called using a monomial that is
+	not well-defined.
+*/
+func TestMonomial_Minus1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1, 2},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("expected Minus to panic; received nil")
+		}
+
+		// Check that error is as expected:
+		rAsE := r.(error)
+		if !strings.Contains(
+			rAsE.Error(),
+			m1.Check().Error(),
+		) {
+			t.Errorf(
+				"expected error message to contain %v; received %v",
+				m1.Check(),
+				rAsE.Error(),
+			)
+		}
+	}()
+	m1.Minus(m1)
+}
+
+/*
+TestMonomial_Minus2
+Description:
+
+	Verifies that the Monomial.Minus function panics when the monomial used to call it
+	is well-defined but the second input expression is not well-defined (a variable).
+*/
+func TestMonomial_Minus2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("expected Minus to panic; received nil")
+		}
+	}()
+	m1.Minus(symbolic.Variable{})
+}
+
+/*
+TestMonomial_Minus3
+Description:
+
+	Verifies that the Monomial.Minus function returns a valid polynomial when the input to it
+	is a floating point number (when the original monomial is NOT a constant).
+*/
+func TestMonomial_Minus3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{2},
+	}
+	f1 := 3.14
+
+	// Compute Difference
+	difference := m1.Minus(f1)
+
+	// Verify that the difference is a polynomial
+	diffAsP, tf := difference.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected difference to be a K; received %T",
+			difference,
+		)
+	}
+
+	// Verify that the polynomial contains 2 monomials
+	if len(diffAsP.Monomials) != 2 {
+		t.Errorf(
+			"expected difference to have 2 monomials; received %v",
+			len(diffAsP.Monomials),
+		)
+	}
+}
+
+/*
+TestMonomial_Minus4
+Description:
+
+	Verifies that the Monomial.Minus function panics when the monomial used to call it
+	is well-defined but the second input is not an expression at all (in this case, it's a string).
+*/
+func TestMonomial_Minus4(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+
+	s2 := "x"
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("expected Minus to panic; received nil")
+		}
+
+		// Collect error and compare it to expectation
+		rAse := r.(error)
+		expectedError := smErrors.UnsupportedInputError{
+			Input:        s2,
+			FunctionName: "Monomial.Minus",
+		}
+
+		if !strings.Contains(rAse.Error(), expectedError.Error()) {
+			t.Errorf(
+				"expected error message to contain %v; received %v",
+				expectedError,
+				rAse.Error(),
+			)
+		}
+	}()
+	m1.Minus("x")
 }
 
 /*
