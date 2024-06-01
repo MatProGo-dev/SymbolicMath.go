@@ -627,6 +627,95 @@ func TestMonomial_Multiply3(t *testing.T) {
 }
 
 /*
+TestMonomial_Multiply4
+Description:
+
+	Verifies that the Monomial.Multiply function returns a valid monomial
+	when the monomial used to call it is well-defined and the input is a float64.
+*/
+func TestMonomial_Multiply4(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{2},
+	}
+	f1 := 3.14
+
+	// Compute Product
+	product := m1.Multiply(f1)
+
+	// Verify that the product is a monomial
+	prodAsM, tf := product.(symbolic.Monomial)
+	if !tf {
+		t.Errorf(
+			"expected product to be a K; received %T",
+			product,
+		)
+	}
+
+	if prodAsM.Coefficient != 3.14*3.14 {
+		t.Errorf(
+			"expected product coefficient to be %v; received %v",
+			3.14*3.14,
+			prodAsM.Coefficient,
+		)
+	}
+
+}
+
+/*
+TestMonomial_Multiply5
+Description:
+
+	Verifies that the Monomial.Multiply function returns a valid polynomial
+	when the monomial used to call it is well-defined and the input is a polynomial.
+	The number of monomials in the product should match the number in the input polynomial.
+*/
+func TestMonomial_Multiply5(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1, v2},
+		Exponents:       []int{1, 2},
+	}
+	m2 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			m2,
+			symbolic.K(3.14).ToMonomial(),
+		},
+	}
+
+	// Compute Product
+	product := m1.Multiply(p1)
+
+	// Verify that the product is a polynomial
+	prodAsP, tf := product.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected product to be a polynomial; received %T",
+			product,
+		)
+	}
+
+	// Verify that the polynomial has 2 monomials
+	if len(prodAsP.Monomials) != 2 {
+		t.Errorf(
+			"expected product to have 2 monomials; received %v",
+			len(prodAsP.Monomials),
+		)
+	}
+}
+
+/*
 TestMonomial_Transpose1
 Description:
 
@@ -1112,6 +1201,80 @@ func TestMonomial_LinearCoeff3(t *testing.T) {
 }
 
 /*
+TestMonomial_LinearCoeff4
+Description:
+
+	Verifies that the Monomial.LinearCoeff function panics when
+	the monomial is not well-defined.
+*/
+func TestMonomial_LinearCoeff4(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1, v2},
+		Exponents:       []int{1},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected LinearCoeff to panic; received nil",
+			)
+		}
+	}()
+
+	m1.LinearCoeff()
+}
+
+/*
+TestMonomial_LinearCoeff5
+Description:
+
+	Verifies that the Monomial.LinearCoeff function panics when
+	there are multiple input variables slices to it.
+*/
+func TestMonomial_LinearCoeff5(t *testing.T) {
+	// Constants
+	N := 5
+	vv1 := symbolic.NewVariableVector(N)
+	vv2 := symbolic.NewVariableVector(N)
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{vv1[0]},
+		Exponents:       []int{1},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected LinearCoeff to panic; received nil",
+			)
+		}
+
+		// Check that error is as expected:
+		rAsE := r.(error)
+		if !strings.Contains(
+			rAsE.Error(),
+			"Expected 0 or 1 input.",
+		) {
+			t.Errorf(
+				"expected error message to contain %v; received %v",
+				"Expected 0 or 1 input.",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	m1.LinearCoeff(vv1, vv2)
+
+}
+
+/*
 TestMonomial_IsConstant1
 Description:
 
@@ -1341,6 +1504,102 @@ func TestMonomial_DerivativeWrt3(t *testing.T) {
 		t.Errorf(
 			"expected derivative to be a constant; received %v",
 			derivative,
+		)
+	}
+}
+
+/*
+TestMonomial_DerivativeWrt4
+Description:
+
+	Verifies that the Monomial.DerivativeWrt function
+	returns a monomial with the correct coefficient when the variable we are differentiating
+	with respect to appears in the original monomial and has degree >= 2.
+*/
+func TestMonomial_DerivativeWrt4(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{2},
+	}
+
+	// Compute DerivativeWrt
+	derivative := m1.DerivativeWrt(v1)
+
+	// Verify that the derivative is a monomial
+	derivativeAsM, tf := derivative.(symbolic.Monomial)
+	if !tf {
+		t.Errorf(
+			"expected derivative to be a monomial; received %T",
+			derivative,
+		)
+	}
+
+	// Verify that the derivative is a constant
+	if derivativeAsM.Coefficient != 3.14*2 {
+		t.Errorf(
+			"expected derivative coefficient to be %v; received %v",
+			3.14*2,
+			derivativeAsM.Coefficient,
+		)
+	}
+}
+
+/*
+TestMonomial_DerivativeWrt5
+Description:
+
+	Verifies that the Monomial.DerivativeWrt function creates a proper ouput monomial
+	that contains one less variable in VariableFactors and one less exponent in Exponents
+	when we are differentiative with respect to a variable that appears with exponent 1
+	in the monomial.
+*/
+func TestMonomial_DerivativeWrt5(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1, v2},
+		Exponents:       []int{1, 2},
+	}
+
+	// Compute DerivativeWrt
+	derivative := m1.DerivativeWrt(v1)
+
+	// Verify that the derivative is a monomial
+	derivativeAsM, tf := derivative.(symbolic.Monomial)
+	if !tf {
+		t.Errorf(
+			"expected derivative to be a monomial; received %T",
+			derivative,
+		)
+	}
+
+	// Verify that the derivative is a constant
+	if derivativeAsM.Coefficient != 3.14*1 {
+		t.Errorf(
+			"expected derivative coefficient to be %v; received %v",
+			3.14*1,
+			derivativeAsM.Coefficient,
+		)
+	}
+
+	// Verify that the derivative has one less variable
+	if len(derivativeAsM.VariableFactors) != 1 {
+		t.Errorf(
+			"expected derivative to have 1 variable; received %v",
+			len(derivativeAsM.VariableFactors),
+		)
+	}
+
+	// Verify that the derivative has one less exponent
+	if len(derivativeAsM.Exponents) != 1 {
+		t.Errorf(
+			"expected derivative to have 1 exponent; received %v",
+			len(derivativeAsM.Exponents),
 		)
 	}
 }

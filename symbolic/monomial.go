@@ -554,6 +554,7 @@ func (m Monomial) DerivativeWrt(vIn Variable) Expression {
 			}
 		} else {
 			monomialOut = m
+			monomialOut.Coefficient = m.Coefficient * float64(m.Exponents[foundIndex])
 			monomialOut.Exponents[foundIndex] -= 1
 		}
 
