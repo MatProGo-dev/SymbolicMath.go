@@ -274,6 +274,32 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 
 	case K:
 		return km.Multiply(float64(right)) // Reuse float64 case
+	case Polynomial:
+		// Choose the correct output type based on the size of km
+		nR, nC := km.Dims()[0], km.Dims()[1]
+		switch {
+		case (nR == 1) && (nC == 1):
+			// If the output is a scalar, return a scalar
+			return km[0][0].Multiply(right)
+		case nC == 1:
+			// If the output is a vector, return a vector
+			var outputVec PolynomialVector = make([]Polynomial, nR)
+			for rIndex := 0; rIndex < nR; rIndex++ {
+				outputVec[rIndex] = km[rIndex][0].Multiply(right.Copy()).(Polynomial)
+			}
+			return outputVec
+		default:
+			// If the output is a matrix, return a matrix
+			var outputMat PolynomialMatrix = make([][]Polynomial, nR)
+			for rIndex := 0; rIndex < nR; rIndex++ {
+				outputMat[rIndex] = make([]Polynomial, nC)
+				for cIndex := 0; cIndex < nC; cIndex++ {
+					outputMat[rIndex][cIndex] = km[rIndex][cIndex].Multiply(right.Copy()).(Polynomial)
+				}
+			}
+			return outputMat
+		}
+
 	case *mat.VecDense:
 		// Use gonum's built-in multiplication function
 		var product mat.VecDense
