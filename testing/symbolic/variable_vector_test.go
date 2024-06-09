@@ -1458,3 +1458,33 @@ func TestVariableVector_String1(t *testing.T) {
 		}
 	}
 }
+
+/*
+TestVariableVector_Power1
+Description:
+
+	Verifies that the Power method returns a MonomialVector object when
+	computing a power >= 2 for a well-defined variable vector.
+*/
+func TestVariableVector_Power1(t *testing.T) {
+	// Constants
+	vv := symbolic.NewVariableVector(1)
+
+	// Test
+	r := vv.Power(2)
+	rAsVV, ok := r.(symbolic.Monomial)
+	if !ok {
+		t.Errorf(
+			"Expected vv.Power(2) to return a MonomialVector object; received %T",
+			r,
+		)
+	}
+
+	if rAsVV.Dims()[0] != 1 {
+		t.Errorf(
+			"Expected r to have length 1; received %v",
+			rAsVV.Dims()[0],
+		)
+	}
+
+}
