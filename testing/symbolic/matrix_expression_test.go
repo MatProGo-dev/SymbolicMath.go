@@ -2,6 +2,7 @@ package symbolic_test
 
 import (
 	"fmt"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
 	"testing"
@@ -190,4 +191,225 @@ func TestMatrixExpression_ConcretizeMatrixExpression5(t *testing.T) {
 	if me.Dims()[0] != 2 || me.Dims()[1] != 2 {
 		t.Errorf("Expected a 2x2 MonomialMatrix; received %dx%d MonomialMatrix", me.Dims()[0], me.Dims()[1])
 	}
+}
+
+/*
+TestMatrixExpression_MatrixPowerTemplate1
+Description:
+
+	Tests that the matrix power template properly panics when called with a MatrixExpression that is not
+	well-defined (in this case, a MonomialMatrix).
+*/
+func TestMatrixExpression_MatrixPowerTemplate1(t *testing.T) {
+	// Setup
+	m := symbolic.Monomial{
+		Coefficient:     1.2,
+		VariableFactors: []symbolic.Variable{symbolic.NewVariable(), symbolic.NewVariable()},
+		Exponents:       []int{1},
+	}
+	x := symbolic.MonomialMatrix{
+		{m, m},
+		{m, m},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Expected a panic when calling MatrixPowerTemplate on a MonomialMatrix; received nil")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("Expected the panic to be an error; received %T", r)
+		}
+
+		if !strings.Contains(rAsE.Error(), m.Check().Error()) {
+			t.Errorf("Expected the panic to contain the error message %v; received %v", m.Check().Error(), rAsE.Error())
+		}
+	}()
+	symbolic.MatrixPowerTemplate(x, 2)
+}
+
+/*
+TestMatrixExpression_MatrixPowerTemplate2
+Description:
+
+	Tests that the matrix power template properly panics when called with a MatrixExpression that is well-defined
+	but is not square.
+*/
+func TestMatrixExpression_MatrixPowerTemplate2(t *testing.T) {
+	// Setup
+	m := symbolic.NewVariable().ToMonomial()
+	x := symbolic.MonomialMatrix{
+		{m, m},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Expected a panic when calling MatrixPowerTemplate on a non-square MonomialMatrix; received nil")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("Expected the panic to be an error; received %T", r)
+		}
+
+		if !strings.Contains(rAsE.Error(), "matrix is not square") {
+			t.Errorf("Expected the panic to contain the error message %v; received %v", "Matrix is not square", rAsE.Error())
+		}
+	}()
+	symbolic.MatrixPowerTemplate(x, 2)
+}
+
+/*
+TestMatrixExpression_MatrixPowerTemplate3
+Description:
+
+	Tests that the matrix power template properly panics when called with a MatrixExpression that is well-defined
+	and is square but with a negative exponent.
+*/
+func TestMatrixExpression_MatrixPowerTemplate3(t *testing.T) {
+	// Setup
+	m := symbolic.NewVariable().ToMonomial()
+	x := symbolic.MonomialMatrix{
+		{m, m},
+		{m, m},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Expected a panic when calling MatrixPowerTemplate with a negative exponent; received nil")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("Expected the panic to be an error; received %T", r)
+		}
+
+		expectedError := smErrors.NegativeExponentError{
+			Exponent: -2,
+		}
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf("Expected the panic to contain the error message %v; received %v", "Negative exponent", rAsE.Error())
+		}
+	}()
+	symbolic.MatrixPowerTemplate(x, -2)
+}
+
+/*
+TestMatrixExpression_MatrixSubstituteTemplate1
+Description:
+
+	Tests that the matrix substitute template properly panics when called with a MatrixExpression that is not
+	well-defined (in this case, a MonomialMatrix).
+*/
+func TestMatrixExpression_MatrixSubstituteTemplate1(t *testing.T) {
+	// Setup
+	m := symbolic.Monomial{
+		Coefficient:     1.2,
+		VariableFactors: []symbolic.Variable{symbolic.NewVariable(), symbolic.NewVariable()},
+		Exponents:       []int{1},
+	}
+	x := symbolic.MonomialMatrix{
+		{m, m},
+		{m, m},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Expected a panic when calling MatrixSubstituteTemplate on a MonomialMatrix; received nil")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("Expected the panic to be an error; received %T", r)
+		}
+
+		if !strings.Contains(rAsE.Error(), m.Check().Error()) {
+			t.Errorf("Expected the panic to contain the error message %v; received %v", m.Check().Error(), rAsE.Error())
+		}
+	}()
+	symbolic.MatrixSubstituteTemplate(x, symbolic.NewVariable(), symbolic.NewVariable())
+}
+
+/*
+TestMatrixExpression_MatrixSubstituteTemplate2
+Description:
+
+	Tests that the matrix substitute template properly panics when called with a MatrixExpression that is well-defined
+	and a variable vIn that is not well-defined.
+*/
+func TestMatrixExpression_MatrixSubstituteTemplate2(t *testing.T) {
+	// Setup
+	m := symbolic.NewVariable().ToMonomial()
+	x := symbolic.MonomialMatrix{
+		{m, m},
+		{m, m},
+	}
+	v1 := symbolic.Variable{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Expected a panic when calling MatrixSubstituteTemplate with an invalid variable; received nil")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("Expected the panic to be an error; received %T", r)
+		}
+
+		if !strings.Contains(rAsE.Error(), v1.Check().Error()) {
+			t.Errorf("Expected the panic to contain the error message %v; received %v", "the input variable is not well-defined", rAsE.Error())
+		}
+	}()
+	symbolic.MatrixSubstituteTemplate(x, v1, symbolic.NewVariable())
+}
+
+/*
+TestMatrixExpression_MatrixSubstituteTemplate3
+Description:
+
+	Tests that the matrix substitute template properly panics when called with a MatrixExpression that is well-defined,
+	a variable vIn that is well-defined, but an expression eIn that is not well-defined (in this case a monomial).
+*/
+func TestMatrixExpression_MatrixSubstituteTemplate3(t *testing.T) {
+	// Setup
+	m := symbolic.NewVariable().ToMonomial()
+	x := symbolic.MonomialMatrix{
+		{m, m},
+		{m, m},
+	}
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1.2,
+		VariableFactors: []symbolic.Variable{symbolic.NewVariable(), symbolic.NewVariable()},
+		Exponents:       []int{1},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Expected a panic when calling MatrixSubstituteTemplate with an invalid expression; received nil")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("Expected the panic to be an error; received %T", r)
+		}
+
+		if !strings.Contains(rAsE.Error(), m1.Check().Error()) {
+			t.Errorf("Expected the panic to contain the error message %v; received %v", m1.Check().Error(), rAsE.Error())
+		}
+	}()
+	symbolic.MatrixSubstituteTemplate(x, v1, m1)
 }
