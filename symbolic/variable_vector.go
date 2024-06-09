@@ -144,6 +144,17 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 			pv = append(pv, tempPolynomial)
 		}
 		return pv
+	case VariableVector, MonomialVector, PolynomialVector:
+		// Setup
+		rightAsVE, _ := right.(VectorExpression)
+
+		// Create a slice of scalarexpressions
+		var out []ScalarExpression
+		for ii := 0; ii < vv.Len(); ii++ {
+			seII, _ := vv[ii].Plus(rightAsVE.AtVec(ii)).(ScalarExpression)
+			out = append(out, seII)
+		}
+		return ConcretizeVectorExpression(out)
 	default:
 		panic(
 			smErrors.UnsupportedInputError{
@@ -187,16 +198,6 @@ func (vv VariableVector) Minus(rightIn interface{}) Expression {
 
 		// Use Expression's Minus function
 		return Minus(vv, rightAsE)
-	}
-
-	// Algorithm for non-expressions
-	switch right := rightIn.(type) {
-	case float64:
-		return vv.Minus(K(right)) // Use K method
-	case mat.VecDense:
-		return vv.Minus(VecDenseToKVector(right)) // Use KVector method
-	case *mat.VecDense:
-		return vv.Minus(VecDenseToKVector(*right)) // Use KVector method
 	}
 
 	// If input isn't recognized, then panic
