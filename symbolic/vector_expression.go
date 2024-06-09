@@ -344,12 +344,9 @@ Description:
 */
 func VectorSubstituteTemplate(ve VectorExpression, vIn Variable, se ScalarExpression) VectorExpression {
 	// Input Processing
-	var err error
-	for ii := 0; ii < ve.Len(); ii++ {
-		err = ve.AtVec(ii).Check()
-		if err != nil {
-			panic(fmt.Errorf("idx #%v produced error: %v", ii, err))
-		}
+	err := ve.Check()
+	if err != nil {
+		panic(err)
 	}
 
 	err = vIn.Check()
