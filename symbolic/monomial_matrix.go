@@ -251,16 +251,6 @@ func (mm MonomialMatrix) Minus(e interface{}) Expression {
 		return Minus(mm, eAsE)
 	}
 
-	// Constants
-	switch right := e.(type) {
-	case float64:
-		return mm.Minus(K(right))
-	case mat.Dense:
-		return mm.Minus(DenseToKMatrix(right))
-	case *mat.Dense:
-		return mm.Minus(DenseToKMatrix(*right))
-	}
-
 	// If we've gotten this far, the input is not recognized
 	panic(
 		smErrors.UnsupportedInputError{
