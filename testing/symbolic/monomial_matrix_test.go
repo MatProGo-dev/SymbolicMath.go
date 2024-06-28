@@ -2008,6 +2008,79 @@ func TestMonomialMatrix_String2(t *testing.T) {
 }
 
 /*
+TestMonomialMatrix_Degree1
+Description:
+
+	Tests that the Degree() method properly panics when called with a monomial matrix
+	that is not well-defined.
+*/
+func TestMonomialMatrix_Degree1(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Degree() to panic; it did not",
+			)
+		}
+
+		rAsE, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected Degree() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		expectedError := mm.Check()
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"expected Degree() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				rAsE,
+			)
+		}
+	}()
+
+	mm.Degree()
+}
+
+/*
+TestMonomialMatrix_Degree2
+Description:
+
+	Tests that the Degree() method properly returns the degree of the monomial matrix
+	when called with a well-defined monomial matrix.
+*/
+func TestMonomialMatrix_Degree2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	v3 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	m2 := v2.ToMonomial()
+	m3 := v3.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m2, m3},
+		{m1, symbolic.Monomial{Coefficient: 3.14, VariableFactors: []symbolic.Variable{v1, v2, v3}, Exponents: []int{1, 3, 5}}, m3},
+	}
+
+	// Test
+	degree := mm.Degree()
+
+	// Check that the degree is correct
+	if degree != 9 {
+		t.Errorf(
+			"expected Degree() to return 1; received %v",
+			degree,
+		)
+	}
+}
+
+/*
 TestMonomialMatrix_Substitute1
 Description:
 
@@ -2052,4 +2125,145 @@ func TestMonomialMatrix_Substitute1(t *testing.T) {
 			}
 		}
 	}
+}
+
+/*
+TestMonomialMatrix_SubstituteWrt1
+Description:
+
+	Tests that the SubstituteWrt() method properly substitutes a variable in a given
+	monomial matrix with a polynomial. This should lead to the matrix of monomials
+	becoming a matrix of polynomials. Each entry of the matrix should have the same number
+	of monomials as the test polynomial.
+*/
+func TestMonomialMatrix_SubstituteAccordingTo1(t *testing.T) {
+	// Setup
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	p3 := v1.Plus(v2).(symbolic.Polynomial)
+
+	mm1 := symbolic.MonomialMatrix{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+
+	// Test
+	substituted := mm1.SubstituteAccordingTo(
+		map[symbolic.Variable]symbolic.Expression{v1: p3},
+	)
+
+	// Check that substituted is a PolynomialMatrix
+	sAsPM, ok := substituted.(symbolic.PolynomialMatrix)
+	if !ok {
+		t.Errorf(
+			"expected SubstituteWrt() to return a PolynomialMatrix; received %v",
+			substituted,
+		)
+	}
+
+	// Check that each entry in the substituted matrix has the same number of monomials
+	// as p3
+	for _, row := range sAsPM {
+		for _, polynomial := range row {
+			if len(polynomial.Monomials) != len(p3.Monomials) {
+				t.Errorf(
+					"expected SubstituteWrt() to return a PolynomialMatrix with %v monomials; received %v",
+					len(p3.Monomials),
+					len(polynomial.Monomials),
+				)
+			}
+		}
+	}
+}
+
+/*
+TestMonomialMatrix_SubstituteWrt2
+Description:
+
+	Tests that the SubstituteWrt() method properly panics when called with a monomial matrix
+	that is not well-defined.
+*/
+func TestMonomialMatrix_SubstituteAccordingTo2(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected SubstituteAccordingTo() to panic; it did not",
+			)
+		}
+
+		rAsE, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected SubstituteAccordingTo() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		expectedError := mm.Check()
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"expected SubstituteAccordingTo() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				rAsE,
+			)
+		}
+	}()
+
+	mm.SubstituteAccordingTo(map[symbolic.Variable]symbolic.Expression{})
+}
+
+/*
+TestMonomialMatrix_SubstituteWrt3
+Description:
+
+	Tests that the SubstituteWrt() method properly panics when called with a monomial matrix
+	that is well-defined and a substitution map that is not well-defined.
+*/
+func TestMonomialMatrix_SubstituteAccordingTo3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1},
+		{m1, m1},
+	}
+
+	testMap := map[symbolic.Variable]symbolic.Expression{
+		v1: symbolic.Variable{},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected SubstituteAccordingTo() to panic; it did not",
+			)
+		}
+
+		rAsE, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected SubstituteAccordingTo() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		expectedError := symbolic.CheckSubstitutionMap(testMap)
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"expected SubstituteAccordingTo() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				rAsE,
+			)
+		}
+	}()
+
+	mm.SubstituteAccordingTo(testMap)
+	t.Errorf("expected SubstituteAccordingTo() to panic; it did not")
 }
