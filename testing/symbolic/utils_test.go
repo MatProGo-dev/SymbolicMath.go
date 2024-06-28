@@ -7,6 +7,7 @@ Description:
 */
 
 import (
+	"fmt"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"testing"
 )
@@ -209,6 +210,111 @@ func TestUtils_FindInSlice9(t *testing.T) {
 }
 
 /*
+TestUtils_FindInSlice10
+Description:
+
+	This test verifies that the FindInSlice function returns an error when the
+	first input is a string and the second input is a slice of something else (in this case a slice of strings).
+*/
+func TestUtils_FindInSlice10(t *testing.T) {
+	// Constants
+	x := "x"
+	slice := []int{2, 3, 4, 1}
+
+	// Test
+	_, err := symbolic.FindInSlice(x, slice)
+	if err == nil {
+		t.Errorf(
+			"Expected FindInSlice to return an error; received nil",
+		)
+	} else {
+		expectedError := fmt.Errorf(
+			"the input slice is of type %T, but the element we're searching for is of type %T",
+			slice,
+			x,
+		)
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected error message to be '%v'; received %v",
+				expectedError,
+				err.Error(),
+			)
+		}
+	}
+}
+
+/*
+TestUtils_FindInSlice11
+Description:
+
+	This test verifies that the FindInSlice function returns an error when the
+	the first input is a Variable and the second input is a slice of something else (in this case a slice of strings).
+*/
+func TestUtils_FindInSlice11(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	slice := []int{2, 3, 4, 1}
+
+	// Test
+	_, err := symbolic.FindInSlice(x, slice)
+	if err == nil {
+		t.Errorf(
+			"Expected FindInSlice to return an error; received nil",
+		)
+	} else {
+		expectedError := fmt.Errorf(
+			"the input slice is of type %T, but the element we're searching for is of type %T",
+			slice,
+			x,
+		)
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected error message to be '%v'; received %v",
+				expectedError,
+				err.Error(),
+			)
+		}
+	}
+}
+
+/*
+TestUtils_FindInSlice12
+Description:
+
+	This test verifies that the FindInSlice function returns an error when the
+	the first input is an error (an unsupported type). The second input can be anything else.
+*/
+func TestUtils_FindInSlice12(t *testing.T) {
+	// Constants
+	x := fmt.Errorf("error")
+	slice := []int{2, 3, 4, 1}
+
+	// Test
+	_, err := symbolic.FindInSlice(x, slice)
+	if err == nil {
+		t.Errorf(
+			"Expected FindInSlice to return an error; received nil",
+		)
+	} else {
+		allowedTypes := []string{
+			"string", "int", "uint64", "Variable",
+		}
+		expectedError := fmt.Errorf(
+			"the FindInSlice() function was only defined for types %v, not type %T:",
+			allowedTypes,
+			x,
+		)
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected error message to be '%v'; received %v",
+				expectedError,
+				err.Error(),
+			)
+		}
+	}
+}
+
+/*
 TestUtils_Unique1
 Description:
 
@@ -264,6 +370,164 @@ func TestUtils_Unique3(t *testing.T) {
 		t.Errorf(
 			"Expected Unique to return a slice of length 1; received %v",
 			symbolic.Unique(slice),
+		)
+	}
+}
+
+/*
+TestUtils_Unique4
+Description:
+
+	This test verifies that the unique function returns a slice of length 3
+	when the input slice has length 3 and all elements are unique.
+*/
+func TestUtils_Unique4(t *testing.T) {
+	// Constants
+	slice := []uint64{13, 14, 15}
+
+	// Test
+	if len(symbolic.Unique(slice)) != 3 {
+		t.Errorf(
+			"Expected Unique to return a slice of length 3; received %v",
+			symbolic.Unique(slice),
+		)
+	}
+}
+
+/*
+TestUtils_CheckSubstitutionMap1
+Description:
+
+	This test verifies that the CheckSubstitutionMap function returns an error
+	when the input map contains a variable that is not well-defined.
+*/
+func TestUtils_CheckSubstitutionMap1(t *testing.T) {
+	// Constants
+	badVar := symbolic.Variable{2, -1, -2, symbolic.Binary, "Russ"}
+	varMap := map[symbolic.Variable]symbolic.Expression{
+		symbolic.NewVariable(): symbolic.K(3),
+		badVar:                 symbolic.K(4),
+	}
+
+	// Test
+	err := symbolic.CheckSubstitutionMap(varMap)
+	if err == nil {
+		t.Errorf(
+			"Expected CheckSubstitutionMap to return an error; received nil",
+		)
+	} else {
+		expectedError := fmt.Errorf(
+			"key %v in the substitution map is not a valid variable: %v",
+			badVar,
+			badVar.Check(),
+		)
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected error message to be '%v'; received %v",
+				expectedError,
+				err,
+			)
+		}
+	}
+}
+
+/*
+TestUtils_CheckSubstitutionMap2
+Description:
+
+	This test verifies that the CheckSubstitutionMap function returns an error
+	when the input map contains a value/mapped item that is not well-defined.
+*/
+func TestUtils_CheckSubstitutionMap2(t *testing.T) {
+	// Constants
+	goodVar := symbolic.NewVariable()
+	badVar := symbolic.Variable{2, -1, -2, symbolic.Binary, "Russ"}
+	varMap := map[symbolic.Variable]symbolic.Expression{
+		symbolic.NewVariable(): symbolic.K(3),
+		goodVar:                badVar,
+	}
+
+	// Test
+	err := symbolic.CheckSubstitutionMap(varMap)
+	if err == nil {
+		t.Errorf(
+			"Expected CheckSubstitutionMap to return an error; received nil",
+		)
+	} else {
+		expectedError := fmt.Errorf(
+			"value %v in the substitution map[%v] is not a valid expression: %v",
+			badVar,
+			goodVar,
+			badVar.Check(),
+		)
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected error message to be '%v'; received %v",
+				expectedError,
+				err,
+			)
+		}
+	}
+}
+
+/*
+TestUtils_CheckSubstitutionMap3
+Description:
+
+	This test verifies that the CheckSubstitutionMap function returns an error
+	when the input map contains a value/mapped item that is not a scalar expression.
+*/
+func TestUtils_CheckSubstitutionMap3(t *testing.T) {
+	// Constants
+	goodVar := symbolic.NewVariable()
+	badVar := symbolic.NewVariableMatrix(2, 2)
+	varMap := map[symbolic.Variable]symbolic.Expression{
+		symbolic.NewVariable(): symbolic.K(3),
+		goodVar:                badVar,
+	}
+
+	// Test
+	err := symbolic.CheckSubstitutionMap(varMap)
+	if err == nil {
+		t.Errorf(
+			"Expected CheckSubstitutionMap to return an error; received nil",
+		)
+	} else {
+		expectedError := fmt.Errorf(
+			"value %v in the substitution map[%v] is not a scalar expression (received %T)",
+			badVar,
+			goodVar,
+			badVar,
+		)
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected error message to be '%v'; received %v",
+				expectedError,
+				err,
+			)
+		}
+	}
+}
+
+/*
+TestUtils_CheckSubstitutionMap4
+Description:
+
+	This test verifies that the CheckSubstitutionMap function returns no error
+	when the input map is well-defined (has valid variable keys and its values are all valid scalar expresssions).
+*/
+func TestUtils_CheckSubstitutionMap4(t *testing.T) {
+	// Constants
+	varMap := map[symbolic.Variable]symbolic.Expression{
+		symbolic.NewVariable(): symbolic.K(3),
+		symbolic.NewVariable(): symbolic.K(4),
+	}
+
+	// Test
+	if err := symbolic.CheckSubstitutionMap(varMap); err != nil {
+		t.Errorf(
+			"Expected CheckSubstitutionMap to return nil; received %v",
+			err,
 		)
 	}
 }

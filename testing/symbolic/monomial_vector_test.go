@@ -5,6 +5,8 @@ import (
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"gonum.org/v1/gonum/mat"
+	"math"
 	"strings"
 	"testing"
 )
@@ -853,6 +855,225 @@ func TestMonomialVector_Plus12(t *testing.T) {
 }
 
 /*
+TestMonomialVector_Minus1
+Description:
+
+	Verifies that the Minus() method throws a panic when an improperly
+	initialized vector of monomials is given.
+*/
+func TestMonomialVector_Minus1(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Minus(3.14) to panic; received %v",
+				mv.Minus(3.14),
+			)
+		}
+	}()
+
+	mv.Minus(3.14)
+}
+
+/*
+TestMonomialVector_Minus2
+Description:
+
+	Verifies that the Minus() method throws a panic when a well-formed
+	vector of monomials is subtracted from an improperly initialized expression
+	(in this case a monomial matrix).
+*/
+func TestMonomialVector_Minus2(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{
+		symbolic.NewVariable().ToMonomial(),
+		symbolic.NewVariable().ToMonomial(),
+	}
+	pm := symbolic.MonomialMatrix{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Minus(pm) to panic; received %v",
+				mv.Minus(pm),
+			)
+		}
+	}()
+
+	mv.Minus(pm)
+}
+
+/*
+TestMonomialVector_Minus3
+Description:
+
+	Verifies that the Minus() method throws a panic when a well-formed
+	vector of monomials is subtracted from a well formed vector expression
+	OF THE WRONG DIMENSIONs.
+*/
+func TestMonomialVector_Minus3(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{
+		symbolic.NewVariable().ToMonomial(),
+		symbolic.NewVariable().ToMonomial(),
+	}
+	pm := symbolic.PolynomialMatrix{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Minus(pm) to panic; received %v",
+				mv.Minus(pm),
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected mv.Minus(pm) to panic with an error; received %v",
+				r,
+			)
+		}
+
+		if !strings.Contains(
+			rAsE.Error(),
+			smErrors.DimensionError{
+				Operation: "Minus",
+				Arg1:      mv,
+				Arg2:      pm,
+			}.Error(),
+		) {
+			t.Errorf(
+				"Expected mv.Minus(pm) to panic with an error containing \"dimensions\"; received %v",
+				rAsE.Error(),
+			)
+		}
+	}()
+
+	mv.Minus(pm)
+}
+
+/*
+TestMonomialVector_Minus4
+Description:
+
+	Verifies that the Minus() method returns the correct value when a
+	well-formed vector of monomials is subtracted from a float64.
+	The result should be a polynomial vector where each polynomial contains
+	two monomials, one that is a constant and one that is a variable.
+*/
+func TestMonomialVector_Minus4(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	mv := symbolic.MonomialVector{v1.ToMonomial(), v1.ToMonomial()}
+	f2 := 3.14
+
+	// Test
+	difference := mv.Minus(f2)
+
+	// Verify that the difference is a polynomial vector
+	if _, tf := difference.(symbolic.PolynomialVector); !tf {
+		t.Errorf(
+			"expected difference to be a PolynomialVector; received %T",
+			difference,
+		)
+	}
+
+	// Verify that each polynomial contains two monomials
+	for _, polynomial := range difference.(symbolic.PolynomialVector) {
+		if len(polynomial.Monomials) != 2 {
+			t.Errorf(
+				"expected len(polynomial.Monomials) to be 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+
+		for _, monomial := range polynomial.Monomials {
+			if (!monomial.IsConstant()) && (!monomial.IsVariable(v1)) {
+				t.Errorf("expected monomial to be a variable or a constant; received %v", monomial)
+			}
+		}
+
+	}
+}
+
+/*
+TestMonomialVector_Minus5
+Description:
+
+	Verifies that the Minus() method returns the correct value when a
+	well-formed vector of monomials is subtracted from a *mat.VecDense object
+	of appropriate dimension.
+*/
+func TestMonomialVector_Minus5(t *testing.T) {
+	// Setup
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	mv := symbolic.MonomialVector{v1.ToMonomial(), v2.ToMonomial()}
+
+	// Create a *mat.VecDense object
+	vec := mat.NewVecDense(2, []float64{1, 2})
+
+	// Test
+	difference := mv.Minus(vec)
+
+	// Verify that the difference is a polynomial vector
+	if _, tf := difference.(symbolic.PolynomialVector); !tf {
+		t.Errorf(
+			"expected difference to be a PolynomialVector; received %T",
+			difference,
+		)
+	}
+
+	// Verify that each polynomial contains two monomials
+	for ii, polynomial := range difference.(symbolic.PolynomialVector) {
+		if len(polynomial.Monomials) != 2 {
+			t.Errorf(
+				"expected len(polynomial.Monomials) to be 2; received %v",
+				len(polynomial.Monomials),
+			)
+		}
+
+		// Verify that each monomial is the correct value
+		for _, monomial := range polynomial.Monomials {
+			if monomial.IsConstant() {
+				switch ii {
+				case 0:
+					if monomial.Coefficient != -1.0 {
+						t.Errorf(
+							"expected monomial.Coefficient to be -1.0; received %v",
+							monomial.Coefficient,
+						)
+					}
+				case 1:
+					if monomial.Coefficient != -2.0 {
+						t.Errorf(
+							"expected monomial.Coefficient to be -2.0; received %v",
+							monomial.Coefficient,
+						)
+					}
+				}
+
+			}
+		}
+	}
+}
+
+/*
 TestMonomialVector_Multiply1
 Description:
 
@@ -1405,7 +1626,7 @@ func TestMonomialVector_Derivative3(t *testing.T) {
 	derivative := mv.DerivativeWrt(v1)
 
 	// Verify that the derivative is a K vector
-	if _, tf := derivative.(symbolic.MonomialVector); !tf {
+	if _, tf := derivative.(symbolic.KVector); !tf {
 		t.Errorf(
 			"expected derivative to be a MonomialVector; received %T",
 			derivative,
@@ -1414,20 +1635,12 @@ func TestMonomialVector_Derivative3(t *testing.T) {
 
 	// Verify that each element of the derivative is just the coefficient
 	// from the original monomial vector mv
-	for ii, monomial := range derivative.(symbolic.MonomialVector) {
-		// Check that the monomial is a constant
-		if !monomial.IsConstant() {
-			t.Errorf(
-				"expected monomial to be a constant; received %v",
-				monomial,
-			)
-		}
-
-		if monomial.Coefficient != mv[ii].Coefficient {
+	for ii, d_ii := range derivative.(symbolic.KVector) {
+		if float64(d_ii) != mv[ii].Coefficient {
 			t.Errorf(
 				"expected constant to be %v; received %v",
 				mv[ii].Coefficient,
-				monomial.Coefficient,
+				float64(d_ii),
 			)
 		}
 	}
@@ -1462,7 +1675,7 @@ func TestMonomialVector_Derivative4(t *testing.T) {
 	derivative := mv.DerivativeWrt(v1)
 
 	// Verify that the derivative is a K vector
-	d_v1, tf := derivative.(symbolic.MonomialVector)
+	d_v1, tf := derivative.(symbolic.KVector)
 	if !tf {
 		t.Errorf(
 			"expected derivative to be a MonomialVector; received %T",
@@ -1471,33 +1684,161 @@ func TestMonomialVector_Derivative4(t *testing.T) {
 	}
 
 	// Verify that the first element of the derivative is a constant and nonzero
-	if !d_v1[0].IsConstant() {
+	if float64(d_v1[0]) != 3.14 {
 		t.Errorf(
-			"expected derivative[0] to be a constant; received %v",
+			"expected derivative[0].Coefficient to be 3.14; received %v",
 			d_v1[0],
 		)
 	}
 
-	if d_v1[0].Coefficient != 3.14 {
-		t.Errorf(
-			"expected derivative[0].Coefficient to be 3.14; received %v",
-			d_v1[0].Coefficient,
-		)
-	}
-
 	// Verify that the second element of the derivative is a constant and zero
-	if !d_v1[1].IsConstant() {
+	if float64(d_v1[1]) != 0 {
 		t.Errorf(
-			"expected derivative[1] to be a constant; received %v",
+			"expected derivative[1].Coefficient to be 0; received %v",
 			d_v1[1],
 		)
 	}
 
-	if d_v1[1].Coefficient != 0 {
+}
+
+/*
+TestMonomialVector_Degree1
+Description:
+
+	Verifies that the Degree() method panics when this is called with a MonomialVector that is not well-defined.
+*/
+func TestMonomialVector_Degree1(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Degree() to panic; received %v",
+				mv.Degree(),
+			)
+		}
+
+		err := r.(error)
+		expectedError := mv.Check()
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected error to be %v; received %v",
+				expectedError,
+				err,
+			)
+		}
+
+	}()
+
+	mv.Degree()
+	t.Errorf("Test should panic before this is reached!")
+}
+
+/*
+TestMonomialVector_Degree2
+Description:
+
+	Verifies that the Degree() method returns the correct value when called with a well-defined MonomialVector.
+	This should be the maximum of all of the monomials inside the vector.
+*/
+func TestMonomialVector_Degree2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{2},
+	}
+	m2 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v2},
+		Exponents:       []int{1},
+	}
+	mv := symbolic.MonomialVector{m1, m2}
+
+	// Test
+	degree := mv.Degree()
+
+	// Verify that the degree is correct
+	if degree != 2 {
 		t.Errorf(
-			"expected derivative[1].Coefficient to be 0; received %v",
-			d_v1[1].Coefficient,
+			"expected degree to be 2; received %v",
+			degree,
+		)
+	}
+}
+
+/*
+TestMonomialVector_Power1
+Description:
+
+	Verifies that the Power() method panics when called with a vector that has Len() greater
+	than 1.
+*/
+func TestMonomialVector_Power1(t *testing.T) {
+	// Constants
+	mv := symbolic.NewVariableVector(10).ToMonomialVector()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.Power(3) to panic; received %v",
+				mv.Power(3),
+			)
+		}
+	}()
+
+	mv.Power(3)
+	t.Errorf("Test should panic before this is reached!")
+}
+
+/*
+TestMonomialVector_Power2
+Description:
+
+	Verifies that the Power() method returns the correct value when called with a vector
+	of Len() == 1. The result should be a monomial vector where each monomial is raised to
+	the power of the input integer.
+*/
+func TestMonomialVector_Power2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+	mv := symbolic.MonomialVector{m1}
+
+	// Test
+	power := mv.Power(3)
+
+	// Verify that the power is a monomial vector
+	if _, tf := power.(symbolic.Monomial); !tf {
+		t.Errorf(
+			"expected power to be a MonomialVector; received %T",
+			power,
 		)
 	}
 
+	// Verify that each monomial is raised to the power of 3
+	if power.(symbolic.Monomial).Exponents[0] != 3 {
+		t.Errorf(
+			"expected monomial.Exponents[0] to be 3; received %v",
+			power.(symbolic.Monomial).Exponents[0],
+		)
+	}
+
+	if power.(symbolic.Monomial).Coefficient != math.Pow(3.14, 3) {
+		t.Errorf(
+			"expected monomial.Coefficient to be 3.14^3; received %v",
+			power.(symbolic.Monomial).Coefficient,
+		)
+	}
 }

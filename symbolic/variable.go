@@ -448,16 +448,14 @@ Description:
 
 	Creates a new binary variable.
 */
-func NewBinaryVariable(envs ...Environment) Variable {
+func NewBinaryVariable(envs ...*Environment) Variable {
 	// Constants
 
 	// Input Processing
-	var currentEnv Environment
+	var currentEnv = &BackgroundEnvironment
 	switch len(envs) {
 	case 1:
 		currentEnv = envs[0]
-	default:
-		currentEnv = BackgroundEnvironment
 	}
 
 	// Get New Index
@@ -551,4 +549,71 @@ Description:
 */
 func (v Variable) String() string {
 	return v.Name
+}
+
+/*
+Substitute
+Description:
+
+	Substitutes the variable vIn with the expression eIn.
+*/
+func (v Variable) Substitute(vIn Variable, seIn ScalarExpression) Expression {
+	// Input Processing
+	err := v.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = seIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	if v.ID == vIn.ID {
+		return seIn
+	} else {
+		return v
+	}
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes the variable in the map with the corresponding expression.
+*/
+func (v Variable) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+	// Input Processing
+	err := v.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	if e, ok := subMap[v]; ok {
+		return e
+	} else {
+		return v
+	}
+}
+
+/*
+Power
+Description:
+
+	Computes the power of the variable.
+*/
+func (v Variable) Power(exponent int) Expression {
+	return ScalarPowerTemplate(v, exponent)
 }

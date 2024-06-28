@@ -777,6 +777,211 @@ func TestMonomialMatrix_Plus9(t *testing.T) {
 }
 
 /*
+TestMonomialMatrix_Minus1
+Description:
+
+	Verifies that the Minus() method panics if the monomial matrix
+	that it is called on is not well formed.
+*/
+func TestMonomialMatrix_Minus1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1.0,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1, 2},
+	}
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1},
+		{m1},
+		{m1, m1},
+	}
+	mm2 := mm
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected Minus() to panic; it did not",
+			)
+		}
+	}()
+	mm.Minus(mm2)
+}
+
+/*
+TestMonomialMatrix_Minus2
+Description:
+
+	Verifies that the Minus() method panics if the second expression
+	input to the method is not well formed.
+*/
+func TestMonomialMatrix_Minus2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+	var mm2 symbolic.MonomialMatrix
+
+	expectedError := mm2.Check()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Minus() to panic; it did not",
+			)
+		}
+
+		// Check that the error is correct
+		err, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected Minus() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		if !strings.Contains(
+			err.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"expected Minus() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				err,
+			)
+		}
+
+	}()
+	mm.Minus(mm2)
+
+}
+
+/*
+TestMonomialMatrix_Minus3
+Description:
+
+	Verifies that the Minus() method panics if the two expressions
+	are not the same size. (In this case the first expression
+	is 3 x 2 and the second is 2 x 2).
+*/
+func TestMonomialMatrix_Minus3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+	var mm2 symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+	expectedError := smErrors.DimensionError{
+		Arg1:      mm,
+		Arg2:      mm2,
+		Operation: "Minus",
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Minus() to panic; it did not",
+			)
+		}
+
+		// Check that the error is correct
+		err, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected Minus() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		if !strings.Contains(
+			err.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"expected Minus() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				err,
+			)
+		}
+
+	}()
+	mm.Minus(mm2)
+}
+
+/*
+TestMonomialMatrix_Minus4
+Description:
+
+	Tests that the Minus() method properly subtracts a constant from a matrix
+	of Monomials. (In this case, the monomial matrix is a 2 x2 matrix
+	of single variables and the constant is 1.0).
+*/
+func TestMonomialMatrix_Minus4(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+	f2 := 1.0
+
+	// Test
+	difference := mm.Minus(f2)
+
+	// Check that the difference is of the PolynomialMatrix type
+	_, ok := difference.(symbolic.PolynomialMatrix)
+	if !ok {
+		t.Errorf(
+			"expected Minus() to return a PolynomialMatrix; received %v",
+			difference,
+		)
+	}
+
+	// Check that each entry in the difference:
+	// 1. Contains 2 monomials
+	// 2. Contains the original monomial
+	// 3. Contains the constant monomial
+	for _, row := range difference.(symbolic.PolynomialMatrix) {
+		for _, polynomial := range row {
+			if len(polynomial.Monomials) != 2 {
+				t.Errorf(
+					"expected Minus() to return a PolynomialMatrix with 2 monomials; received %v",
+					polynomial.Monomials,
+				)
+			}
+
+			// Check that the first monomial is the original monomial
+			if v1Index := polynomial.VariableMonomialIndex(v1); v1Index == -1 {
+				t.Errorf(
+					"expected Minus() to return a PolynomialMatrix with the original monomial; received %v",
+					polynomial,
+				)
+			}
+
+			// Check that the second monomial is the constant monomial
+			if constIndex := polynomial.ConstantMonomialIndex(); polynomial.Monomials[constIndex].Coefficient != -1.0 {
+				t.Errorf(
+					"expected Minus() to return a PolynomialMatrix with the constant monomial; received %v",
+					polynomial.Monomials[1],
+				)
+			}
+		}
+	}
+}
+
+/*
 TestMonomialMatrix_Multiply1
 Description:
 
@@ -1430,6 +1635,175 @@ func TestMonomialMatrix_Eq2(t *testing.T) {
 }
 
 /*
+TestMonomialMatrix_DerivativeWrt1
+Description:
+
+	This test checks that the DerivativeWrt() method properly panics when it is called
+	with a monomial matrix that is not well formed.
+*/
+func TestMonomialMatrix_DerivativeWrt1(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected DerivativeWrt() to panic; it did not",
+			)
+		}
+
+		rAsE, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected DerivativeWrt() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		expectedError := mm.Check()
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"expected DerivativeWrt() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				rAsE,
+			)
+		}
+	}()
+	mm.DerivativeWrt(symbolic.NewVariable())
+}
+
+/*
+TestMonomialMatrix_DerivativeWrt2
+Description:
+
+	This test checks that the DerivativeWrt() method properly panics when it is called
+	with a monomial matrix that is well-formed and a variable that is not well-defined.
+*/
+func TestMonomialMatrix_DerivativeWrt2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	badV := symbolic.Variable{}
+	m1 := v1.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1},
+		{m1, m1},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected DerivativeWrt() to panic; it did not",
+			)
+		}
+
+		rAsE, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected DerivativeWrt() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		expectedError := badV.Check()
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"expected DerivativeWrt() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				rAsE,
+			)
+		}
+	}()
+
+	mm.DerivativeWrt(badV)
+}
+
+/*
+TestMonomialMatrix_DerivativeWrt3
+Description:
+
+	This test checks that the DerivativeWrt() method properly returns a matrix of
+	monomials that are the derivatives of the original monomials with respect to
+	the given variable.
+*/
+func TestMonomialMatrix_DerivativeWrt3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	m2 := v2.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m2},
+		{m1, m2},
+	}
+
+	// Test
+	derivatives := mm.DerivativeWrt(v1)
+
+	// Check that the dimensions of the derivatives are (2,2)
+	if dims := derivatives.Dims(); dims[0] != 2 || dims[1] != 2 {
+		t.Errorf(
+			"expected DerivativeWrt() to return a MonomialMatrix with dimensions (2,2); received %v",
+			dims,
+		)
+	}
+
+	dAsMM, ok := derivatives.(symbolic.KMatrix)
+	if !ok {
+		t.Errorf(
+			"expected DerivativeWrt() to return a MonomialMatrix; received %T",
+			derivatives,
+		)
+
+	}
+
+	// Check that the derivatives are correct
+	for ii, row := range dAsMM {
+		for jj, derivative := range row {
+			// Check that the derivative is the correct monomial
+			if ii == 0 {
+				if jj == 0 {
+					if float64(derivative) != 1.0 {
+						t.Errorf(
+							"expected DerivativeWrt() to return a MonomialMatrix with derivative %v at (0,0); received %v",
+							1.0,
+							derivative,
+						)
+					}
+				} else {
+					if float64(derivative) != 0.0 {
+						t.Errorf(
+							"expected DerivativeWrt() to return a MonomialMatrix with derivative 0.0 at (0,1); received %v",
+							derivative,
+						)
+					}
+				}
+			} else {
+				if jj == 0 {
+					if float64(derivative) != 1.0 {
+						t.Errorf(
+							"expected DerivativeWrt() to return a MonomialMatrix with derivative %v at (1,1); received %v",
+							1.0,
+							derivative,
+						)
+					}
+				} else {
+					if float64(derivative) != 0.0 {
+						t.Errorf(
+							"expected DerivativeWrt() to return a MonomialMatrix with derivative 0.0 at (1,0); received %v",
+							derivative,
+						)
+					}
+				}
+			}
+		}
+	}
+}
+
+/*
 TestMonomialMatrix_Transpose2
 Description:
 
@@ -1631,4 +2005,265 @@ func TestMonomialMatrix_String2(t *testing.T) {
 	}()
 
 	mm.String()
+}
+
+/*
+TestMonomialMatrix_Degree1
+Description:
+
+	Tests that the Degree() method properly panics when called with a monomial matrix
+	that is not well-defined.
+*/
+func TestMonomialMatrix_Degree1(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Degree() to panic; it did not",
+			)
+		}
+
+		rAsE, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected Degree() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		expectedError := mm.Check()
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"expected Degree() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				rAsE,
+			)
+		}
+	}()
+
+	mm.Degree()
+}
+
+/*
+TestMonomialMatrix_Degree2
+Description:
+
+	Tests that the Degree() method properly returns the degree of the monomial matrix
+	when called with a well-defined monomial matrix.
+*/
+func TestMonomialMatrix_Degree2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	v3 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	m2 := v2.ToMonomial()
+	m3 := v3.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m2, m3},
+		{m1, symbolic.Monomial{Coefficient: 3.14, VariableFactors: []symbolic.Variable{v1, v2, v3}, Exponents: []int{1, 3, 5}}, m3},
+	}
+
+	// Test
+	degree := mm.Degree()
+
+	// Check that the degree is correct
+	if degree != 9 {
+		t.Errorf(
+			"expected Degree() to return 1; received %v",
+			degree,
+		)
+	}
+}
+
+/*
+TestMonomialMatrix_Substitute1
+Description:
+
+	Tests that the Substitute() method properly substitutes a variable in a given
+	monomial matrix with a polynomial. This should lead to the matrix of monomials
+	becoming a matrix of polynomials. Each entry of the matrix should have the same number
+	of monomials as the first polynomial.
+*/
+func TestMonomialMatrix_Substitute1(t *testing.T) {
+	// Setup
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	p3 := v1.Plus(v2).(symbolic.Polynomial)
+
+	mm1 := symbolic.MonomialMatrix{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+
+	// Test
+	substituted := mm1.Substitute(v1, p3)
+
+	// Check that substituted is a PolynomialMatrix
+	sAsPM, ok := substituted.(symbolic.PolynomialMatrix)
+	if !ok {
+		t.Errorf(
+			"expected Substitute() to return a PolynomialMatrix; received %v",
+			substituted,
+		)
+	}
+
+	// Check that each entry in the substituted matrix has the same number of monomials
+	// as p3
+	for _, row := range sAsPM {
+		for _, polynomial := range row {
+			if len(polynomial.Monomials) != len(p3.Monomials) {
+				t.Errorf(
+					"expected Substitute() to return a PolynomialMatrix with %v monomials; received %v",
+					len(p3.Monomials),
+					len(polynomial.Monomials),
+				)
+			}
+		}
+	}
+}
+
+/*
+TestMonomialMatrix_SubstituteWrt1
+Description:
+
+	Tests that the SubstituteWrt() method properly substitutes a variable in a given
+	monomial matrix with a polynomial. This should lead to the matrix of monomials
+	becoming a matrix of polynomials. Each entry of the matrix should have the same number
+	of monomials as the test polynomial.
+*/
+func TestMonomialMatrix_SubstituteAccordingTo1(t *testing.T) {
+	// Setup
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	p3 := v1.Plus(v2).(symbolic.Polynomial)
+
+	mm1 := symbolic.MonomialMatrix{
+		{v1.ToMonomial(), v1.ToMonomial()},
+		{v1.ToMonomial(), v1.ToMonomial()},
+	}
+
+	// Test
+	substituted := mm1.SubstituteAccordingTo(
+		map[symbolic.Variable]symbolic.Expression{v1: p3},
+	)
+
+	// Check that substituted is a PolynomialMatrix
+	sAsPM, ok := substituted.(symbolic.PolynomialMatrix)
+	if !ok {
+		t.Errorf(
+			"expected SubstituteWrt() to return a PolynomialMatrix; received %v",
+			substituted,
+		)
+	}
+
+	// Check that each entry in the substituted matrix has the same number of monomials
+	// as p3
+	for _, row := range sAsPM {
+		for _, polynomial := range row {
+			if len(polynomial.Monomials) != len(p3.Monomials) {
+				t.Errorf(
+					"expected SubstituteWrt() to return a PolynomialMatrix with %v monomials; received %v",
+					len(p3.Monomials),
+					len(polynomial.Monomials),
+				)
+			}
+		}
+	}
+}
+
+/*
+TestMonomialMatrix_SubstituteWrt2
+Description:
+
+	Tests that the SubstituteWrt() method properly panics when called with a monomial matrix
+	that is not well-defined.
+*/
+func TestMonomialMatrix_SubstituteAccordingTo2(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected SubstituteAccordingTo() to panic; it did not",
+			)
+		}
+
+		rAsE, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected SubstituteAccordingTo() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		expectedError := mm.Check()
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"expected SubstituteAccordingTo() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				rAsE,
+			)
+		}
+	}()
+
+	mm.SubstituteAccordingTo(map[symbolic.Variable]symbolic.Expression{})
+}
+
+/*
+TestMonomialMatrix_SubstituteWrt3
+Description:
+
+	Tests that the SubstituteWrt() method properly panics when called with a monomial matrix
+	that is well-defined and a substitution map that is not well-defined.
+*/
+func TestMonomialMatrix_SubstituteAccordingTo3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1},
+		{m1, m1},
+	}
+
+	testMap := map[symbolic.Variable]symbolic.Expression{
+		v1: symbolic.Variable{},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected SubstituteAccordingTo() to panic; it did not",
+			)
+		}
+
+		rAsE, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected SubstituteAccordingTo() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		expectedError := symbolic.CheckSubstitutionMap(testMap)
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"expected SubstituteAccordingTo() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				rAsE,
+			)
+		}
+	}()
+
+	mm.SubstituteAccordingTo(testMap)
+	t.Errorf("expected SubstituteAccordingTo() to panic; it did not")
 }

@@ -239,12 +239,6 @@ func (p Polynomial) Minus(e interface{}) Expression {
 		return Minus(p, eAsE)
 	}
 
-	// Constants
-	switch right := e.(type) {
-	case float64:
-		return p.Copy().Minus(K(right))
-	}
-
 	// If the function has reached this point, then
 	// the input is not recognized
 	panic(
@@ -429,7 +423,13 @@ Description:
 	The transpose operator when applied to a scalar is just the same scalar object.
 */
 func (p Polynomial) Transpose() Expression {
-	return p
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	return p.Copy()
 }
 
 /*
@@ -624,8 +624,19 @@ func (p Polynomial) DerivativeWrt(vIn Variable) Expression {
 		}
 
 		// Append
-		components := monomial.DerivativeWrt(vIn)
-		derivative.Monomials = append(derivative.Monomials, components.(Monomial))
+		dMonomial := monomial.DerivativeWrt(vIn)
+		switch component := dMonomial.(type) {
+		case Monomial:
+			derivative.Monomials = append(derivative.Monomials, component)
+		case K:
+			// Skip zero monomials
+			if float64(component) == 0.0 {
+				continue
+			}
+			derivative.Monomials = append(derivative.Monomials, component.ToMonomial())
+		default:
+			panic(fmt.Errorf("Unexpected type in Polynomial.Derivative: %T", component))
+		}
 	}
 
 	// If the derivative is empty, then return 0.0
@@ -751,4 +762,75 @@ func (p Polynomial) String() string {
 
 	// Return
 	return polynomialString
+}
+
+/*
+Substitute
+Description:
+
+	This method substitutes the variable vIn with the expression eIn.
+*/
+func (p Polynomial) Substitute(vIn Variable, eIn ScalarExpression) Expression {
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = eIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var out Expression = K(0.0)
+	for _, monomial := range p.Monomials {
+		newMonomial := monomial.Substitute(vIn, eIn)
+		out = out.Plus(newMonomial).(Polynomial).Simplify()
+	}
+
+	return out
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	This method substitutes the variables in the map with the corresponding expressions.
+*/
+func (p Polynomial) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+	// Input Processing
+	err := p.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var out Expression = K(0.0)
+	for _, monomial := range p.Monomials {
+		newMonomial := monomial.SubstituteAccordingTo(subMap)
+		out = out.Plus(newMonomial)
+	}
+
+	return out
+}
+
+/*
+Power
+Description:
+
+	Computes the power of the constant.
+*/
+func (p Polynomial) Power(exponent int) Expression {
+	return ScalarPowerTemplate(p, exponent)
 }

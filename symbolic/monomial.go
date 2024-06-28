@@ -159,12 +159,6 @@ func (m Monomial) Minus(e interface{}) Expression {
 		return Minus(m, rightAsE)
 	}
 
-	// Algorithm
-	switch right := e.(type) {
-	case float64:
-		return m.Minus(K(right)) // Reuse K case
-	}
-
 	// Unrecognized response is a panic
 	panic(
 		smErrors.UnsupportedInputError{
@@ -549,7 +543,11 @@ func (m Monomial) DerivativeWrt(vIn Variable) Expression {
 		// monomial.
 		var monomialOut Monomial
 
-		if m.Exponents[foundIndex] == 1 {
+		switch {
+		case (m.Exponents[foundIndex] == 1) && (len(m.VariableFactors) == 1):
+			// Return the exponent
+			return K(m.Coefficient)
+		case m.Exponents[foundIndex] == 1:
 			// If the degree of vIn is 1, then remove it from the monomial
 			monomialOut.Coefficient = m.Coefficient
 			for ii, variable := range m.VariableFactors {
@@ -558,8 +556,9 @@ func (m Monomial) DerivativeWrt(vIn Variable) Expression {
 					monomialOut.Exponents = append(monomialOut.Exponents, m.Exponents[ii])
 				}
 			}
-		} else {
+		default:
 			monomialOut = m
+			monomialOut.Coefficient = m.Coefficient * float64(m.Exponents[foundIndex])
 			monomialOut.Exponents[foundIndex] -= 1
 		}
 
@@ -662,4 +661,88 @@ func (m Monomial) Copy() Monomial {
 
 	// Return
 	return mCopy
+}
+
+/*
+Substitute
+Description:
+
+	Substitutes all occurrences of variable vIn with the expression eIn.
+*/
+func (m Monomial) Substitute(vIn Variable, eIn ScalarExpression) Expression {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = vIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = eIn.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	// Find the index of the variable in the monomial
+	foundIndex, _ := FindInSlice(vIn, m.VariableFactors)
+
+	// If the variable is not in the monomial, then return the monomial
+	if foundIndex == -1 {
+		return m
+	}
+
+	// If the variable is in the monomial,
+	// then compute the product of the monomial with the expression
+	var prod Expression = K(m.Coefficient)
+	for ii, variable := range m.VariableFactors {
+		prod = prod.Multiply(variable.Substitute(vIn, eIn).Power(m.Exponents[ii]))
+	}
+
+	// Return
+	return prod
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes all occurrences of the variables in the map with the corresponding expressions.
+*/
+func (m Monomial) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	// Create the monomial
+	var out Expression = K(0.0)
+
+	// Iterate through each variable in the monomial
+	for tempVar, tempExp := range subMap {
+		out = out.Substitute(tempVar, tempExp.(ScalarExpression))
+	}
+
+	// Return
+	return out
+}
+
+/*
+Power
+Description:
+
+	Computes the power of the monomial.
+*/
+func (m Monomial) Power(exponent int) Expression {
+	return ScalarPowerTemplate(m, exponent)
 }

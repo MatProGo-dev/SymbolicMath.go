@@ -636,3 +636,50 @@ func (mv MonomialVector) Degree() int {
 	// Return
 	return maxDegree
 }
+
+/*
+Substitute
+Description:
+
+	This function substitutes the input variable with the input scalar expression.
+*/
+func (mv MonomialVector) Substitute(vIn Variable, seIn ScalarExpression) Expression {
+	return VectorSubstituteTemplate(mv, vIn, seIn)
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	This function substitutes all instances of variables in the substitutions map with their corresponding expressions.
+*/
+func (mv MonomialVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+	// Input Processing
+	err := mv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
+	if err != nil {
+		panic(err)
+	}
+
+	// Setup
+	var out VectorExpression = mv
+	for varKey, expr := range subMap {
+		postSub := out.Substitute(varKey, expr.(ScalarExpression))
+		out = postSub.(VectorExpression)
+	}
+	return out
+}
+
+/*
+Power
+Description:
+
+	This function raises the monomial vector to the input power.
+*/
+func (mv MonomialVector) Power(exponent int) Expression {
+	return VectorPowerTemplate(mv, exponent)
+}

@@ -637,3 +637,51 @@ func (pm PolynomialMatrix) Degree() int {
 	}
 	return maxDegree
 }
+
+/*
+Substitute
+Description:
+
+	Substitutes the variable vIn with the expression eIn in the polynomial matrix.
+*/
+func (pm PolynomialMatrix) Substitute(vIn Variable, eIn ScalarExpression) Expression {
+	return MatrixSubstituteTemplate(pm, vIn, eIn)
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes the variables in the polynomial matrix with the corresponding expressions in the map.
+*/
+func (pm PolynomialMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+	// Input Processing
+	err := pm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var out MatrixExpression = pm
+	for v, e := range subMap {
+		outSubbed := out.Substitute(v, e.(ScalarExpression))
+		out = outSubbed.(MatrixExpression)
+	}
+
+	return out
+}
+
+/*
+Power
+Description:
+
+	Raises the polynomial matrix to the power of the input integer.
+*/
+func (pm PolynomialMatrix) Power(exponent int) Expression {
+	return MatrixPowerTemplate(pm, exponent)
+}

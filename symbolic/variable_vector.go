@@ -144,6 +144,17 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 			pv = append(pv, tempPolynomial)
 		}
 		return pv
+	case VariableVector, MonomialVector, PolynomialVector:
+		// Setup
+		rightAsVE, _ := right.(VectorExpression)
+
+		// Create a slice of scalarexpressions
+		var out []ScalarExpression
+		for ii := 0; ii < vv.Len(); ii++ {
+			seII, _ := vv[ii].Plus(rightAsVE.AtVec(ii)).(ScalarExpression)
+			out = append(out, seII)
+		}
+		return ConcretizeVectorExpression(out)
 	default:
 		panic(
 			smErrors.UnsupportedInputError{
@@ -187,16 +198,6 @@ func (vv VariableVector) Minus(rightIn interface{}) Expression {
 
 		// Use Expression's Minus function
 		return Minus(vv, rightAsE)
-	}
-
-	// Algorithm for non-expressions
-	switch right := rightIn.(type) {
-	case float64:
-		return vv.Minus(K(right)) // Use K method
-	case mat.VecDense:
-		return vv.Minus(VecDenseToKVector(right)) // Use KVector method
-	case *mat.VecDense:
-		return vv.Minus(VecDenseToKVector(*right)) // Use KVector method
 	}
 
 	// If input isn't recognized, then panic
@@ -583,4 +584,53 @@ Description:
 */
 func (vv VariableVector) Degree() int {
 	return 1
+}
+
+/*
+Substitute
+Description:
+
+	Substitute returns the expression with the variable vIn replaced with the expression eIn
+*/
+func (vv VariableVector) Substitute(vIn Variable, seIn ScalarExpression) Expression {
+	return VectorSubstituteTemplate(vv, vIn, seIn)
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitute replaces all instances of the variables in the map with the corresponding expressions.
+*/
+func (vv VariableVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+	// Input Processing
+	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var out VectorExpression = vv
+	for tempVar, tempExpr := range subMap {
+		outSubbed := out.Substitute(tempVar, tempExpr.(ScalarExpression))
+		out = outSubbed.(VectorExpression)
+	}
+
+	return out
+
+}
+
+/*
+Power
+Description:
+
+	Raises the variable vector to the power of the input integer
+*/
+func (vv VariableVector) Power(exponent int) Expression {
+	return VectorPowerTemplate(vv, exponent)
 }

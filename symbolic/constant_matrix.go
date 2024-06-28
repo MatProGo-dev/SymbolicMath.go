@@ -142,6 +142,23 @@ func (km KMatrix) Plus(e interface{}) Expression {
 
 		return km.Plus(rightAsVM) // Reuse VariableMatrix case
 
+	case mat.Dense:
+		return km.Plus(DenseToKMatrix(right)) // Reuse KMatrix case
+
+	case *mat.Dense:
+		return km.Plus(*right) // Reuse mat.Dense case
+
+	case KMatrix:
+		// Create the result matrix
+		var result KMatrix = make([][]K, nR)
+		for rIndex := 0; rIndex < nR; rIndex++ {
+			result[rIndex] = make([]K, nC)
+			for cIndex := 0; cIndex < nC; cIndex++ {
+				result[rIndex][cIndex] = km[rIndex][cIndex] + right[rIndex][cIndex]
+			}
+		}
+		return result
+
 	case VariableMatrix:
 		// Create the result matrix
 		var result PolynomialMatrix = make([][]Polynomial, nR)
@@ -257,6 +274,32 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 
 	case K:
 		return km.Multiply(float64(right)) // Reuse float64 case
+	case Polynomial:
+		// Choose the correct output type based on the size of km
+		nR, nC := km.Dims()[0], km.Dims()[1]
+		switch {
+		case (nR == 1) && (nC == 1):
+			// If the output is a scalar, return a scalar
+			return km[0][0].Multiply(right)
+		case nC == 1:
+			// If the output is a vector, return a vector
+			var outputVec PolynomialVector = make([]Polynomial, nR)
+			for rIndex := 0; rIndex < nR; rIndex++ {
+				outputVec[rIndex] = km[rIndex][0].Multiply(right.Copy()).(Polynomial)
+			}
+			return outputVec
+		default:
+			// If the output is a matrix, return a matrix
+			var outputMat PolynomialMatrix = make([][]Polynomial, nR)
+			for rIndex := 0; rIndex < nR; rIndex++ {
+				outputMat[rIndex] = make([]Polynomial, nC)
+				for cIndex := 0; cIndex < nC; cIndex++ {
+					outputMat[rIndex][cIndex] = km[rIndex][cIndex].Multiply(right.Copy()).(Polynomial)
+				}
+			}
+			return outputMat
+		}
+
 	case *mat.VecDense:
 		// Use gonum's built-in multiplication function
 		var product mat.VecDense
@@ -672,4 +715,34 @@ Description:
 */
 func (km KMatrix) Degree() int {
 	return 0
+}
+
+/*
+Substitute
+Description:
+
+	Substitutes all occurrences of variable vIn with the expression eIn.
+*/
+func (km KMatrix) Substitute(vIn Variable, eIn ScalarExpression) Expression {
+	return km
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes all occurrences of the variables in the map with the corresponding expressions.
+*/
+func (km KMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+	return km
+}
+
+/*
+Power
+Description:
+
+	Raises the constant matrix to the power of the input integer.
+*/
+func (km KMatrix) Power(exponent int) Expression {
+	return MatrixPowerTemplate(km, exponent)
 }

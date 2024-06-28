@@ -426,6 +426,171 @@ func TestVariableVector_Plus7(t *testing.T) {
 }
 
 /*
+TestVariableVector_Minus1
+Description:
+
+	Tests that the Minus method correctly panics when a vector expression that is not
+	well-defined used to call Minus().
+*/
+func TestVariableVector_Minus1(t *testing.T) {
+	// Setup
+	vv1 := symbolic.VariableVector{
+		symbolic.Variable{},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vv1.Minus(vv2) to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected vv1.Minus(vv2) to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		expectedError := vv1.Check()
+		if !strings.Contains(
+			rAsE.Error(),
+			expectedError.Error(),
+		) {
+			t.Errorf(
+				"Expected vv1.Minus(vv2) to panic with a specific error; instead received %v",
+				r,
+			)
+		}
+	}()
+
+	// Test
+	vv1.Minus(vv1)
+	t.Errorf("This line should not be reached")
+}
+
+/*
+TestVariableVector_Minus2
+Description:
+
+	Tests that the Minus method correctly panics when a vector expression that is
+	well-defined but has a different length than the other operand in the call to Minus().
+*/
+func TestVariableVector_Minus2(t *testing.T) {
+	// Setup
+	vv1 := symbolic.NewVariableVector(111)
+	vv2 := symbolic.NewVariableVector(110)
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vv1.Minus(vv2) to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected vv1.Minus(vv2) to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if rAsE.Error() != (smErrors.DimensionError{
+			Operation: "Minus",
+			Arg1:      vv1,
+			Arg2:      vv2,
+		}).Error() {
+			t.Errorf(
+				"Expected vv1.Minus(vv2) to panic with a DimensionError; received %v",
+				r,
+			)
+		}
+	}()
+
+	// Test
+	vv1.Minus(vv2)
+	t.Errorf("This line should not be reached")
+}
+
+/*
+TestVariableVector_Minus3
+Description:
+
+	Tests that the Minus method correctly panics when a vector expression that is
+	well-defined is used to call Minus(), but the input to the minus is not well-defined.
+*/
+func TestVariableVector_Minus3(t *testing.T) {
+	// Setup
+	vv1 := symbolic.NewVariableVector(111)
+	vv2 := symbolic.VariableVector{
+		symbolic.Variable{},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vv1.Minus(vv2) to panic; received no panic",
+			)
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf(
+				"Expected vv1.Minus(vv2) to panic with an error; received %v",
+				r,
+			)
+		}
+
+		// Check that the error message is correct
+		if !strings.Contains(
+			rAsE.Error(),
+			"element 0 has an issue:",
+		) {
+			t.Errorf(
+				"Expected vv1.Minus(vv2) to panic with a specific error; received %v",
+				r,
+			)
+		}
+	}()
+
+	// Test
+	vv1.Minus(vv2)
+	t.Errorf("This line should not be reached")
+}
+
+/*
+TestVariableVector_Minus4
+Description:
+
+	Tests that the Minus method correctly returns a PolynomialVector object when
+	a VariableVector is subtracted from another VariableVector.
+*/
+func TestVariableVector_Minus4(t *testing.T) {
+	// Setup
+	vv1 := symbolic.NewVariableVector(111)
+	vv2 := symbolic.NewVariableVector(111)
+
+	// Test
+	r := vv1.Minus(vv2)
+	if _, ok := r.(symbolic.PolynomialVector); !ok {
+		t.Errorf(
+			"Expected vv1.Minus(vv2) to return a PolynomialVector object; received %T",
+			r,
+		)
+	}
+}
+
+/*
 TestVariableVector_Multiply1
 Description:
 
@@ -1292,4 +1457,34 @@ func TestVariableVector_String1(t *testing.T) {
 			)
 		}
 	}
+}
+
+/*
+TestVariableVector_Power1
+Description:
+
+	Verifies that the Power method returns a MonomialVector object when
+	computing a power >= 2 for a well-defined variable vector.
+*/
+func TestVariableVector_Power1(t *testing.T) {
+	// Constants
+	vv := symbolic.NewVariableVector(1)
+
+	// Test
+	r := vv.Power(2)
+	rAsVV, ok := r.(symbolic.Monomial)
+	if !ok {
+		t.Errorf(
+			"Expected vv.Power(2) to return a MonomialVector object; received %T",
+			r,
+		)
+	}
+
+	if rAsVV.Dims()[0] != 1 {
+		t.Errorf(
+			"Expected r to have length 1; received %v",
+			rAsVV.Dims()[0],
+		)
+	}
+
 }

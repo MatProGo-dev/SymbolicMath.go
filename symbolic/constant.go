@@ -121,6 +121,10 @@ func (c K) Plus(rightIn interface{}) Expression {
 		// Convert to VectorExpression
 		ve, _ := ToVectorExpression(right)
 		return ve.Plus(c)
+	case mat.Dense:
+		return c.Plus(DenseToKMatrix(right))
+	case *mat.Dense:
+		return c.Plus(DenseToKMatrix(*right))
 	case KMatrix, VariableMatrix, MonomialMatrix, PolynomialMatrix:
 		// Convert to MatrixExpression
 		me, _ := ToMatrixExpression(right)
@@ -378,4 +382,34 @@ Description:
 */
 func (c K) String() string {
 	return fmt.Sprintf("%v", float64(c))
+}
+
+/*
+Substitute
+Description:
+
+	Substitutes the variable vIn with the expression eIn.
+*/
+func (c K) Substitute(vIn Variable, eIn ScalarExpression) Expression {
+	return c
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes the variables in the map with the corresponding expressions.
+*/
+func (c K) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+	return c
+}
+
+/*
+Power
+Description:
+
+	Computes the power of the constant.
+*/
+func (c K) Power(exponent int) Expression {
+	return ScalarPowerTemplate(c, exponent)
 }

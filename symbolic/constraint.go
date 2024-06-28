@@ -12,6 +12,7 @@ type Constraint interface {
 	Right() Expression
 	ConstrSense() ConstrSense
 	Check() error
+	IsLinear() bool
 }
 
 func IsConstraint(c interface{}) bool {

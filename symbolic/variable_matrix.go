@@ -697,3 +697,51 @@ Description:
 func (vm VariableMatrix) Degree() int {
 	return 1
 }
+
+/*
+Substitute
+Description:
+
+	This function substitutes the variable vIn with the expression eIn.
+*/
+func (vm VariableMatrix) Substitute(vIn Variable, eIn ScalarExpression) Expression {
+	return MatrixSubstituteTemplate(vm, vIn, eIn)
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	This function substitutes the variables in the map with the corresponding expressions.
+*/
+func (vm VariableMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
+	// Input Processing
+	err := vm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(subMap)
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var out MatrixExpression = vm
+	for v, e := range subMap {
+		outSubbed := out.Substitute(v, e.(ScalarExpression))
+		out = outSubbed.(MatrixExpression)
+	}
+
+	return out
+}
+
+/*
+Power
+Description:
+
+	This function raises the variable matrix to a given power.
+*/
+func (vm VariableMatrix) Power(exponent int) Expression {
+	return MatrixPowerTemplate(vm, exponent)
+}

@@ -562,6 +562,161 @@ func TestVariable_Minus1(t *testing.T) {
 }
 
 /*
+TestVariable_Minus2
+Description:
+
+	Verifies that the Minus() method works properly when subtracting a float64 from a variable.
+*/
+func TestVariable_Minus2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	diff := x.Minus(3.14)
+	if diff.(symbolic.ScalarExpression).Constant() != -3.14 {
+		t.Errorf(
+			"expected %v - 3.14 to have constant component -3.14; received %v",
+			x,
+			x.Minus(3.14),
+		)
+	}
+
+	// Test that diff is a polynomial with 2 terms
+	diffAsPoly, tf := diff.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected %v - 3.14 to be a polynomial; received %T",
+			x,
+			diff,
+		)
+	}
+
+	if len(diffAsPoly.Monomials) != 2 {
+		t.Errorf(
+			"expected %v - 3.14 to have 2 terms; received %v",
+			x,
+			len(diffAsPoly.Monomials),
+		)
+	}
+}
+
+/*
+TestVariable_Minus3
+Description:
+
+	Verifies that the Minus() method properly panics when called on a variable
+	that is not well-defined.
+*/
+func TestVariable_Minus3(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+	x.Minus("hello")
+}
+
+/*
+TestVariable_Minus4
+Description:
+
+	This tests that the Minus() function properly panics when called on a variable
+	that is not well-defined.
+*/
+func TestVariable_Minus4(t *testing.T) {
+	// Constants
+	var x symbolic.Variable
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+	x.Minus(3.4)
+}
+
+/*
+TestVariable_Minus5
+Description:
+
+	Verifies that the Minus() method properly panics when the
+	input to the Minus() method's input is not a well-expressed.
+*/
+func TestVariable_Minus5(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	badVar := symbolic.Variable{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("The code did not panic")
+		}
+
+		rAsErr := r.(error)
+		if !strings.Contains(
+			rAsErr.Error(),
+			badVar.Check().Error(),
+		) {
+			t.Errorf("Expected error message to contain %v; received %v", badVar.Check().Error(), rAsErr.Error())
+		}
+
+	}()
+	x.Minus(badVar)
+}
+
+/*
+TestVariable_Minus6
+Description:
+
+	Verifies that the Minus() method properly produces a polynomial
+	when you subtract a float64 from the target variable.
+*/
+func TestVariable_Minus6(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	f1 := 3.14
+
+	// Test
+	diff := x.Minus(f1)
+	if diff.(symbolic.ScalarExpression).Constant() != -f1 {
+		t.Errorf(
+			"expected %v - %v to have constant component %v; received %v",
+			x,
+			f1,
+			-f1,
+			diff.(symbolic.ScalarExpression).Constant(),
+		)
+	}
+
+	// Test that diff is a polynomial with 2 terms
+	diffAsPoly, tf := diff.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected %v - %v to be a polynomial; received %T",
+			x,
+			f1,
+			diff,
+		)
+	}
+
+	if len(diffAsPoly.Monomials) != 2 {
+		t.Errorf(
+			"expected %v - %v to have 2 terms; received %v",
+			x,
+			f1,
+			len(diffAsPoly.Monomials),
+		)
+	}
+}
+
+/*
 TestVariable_LessEq1
 Description:
 
@@ -1061,6 +1216,38 @@ func TestVariable_Multiply5(t *testing.T) {
 }
 
 /*
+TestVariable_Multiply6
+Description:
+
+	Tests that the Multiply() method properly panics when called with a
+	well-defined variable and an expression that is not well-defined
+	(in this case, a variable).
+*/
+func TestVariable_Multiply6(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	uninit := symbolic.Variable{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("The code did not panic")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("The panic was not an error")
+		}
+
+		if !strings.Contains(rAsE.Error(), uninit.Check().Error()) {
+			t.Errorf("The panic was not due to a bad Variable")
+		}
+	}()
+	x.Multiply(symbolic.Variable{})
+}
+
+/*
 TestVariable_String1
 Description:
 
@@ -1076,6 +1263,586 @@ func TestVariable_String1(t *testing.T) {
 			"expected %v to be \"x\"; received %v",
 			x,
 			x.String(),
+		)
+	}
+}
+
+/*
+TestVariable_Transpose1
+Description:
+
+	Tests that the Transpose() method returns the same variable that
+	it was called on.
+*/
+func TestVariable_Transpose1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Algorthm
+	xT := x.Transpose()
+
+	xTAsV, tf := xT.(symbolic.Variable)
+	if !tf {
+		t.Errorf(
+			"expected %v.T to be a variable; received %T",
+			x,
+			xT,
+		)
+	}
+
+	if xTAsV.ID != x.ID {
+		t.Errorf(
+			"expected %v.T to be %v; received %v",
+			x,
+			x,
+			xT,
+		)
+	}
+}
+
+/*
+TestVariable_NewBinaryVariable1
+Description:
+
+	Tests that the NewBinaryVariable() method properly creates
+	a variable with binary type.
+*/
+func TestVariable_NewBinaryVariable1(t *testing.T) {
+	// Constants
+	x := symbolic.NewBinaryVariable()
+
+	// Test
+	if x.Type != symbolic.Binary {
+		t.Errorf(
+			"expected %v to be a binary variable; received %v",
+			x,
+			x.Type,
+		)
+	}
+}
+
+/*
+TestVariable_NewBinaryVariable2
+Description:
+
+	Tests that the NewBinaryVariable() method properly creates
+	a variable with a unique ID when an environment is provided.
+*/
+func TestVariable_NewBinaryVariable2(t *testing.T) {
+	// Constants
+	env := symbolic.Environment{
+		Name: "test-nbv2",
+	}
+	symbolic.NewVariable(&env)
+	x := symbolic.NewBinaryVariable(&env)
+
+	// Test that the ID is unique
+	if x.Type != symbolic.Binary {
+		t.Errorf(
+			"expected %v to be a binary variable; received %v",
+			x,
+			x.Type,
+		)
+	}
+
+	// Test that the ID is greater than 0
+	if x.ID <= 0 {
+		t.Errorf(
+			"expected %v to have a unique ID; received %v",
+			x,
+			x.ID,
+		)
+	}
+}
+
+/*
+TestVariable_DerivativeWrt1
+Description:
+
+	Tests that the DerivativeWrt() method properly panics when called
+	on a variable that is not well-defined.
+*/
+func TestVariable_DerivativeWrt1(t *testing.T) {
+	// Constants
+	var x symbolic.Variable
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("The code did not panic")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("The panic was not an error")
+		}
+
+		if !strings.Contains(rAsE.Error(), x.Check().Error()) {
+			t.Errorf("The panic was not due to a bad Variable")
+		}
+	}()
+	x.DerivativeWrt(x)
+}
+
+/*
+TestVariable_DerivativeWrt2
+Description:
+
+	Tests that the DerivativeWrt() method properly panics when a valid
+	variable is used to call it, but the input is not well-defined.
+*/
+
+/*
+TestVariable_DerivativeWrt2
+Description:
+
+	Tests that the DerivativeWrt() method properly returns zero when
+	called on a variable with a w.r.t. variable that is different
+	from the receiver.
+*/
+func TestVariable_DerivativeWrt2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+
+	// Test
+	der := x.DerivativeWrt(y)
+
+	derAsScalar, tf := der.(symbolic.ScalarExpression)
+	if !tf {
+		t.Errorf(
+			"expected d(%v)/d(%v) to be a scalar expression; received %T",
+			x,
+			y,
+			der,
+		)
+
+	}
+	if derAsScalar.Constant() != 0.0 {
+		t.Errorf(
+			"expected d(%v)/d(%v) to be 0.0; received %v",
+			x,
+			y,
+			derAsScalar.Constant(),
+		)
+	}
+}
+
+/*
+TestVariable_DerivativeWrt3
+Description:
+
+	Tests that the DerivativeWrt() method properly returns 1.0 when
+	called on a variable with a w.r.t. variable that is the same
+	as the receiver.
+*/
+func TestVariable_DerivativeWrt3(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	der := x.DerivativeWrt(x)
+
+	derAsScalar, tf := der.(symbolic.ScalarExpression)
+	if !tf {
+		t.Errorf(
+			"expected d(%v)/d(%v) to be a scalar expression; received %T",
+			x,
+			x,
+			der,
+		)
+
+	}
+	if derAsScalar.Constant() != 1.0 {
+		t.Errorf(
+			"expected d(%v)/d(%v) to be 1.0; received %v",
+			x,
+			x,
+			derAsScalar.Constant(),
+		)
+	}
+}
+
+/*
+TestVariable_DerivativeWrt4
+Description:
+
+	Tests that the DerivativeWrt() method properly panics when called
+	with a well-defined variable receiver and an input that is not
+	well-defined.
+*/
+func TestVariable_DerivativeWrt4(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	uninit := symbolic.Variable{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("The code did not panic")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("The panic was not an error")
+		}
+
+		if !strings.Contains(rAsE.Error(), uninit.Check().Error()) {
+			t.Errorf("The panic was not due to a bad Variable")
+		}
+	}()
+	x.DerivativeWrt(symbolic.Variable{})
+}
+
+/*
+TestVariable_Substitute1
+Description:
+
+	Tests that the Substitute() method properly panics when called
+	on a variable that is not well-defined.
+*/
+func TestVariable_Substitute1(t *testing.T) {
+	// Constants
+	var x symbolic.Variable
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("The code did not panic")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("The panic was not an error")
+		}
+
+		if !strings.Contains(rAsE.Error(), x.Check().Error()) {
+			t.Errorf("The panic was not due to a bad Variable")
+		}
+	}()
+	x.Substitute(x, x)
+}
+
+/*
+TestVariable_Substitute2
+Description:
+
+	Tests that the Substitute() method properly panics when called with a variable input vIn
+	that is not well-defined.
+*/
+func TestVariable_Substitute2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	var vIn symbolic.Variable
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("The code did not panic")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("The panic was not an error")
+		}
+
+		if !strings.Contains(rAsE.Error(), vIn.Check().Error()) {
+			t.Errorf("The panic was not due to a bad Variable")
+		}
+	}()
+
+	x.Substitute(vIn, x)
+}
+
+/*
+TestVariable_Substitute3
+Description:
+
+	Tests that the Substitute() method properly panics when called with:
+	- A well-defined variable receiver (v)
+	- A well-defined variable input vIn
+	- An expression that is not well-defined
+*/
+func TestVariable_Substitute3(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+	var uninit symbolic.Variable
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("The code did not panic")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("The panic was not an error")
+		}
+
+		if !strings.Contains(rAsE.Error(), uninit.Check().Error()) {
+			t.Errorf("The panic was not due to a bad Variable")
+		}
+	}()
+	x.Substitute(y, uninit)
+}
+
+/*
+TestVariable_Substitute4
+Description:
+
+	Tests that the Substitute() method properly returns the variable
+	that it was called on when the input variable is different.
+	(And everything is well-defined.)
+*/
+func TestVariable_Substitute4(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+
+	sumAsScalar := y.Plus(3.114).(symbolic.ScalarExpression)
+
+	// Test
+	sub := x.Substitute(y, sumAsScalar)
+
+	subAsV, tf := sub.(symbolic.Variable)
+	if !tf {
+		t.Errorf(
+			"expected %v.sub(%v, %v) to be a variable; received %T",
+			x,
+			y,
+			x,
+			sub,
+		)
+	}
+
+	if subAsV.ID != x.ID {
+		t.Errorf(
+			"expected %v.sub(%v, %v) to be %v; received %v",
+			x,
+			y,
+			x,
+			x,
+			sub,
+		)
+	}
+}
+
+/*
+TestVariable_Substitute5
+Description:
+
+	Tests that the Substitute() method properly returns the expression
+	that it was called on when the input variable is the same as the replacement variable
+	vIn (and everything is well-defined).
+*/
+func TestVariable_Substitute5(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient: 3.14,
+	}
+
+	// Test
+	sub := x.Substitute(x, m1)
+
+	_, tf := sub.(symbolic.Monomial)
+	if !tf {
+		t.Errorf(
+			"expected %v.sub(%v, %v) to be a variable; received %T",
+			x,
+			x,
+			x,
+			sub,
+		)
+	}
+}
+
+/*
+TestVariable_SubstituteAccordingTo1
+Description:
+
+	Tests that the SubstituteAccordingTo() method properly panics when called
+	on a variable that is not well-defined.
+*/
+func TestVariable_SubstituteAccordingTo1(t *testing.T) {
+	// Constants
+	var x symbolic.Variable
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("The code did not panic")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("The panic was not an error")
+		}
+
+		if !strings.Contains(rAsE.Error(), x.Check().Error()) {
+			t.Errorf("The panic was not due to a bad Variable")
+		}
+	}()
+	x.SubstituteAccordingTo(map[symbolic.Variable]symbolic.Expression{
+		x: x,
+	})
+}
+
+/*
+TestVariable_SubstituteAccordingTo2
+Description:
+
+	Tests that the SubstituteAccordingTo() method properly panics when called with a
+	map that contains a well-defined variable key and a value that is not well-defined.
+*/
+func TestVariable_SubstituteAccordingTo2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	var uninit symbolic.Variable
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("The code did not panic")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("The panic was not an error")
+		}
+
+		if !strings.Contains(rAsE.Error(), uninit.Check().Error()) {
+			t.Errorf("The panic was not due to a bad Variable")
+		}
+	}()
+	x.SubstituteAccordingTo(map[symbolic.Variable]symbolic.Expression{
+		x: uninit,
+	})
+}
+
+/*
+TestVariable_SubstituteAccordingTo3
+Description:
+
+	Tests that the SubstituteAccordingTo() method properly returns a temporary
+	expression (a unique variable) when the input map contains a key that is
+	the same as the input variable (the receiver).
+*/
+func TestVariable_SubstituteAccordingTo3(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+
+	// Test
+	sub := x.SubstituteAccordingTo(map[symbolic.Variable]symbolic.Expression{
+		x: y,
+	})
+
+	subAsV, tf := sub.(symbolic.Variable)
+	if !tf {
+		t.Errorf(
+			"expected %v.sub(%v, %v) to be a variable; received %T",
+			x,
+			x,
+			y,
+			sub,
+		)
+	}
+
+	if subAsV.ID != y.ID {
+		t.Errorf(
+			"expected %v.sub(%v, %v) to be a unique variable; received %v",
+			x,
+			x,
+			y,
+			sub,
+		)
+	}
+}
+
+/*
+TestVariable_SubstituteAccordingTo4
+Description:
+
+	Tests that the SubstituteAccordingTo() method properly returns a the same variable
+	when the input map DOES NOT contain a key that is
+	the same as the input variable (the receiver).
+*/
+func TestVariable_SubstituteAccordingTo4(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+
+	// Test
+	sub := x.SubstituteAccordingTo(map[symbolic.Variable]symbolic.Expression{
+		y: x,
+	})
+
+	subAsV, tf := sub.(symbolic.Variable)
+	if !tf {
+		t.Errorf(
+			"expected %v.sub(%v, %v) to be a variable; received %T",
+			x,
+			x,
+			y,
+			sub,
+		)
+	}
+
+	if subAsV.ID != x.ID {
+		t.Errorf(
+			"expected %v.sub(%v, %v) to be a unique variable; received %v",
+			x,
+			x,
+			y,
+			sub,
+		)
+	}
+}
+
+/*
+TestVariable_Power1
+Description:
+
+	Tests that the variable correctly becomes a monomial when raised to a power
+	greater than 1.
+*/
+func TestVariable_Power1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Test
+	pow := x.Power(3)
+	mon, tf := pow.(symbolic.Monomial)
+	if !tf {
+		t.Errorf(
+			"expected %v^3 to be a monomial; received %T",
+			x,
+			pow,
+		)
+	}
+
+	if mon.Exponents[0] != 3 {
+		t.Errorf(
+			"expected %v^3 to have an exponent of 3; received %v",
+			x,
+			mon.Exponents[0],
+		)
+	}
+
+	if mon.Coefficient != 1.0 {
+		t.Errorf(
+			"expected %v^3 to have a coefficient of 1.0; received %v",
+			x,
+			mon.Coefficient,
 		)
 	}
 }

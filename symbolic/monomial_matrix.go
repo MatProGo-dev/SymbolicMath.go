@@ -251,16 +251,6 @@ func (mm MonomialMatrix) Minus(e interface{}) Expression {
 		return Minus(mm, eAsE)
 	}
 
-	// Constants
-	switch right := e.(type) {
-	case float64:
-		return mm.Minus(K(right))
-	case mat.Dense:
-		return mm.Minus(DenseToKMatrix(right))
-	case *mat.Dense:
-		return mm.Minus(DenseToKMatrix(*right))
-	}
-
 	// If we've gotten this far, the input is not recognized
 	panic(
 		smErrors.UnsupportedInputError{
@@ -515,30 +505,19 @@ func (mm MonomialMatrix) DerivativeWrt(vIn Variable) Expression {
 	}
 
 	// Compute the Derivative of each monomial
-	var dmm MonomialMatrix
+	var dmm [][]ScalarExpression
 	for _, row := range mm {
-		var dmmRow []Monomial
+		var dmmRow []ScalarExpression
 		for _, monomial := range row {
 			dMonomial := monomial.DerivativeWrt(vIn)
-			var dMonomialAsMonomial Monomial
-			switch dMonomial.(type) {
-			case Monomial:
-				dMonomialAsMonomial = dMonomial.(Monomial)
-			case K:
-				dMonomialAsMonomial = dMonomial.(K).ToMonomial()
-			default:
-				panic(
-					fmt.Errorf("unexpected type of derivative: %T (%v)", dMonomial, dMonomial),
-				)
-			}
-			// Add the converted dMonomial to dmmRow
-			dmmRow = append(dmmRow, dMonomialAsMonomial)
+			dMonomialAsSE, _ := ToScalarExpression(dMonomial)
+			dmmRow = append(dmmRow, dMonomialAsSE) // Add the converted dMonomial to dmmRow
 		}
 		dmm = append(dmm, dmmRow)
 	}
 
 	// Return the derivative
-	return dmm
+	return ConcretizeMatrixExpression(dmm)
 }
 
 /*
@@ -648,4 +627,51 @@ func (mm MonomialMatrix) Degree() int {
 
 	// Return
 	return maxDegree
+}
+
+/*
+Substitute
+Description:
+
+	Substitutes the variable v with the expression e in the monomial matrix.
+*/
+func (mm MonomialMatrix) Substitute(v Variable, se ScalarExpression) Expression {
+	return MatrixSubstituteTemplate(mm, v, se)
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes the variables in the monomial matrix according to the map provided in substitutions.
+*/
+func (mm MonomialMatrix) SubstituteAccordingTo(substitutions map[Variable]Expression) Expression {
+	// Input Processing
+	err := mm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = CheckSubstitutionMap(substitutions)
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	var out MatrixExpression = mm
+	for v, expr := range substitutions {
+		postSub := out.Substitute(v, expr.(ScalarExpression))
+		out = postSub.(MatrixExpression)
+	}
+	return out
+}
+
+/*
+Power
+Description:
+
+	Returns the monomial matrix raised to the power of the input integer.
+*/
+func (mm MonomialMatrix) Power(exponent int) Expression {
+	return MatrixPowerTemplate(mm, exponent)
 }

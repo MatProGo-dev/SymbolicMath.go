@@ -11,6 +11,7 @@ import (
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -1456,6 +1457,155 @@ func TestPolynomial_Multiply6(t *testing.T) {
 }
 
 /*
+TestPolynomial_Multiply7
+Description:
+
+	Verifies that the Polynomial.Multiply properly panics when the input polynomial is not well-defined.
+*/
+func TestPolynomial_Multiply7(t *testing.T) {
+	// Setup
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Multiply to panic when called with an invalid polynomial; received nil",
+			)
+		}
+
+		rAsE := r.(error)
+		if rAsE.Error() != p1.Check().Error() {
+			t.Errorf(
+				"expected Multiply to panic with error %v; received %v",
+				p1.Check(),
+				rAsE,
+			)
+		}
+	}()
+
+	// Call the Multiply method
+	p1.Multiply(p1)
+}
+
+/*
+TestPolynomial_Multiply8
+Description:
+
+	Verifies that the Polynomial.Multiply method returns the correct output
+	when called with a well-defined polynomial and a well-defined constant matrix.
+	The resulting polynomial should be a polynomial matrix.
+*/
+func TestPolynomial_Multiply8(t *testing.T) {
+	// Setup
+	p1 := symbolic.NewVariable().ToPolynomial()
+	km1 := getKMatrix.From([][]float64{
+		{3.14, 2.71},
+		{1.0, 0.0},
+	})
+
+	// Test
+	prod := p1.Multiply(km1)
+
+	// Verify that the product is a polynomial matrix
+	prodAsPM, tf := prod.(symbolic.PolynomialMatrix)
+	if !tf {
+		t.Errorf(
+			"expected %v * %v to return a polynomial matrix; received %T",
+			p1,
+			km1,
+			prod,
+		)
+	}
+
+	// Verify that the coefficients of the product are correct
+	for ii, pRow := range prodAsPM {
+		for jj, p := range pRow {
+			if len(p.Monomials) != 1 {
+				t.Errorf(
+					"expected %v * %v to have 1 monomial; received %v",
+					p1,
+					km1,
+					len(p.Monomials),
+				)
+			}
+
+			if prodAsPM[ii][jj].Monomials[0].Coefficient != float64(km1.At(ii, jj).(symbolic.K)) {
+				t.Errorf(
+					"expected %v * %v to have coefficient %v; received %v",
+					p1,
+					km1,
+					km1.At(ii, jj),
+					prodAsPM[ii][jj].Monomials[0].Coefficient,
+				)
+			}
+
+		}
+	}
+}
+
+/*
+TestPolynomial_Transpose1
+Description:
+
+	Verifies that the output of the transpose of a polynomial
+	is the same as the original polynomial when the polynomial
+	is well-defined.
+*/
+func TestPolynomial_Transpose1(t *testing.T) {
+	// Setup
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	pT := p1.Transpose()
+
+	// Verify that the transpose is the same as the original
+	if !reflect.DeepEqual(p1, pT) {
+		t.Errorf(
+			"expected %v^T to be %v; received %v",
+			p1,
+			p1,
+			pT,
+		)
+
+	}
+}
+
+/*
+TestPolynomial_Transpose2
+Description:
+
+	Verifies that the Transpose() method properly panics when the polynomial is not well-defined.
+*/
+func TestPolynomial_Transpose2(t *testing.T) {
+	// Setup
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Transpose to panic when called with an invalid polynomial; received nil",
+			)
+		}
+
+		rAsE := r.(error)
+		if rAsE.Error() != p1.Check().Error() {
+			t.Errorf(
+				"expected Transpose to panic with error %v; received %v",
+				p1.Check(),
+				rAsE,
+			)
+		}
+	}()
+
+	// Call the Transpose method
+	p1.Transpose()
+}
+
+/*
 TestPolynomial_LessEq1
 Description:
 
@@ -1667,6 +1817,198 @@ func TestPolynomial_Constant1(t *testing.T) {
 }
 
 /*
+TestPolynomial_Constant2
+Description:
+
+	Verifies that the Polynomial.Constant method panics when called on a polynomial
+	that is not well-defined.
+*/
+func TestPolynomial_Constant2(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Constant to panic when called with an invalid polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the Constant method
+	p1.Constant()
+}
+
+/*
+TestPolynomial_Simplify1
+Description:
+
+	Verifies that the Polynomial.Simplify method panics when called with a polynomial
+	that is not well-defined.
+*/
+func TestPolynomial_Simplify1(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Simplify to panic when called with an invalid polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the Simplify method
+	p1.Simplify()
+}
+
+/*
+TestPolynomial_Simplify2
+Description:
+
+	Verifies that the Polynomial.Simplify method returns the same polynomial,
+	when the polynomial contains one monomial with a coefficient of 0.
+*/
+func TestPolynomial_Simplify2(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{Coefficient: 0, VariableFactors: []symbolic.Variable{}, Exponents: []int{}},
+		},
+	}
+
+	// Test
+	simp := p1.Simplify()
+	if !reflect.DeepEqual(p1, simp) {
+		t.Errorf(
+			"expected %v to simplify to %v; received %v",
+			p1,
+			p1,
+			simp,
+		)
+	}
+}
+
+/*
+TestPolynomial_DerivativeWrt1
+Description:
+
+	Verifies that the Polynomial.DerivativeWrt method panics when called with a polynomial
+	that is not well-defined.
+*/
+func TestPolynomial_DerivativeWrt1(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected DerivativeWrt to panic when called with an invalid polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the DerivativeWrt method
+	p1.DerivativeWrt(symbolic.NewVariable())
+}
+
+/*
+TestPolynomial_DerivativeWrt2
+Description:
+
+	Verifies that the Polynomial.DerivativeWrt method panics when the polynomial
+	is well-defined, but the variable wrt is not well-defined.
+*/
+func TestPolynomial_DerivativeWrt2(t *testing.T) {
+	// Constants
+	p1 := symbolic.NewVariable().ToPolynomial()
+	v1 := symbolic.Variable{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected DerivativeWrt to panic when called with an invalid variable; received nil",
+			)
+		}
+
+		rAsE := r.(error)
+		if rAsE.Error() != v1.Check().Error() {
+
+		}
+	}()
+
+	// Call the DerivativeWrt method
+	p1.DerivativeWrt(v1)
+}
+
+/*
+TestPolynomial_DerivativeWrt3
+Description:
+
+	Verifies that the Polynomial.DerivativeWrt method returns the correct output
+	of 0 when the well-defined polynomial contains variables and the wrt variable
+	is not in the polynomial.
+*/
+func TestPolynomial_DerivativeWrt3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v1}, Exponents: []int{1}},
+			symbolic.Monomial{Coefficient: 2, VariableFactors: []symbolic.Variable{v2}, Exponents: []int{2}},
+		},
+	}
+
+	// Test
+	derivative := p1.DerivativeWrt(symbolic.NewVariable())
+	expected := symbolic.K(0.0)
+	if !reflect.DeepEqual(expected, derivative) {
+		t.Errorf(
+			"expected %v.derivative(%v) to be %v; received %v",
+			p1,
+			symbolic.NewVariable(),
+			expected,
+			derivative,
+		)
+	}
+}
+
+/*
+TestPolynomial_Degree1
+Description:
+
+	Verifies that the Polynomial.Degree method panics when called with a polynomial
+	that is not well-defined.
+*/
+func TestPolynomial_Degree1(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Degree to panic when called with an invalid polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the Degree method
+	p1.Degree()
+}
+
+/*
 TestPolynomial_IsLinear1
 Description:
 
@@ -1695,4 +2037,169 @@ func TestPolynomial_IsLinear1(t *testing.T) {
 			symbolic.IsLinear(p1),
 		)
 	}
+}
+
+/*
+TestPolynomial_IsConstant1
+Description:
+
+	Verifies that the Polynomial.IsConstant method panics when called with a polynomial
+	that is not well-defined.
+*/
+func TestPolynomial_IsConstant1(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected IsConstant to panic when called with an invalid polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the IsConstant method
+	p1.IsConstant()
+}
+
+/*
+TestPolynomial_IsConstant2
+Description:
+
+	Verifies that the Polynomial.IsConstant method returns true
+	when called with a polynomial that is a constant (i.e., only contains one monomial that has just a coefficient).
+*/
+func TestPolynomial_IsConstant2(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{Coefficient: 3.14, VariableFactors: []symbolic.Variable{}, Exponents: []int{}},
+		},
+	}
+
+	// Test
+	if !p1.IsConstant() {
+		t.Errorf(
+			"expected %v to be constant; received %v",
+			p1,
+			p1.IsConstant(),
+		)
+	}
+}
+
+/*
+TestPolynomial_String1
+Description:
+
+	Verifies that the Polynomial.String method panics when called with a polynomial
+	that is not well-defined.
+*/
+func TestPolynomial_String1(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected String to panic when called with an invalid polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the String method
+	p1.String()
+}
+
+/*
+TestPolynomial_Substitute1
+Description:
+
+	Verifies that the Polynomial.Substitute method panics when called with a polynomial
+	that is not well-defined.
+*/
+func TestPolynomial_Substitute1(t *testing.T) {
+	// Constants
+	p1 := symbolic.Polynomial{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Substitute to panic when called with an invalid polynomial; received nil",
+			)
+		}
+	}()
+
+	// Call the Substitute method
+	p1.Substitute(symbolic.NewVariable(), symbolic.NewVariable())
+}
+
+/*
+TestPolynomial_Substitute2
+Description:
+
+	Verifies that the Polynomial.Substitute method returns the correct output
+	when called with a well-defined polynomial, a well-defined variable and a well-defined expression to use for substitution.
+*/
+func TestPolynomial_Substitute2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	p1 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			symbolic.Monomial{Coefficient: 1, VariableFactors: []symbolic.Variable{v1}, Exponents: []int{1}},
+		},
+	}
+
+	// Test
+	sub := p1.Substitute(v1, v2.Multiply(3.0).(symbolic.ScalarExpression))
+	if sub.(symbolic.Polynomial).Monomials[0].Coefficient != 3.0 {
+		t.Errorf(
+			"expected %v.substitute(%v, %v) to have coefficient 3.0; received %v",
+			p1,
+			v1,
+			v2.Multiply(3.0),
+			sub.(symbolic.Polynomial).Monomials[0].Coefficient,
+		)
+	}
+}
+
+/*
+TestPolynomial_Substitute3
+Description:
+
+	Verifies that the Polynomial.Substitute method panics when the variable used for substitution
+	is not well-defiend, but the polynomial is well-defined.
+*/
+func TestPolynomial_Substitute3(t *testing.T) {
+	// Constants
+	v1 := symbolic.Variable{}
+	p1 := symbolic.NewVariable().ToPolynomial()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected Substitute to panic when called with an invalid variable; received nil",
+			)
+		}
+
+		rAsE := r.(error)
+		if rAsE.Error() != v1.Check().Error() {
+			t.Errorf(
+				"expected Substitute to panic with error %v; received %v",
+				v1.Check(),
+				rAsE,
+			)
+		}
+	}()
+
+	// Call the Substitute method
+	p1.Substitute(v1, symbolic.NewVariable())
 }
