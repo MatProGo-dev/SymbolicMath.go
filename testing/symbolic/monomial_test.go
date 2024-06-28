@@ -1460,8 +1460,8 @@ func TestMonomial_DerivativeWrt2(t *testing.T) {
 	// Compute DerivativeWrt
 	derivative := m1.DerivativeWrt(v1)
 
-	// Verify that the derivative is a monomial
-	derivativeAsM, tf := derivative.(symbolic.Monomial)
+	// Verify that the derivative is a constant (K)
+	derivativeAsK, tf := derivative.(symbolic.K)
 	if !tf {
 		t.Errorf(
 			"expected derivative to be a monomial; received %T",
@@ -1470,10 +1470,10 @@ func TestMonomial_DerivativeWrt2(t *testing.T) {
 	}
 
 	// Verify that the derivative is a constant
-	if derivativeAsM.Coefficient != 3.14 {
+	if float64(derivativeAsK) != 3.14 {
 		t.Errorf(
 			"expected derivative to be a constant; received %v",
-			derivativeAsM.Coefficient,
+			derivativeAsK,
 		)
 	}
 }

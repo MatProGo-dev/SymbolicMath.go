@@ -1626,7 +1626,7 @@ func TestMonomialVector_Derivative3(t *testing.T) {
 	derivative := mv.DerivativeWrt(v1)
 
 	// Verify that the derivative is a K vector
-	if _, tf := derivative.(symbolic.MonomialVector); !tf {
+	if _, tf := derivative.(symbolic.KVector); !tf {
 		t.Errorf(
 			"expected derivative to be a MonomialVector; received %T",
 			derivative,
@@ -1635,20 +1635,12 @@ func TestMonomialVector_Derivative3(t *testing.T) {
 
 	// Verify that each element of the derivative is just the coefficient
 	// from the original monomial vector mv
-	for ii, monomial := range derivative.(symbolic.MonomialVector) {
-		// Check that the monomial is a constant
-		if !monomial.IsConstant() {
-			t.Errorf(
-				"expected monomial to be a constant; received %v",
-				monomial,
-			)
-		}
-
-		if monomial.Coefficient != mv[ii].Coefficient {
+	for ii, d_ii := range derivative.(symbolic.KVector) {
+		if float64(d_ii) != mv[ii].Coefficient {
 			t.Errorf(
 				"expected constant to be %v; received %v",
 				mv[ii].Coefficient,
-				monomial.Coefficient,
+				float64(d_ii),
 			)
 		}
 	}
@@ -1683,7 +1675,7 @@ func TestMonomialVector_Derivative4(t *testing.T) {
 	derivative := mv.DerivativeWrt(v1)
 
 	// Verify that the derivative is a K vector
-	d_v1, tf := derivative.(symbolic.MonomialVector)
+	d_v1, tf := derivative.(symbolic.KVector)
 	if !tf {
 		t.Errorf(
 			"expected derivative to be a MonomialVector; received %T",
@@ -1692,32 +1684,18 @@ func TestMonomialVector_Derivative4(t *testing.T) {
 	}
 
 	// Verify that the first element of the derivative is a constant and nonzero
-	if !d_v1[0].IsConstant() {
+	if float64(d_v1[0]) != 3.14 {
 		t.Errorf(
-			"expected derivative[0] to be a constant; received %v",
+			"expected derivative[0].Coefficient to be 3.14; received %v",
 			d_v1[0],
 		)
 	}
 
-	if d_v1[0].Coefficient != 3.14 {
-		t.Errorf(
-			"expected derivative[0].Coefficient to be 3.14; received %v",
-			d_v1[0].Coefficient,
-		)
-	}
-
 	// Verify that the second element of the derivative is a constant and zero
-	if !d_v1[1].IsConstant() {
-		t.Errorf(
-			"expected derivative[1] to be a constant; received %v",
-			d_v1[1],
-		)
-	}
-
-	if d_v1[1].Coefficient != 0 {
+	if float64(d_v1[1]) != 0 {
 		t.Errorf(
 			"expected derivative[1].Coefficient to be 0; received %v",
-			d_v1[1].Coefficient,
+			d_v1[1],
 		)
 	}
 

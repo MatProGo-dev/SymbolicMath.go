@@ -543,7 +543,11 @@ func (m Monomial) DerivativeWrt(vIn Variable) Expression {
 		// monomial.
 		var monomialOut Monomial
 
-		if m.Exponents[foundIndex] == 1 {
+		switch {
+		case (m.Exponents[foundIndex] == 1) && (len(m.VariableFactors) == 1):
+			// Return the exponent
+			return K(m.Coefficient)
+		case m.Exponents[foundIndex] == 1:
 			// If the degree of vIn is 1, then remove it from the monomial
 			monomialOut.Coefficient = m.Coefficient
 			for ii, variable := range m.VariableFactors {
@@ -552,7 +556,7 @@ func (m Monomial) DerivativeWrt(vIn Variable) Expression {
 					monomialOut.Exponents = append(monomialOut.Exponents, m.Exponents[ii])
 				}
 			}
-		} else {
+		default:
 			monomialOut = m
 			monomialOut.Coefficient = m.Coefficient * float64(m.Exponents[foundIndex])
 			monomialOut.Exponents[foundIndex] -= 1

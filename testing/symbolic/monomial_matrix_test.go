@@ -1635,6 +1635,175 @@ func TestMonomialMatrix_Eq2(t *testing.T) {
 }
 
 /*
+TestMonomialMatrix_DerivativeWrt1
+Description:
+
+	This test checks that the DerivativeWrt() method properly panics when it is called
+	with a monomial matrix that is not well formed.
+*/
+func TestMonomialMatrix_DerivativeWrt1(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected DerivativeWrt() to panic; it did not",
+			)
+		}
+
+		rAsE, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected DerivativeWrt() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		expectedError := mm.Check()
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"expected DerivativeWrt() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				rAsE,
+			)
+		}
+	}()
+	mm.DerivativeWrt(symbolic.NewVariable())
+}
+
+/*
+TestMonomialMatrix_DerivativeWrt2
+Description:
+
+	This test checks that the DerivativeWrt() method properly panics when it is called
+	with a monomial matrix that is well-formed and a variable that is not well-defined.
+*/
+func TestMonomialMatrix_DerivativeWrt2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	badV := symbolic.Variable{}
+	m1 := v1.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1},
+		{m1, m1},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"expected DerivativeWrt() to panic; it did not",
+			)
+		}
+
+		rAsE, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"expected DerivativeWrt() to panic with an error; it panicked with %v",
+				r,
+			)
+		}
+
+		expectedError := badV.Check()
+		if !strings.Contains(rAsE.Error(), expectedError.Error()) {
+			t.Errorf(
+				"expected DerivativeWrt() to panic with error \"%v\"; it panicked with \"%v\"",
+				expectedError,
+				rAsE,
+			)
+		}
+	}()
+
+	mm.DerivativeWrt(badV)
+}
+
+/*
+TestMonomialMatrix_DerivativeWrt3
+Description:
+
+	This test checks that the DerivativeWrt() method properly returns a matrix of
+	monomials that are the derivatives of the original monomials with respect to
+	the given variable.
+*/
+func TestMonomialMatrix_DerivativeWrt3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	m2 := v2.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m2},
+		{m1, m2},
+	}
+
+	// Test
+	derivatives := mm.DerivativeWrt(v1)
+
+	// Check that the dimensions of the derivatives are (2,2)
+	if dims := derivatives.Dims(); dims[0] != 2 || dims[1] != 2 {
+		t.Errorf(
+			"expected DerivativeWrt() to return a MonomialMatrix with dimensions (2,2); received %v",
+			dims,
+		)
+	}
+
+	dAsMM, ok := derivatives.(symbolic.KMatrix)
+	if !ok {
+		t.Errorf(
+			"expected DerivativeWrt() to return a MonomialMatrix; received %T",
+			derivatives,
+		)
+
+	}
+
+	// Check that the derivatives are correct
+	for ii, row := range dAsMM {
+		for jj, derivative := range row {
+			// Check that the derivative is the correct monomial
+			if ii == 0 {
+				if jj == 0 {
+					if float64(derivative) != 1.0 {
+						t.Errorf(
+							"expected DerivativeWrt() to return a MonomialMatrix with derivative %v at (0,0); received %v",
+							1.0,
+							derivative,
+						)
+					}
+				} else {
+					if float64(derivative) != 0.0 {
+						t.Errorf(
+							"expected DerivativeWrt() to return a MonomialMatrix with derivative 0.0 at (0,1); received %v",
+							derivative,
+						)
+					}
+				}
+			} else {
+				if jj == 0 {
+					if float64(derivative) != 1.0 {
+						t.Errorf(
+							"expected DerivativeWrt() to return a MonomialMatrix with derivative %v at (1,1); received %v",
+							1.0,
+							derivative,
+						)
+					}
+				} else {
+					if float64(derivative) != 0.0 {
+						t.Errorf(
+							"expected DerivativeWrt() to return a MonomialMatrix with derivative 0.0 at (1,0); received %v",
+							derivative,
+						)
+					}
+				}
+			}
+		}
+	}
+}
+
+/*
 TestMonomialMatrix_Transpose2
 Description:
 

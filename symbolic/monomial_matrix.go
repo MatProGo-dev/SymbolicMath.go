@@ -505,30 +505,19 @@ func (mm MonomialMatrix) DerivativeWrt(vIn Variable) Expression {
 	}
 
 	// Compute the Derivative of each monomial
-	var dmm MonomialMatrix
+	var dmm [][]ScalarExpression
 	for _, row := range mm {
-		var dmmRow []Monomial
+		var dmmRow []ScalarExpression
 		for _, monomial := range row {
 			dMonomial := monomial.DerivativeWrt(vIn)
-			var dMonomialAsMonomial Monomial
-			switch dMonomial.(type) {
-			case Monomial:
-				dMonomialAsMonomial = dMonomial.(Monomial)
-			case K:
-				dMonomialAsMonomial = dMonomial.(K).ToMonomial()
-			default:
-				panic(
-					fmt.Errorf("unexpected type of derivative: %T (%v)", dMonomial, dMonomial),
-				)
-			}
-			// Add the converted dMonomial to dmmRow
-			dmmRow = append(dmmRow, dMonomialAsMonomial)
+			dMonomialAsSE, _ := ToScalarExpression(dMonomial)
+			dmmRow = append(dmmRow, dMonomialAsSE) // Add the converted dMonomial to dmmRow
 		}
 		dmm = append(dmm, dmmRow)
 	}
 
 	// Return the derivative
-	return dmm
+	return ConcretizeMatrixExpression(dmm)
 }
 
 /*
