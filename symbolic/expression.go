@@ -277,5 +277,55 @@ func VStack(eIn ...Expression) Expression {
 	}
 
 	// Return the simplified form of the expression
-	return ConcretizeMatrixExpression(result)
+	return ConcretizeExpression(result)
+}
+
+/*
+ConcretizeExpression
+Description:
+
+	Converts the input expression to a valid type that implements "Expression".
+*/
+func ConcretizeExpression(e interface{}) Expression {
+	// Input Processing
+
+	// Convert
+	var (
+		concrete Expression
+	)
+	switch e.(type) {
+	case []ScalarExpression:
+		concreteVectorE := ConcretizeVectorExpression(e.([]ScalarExpression))
+		// If vector expression is a scalar (i.e., has 1 row), return the scalar expression
+		if concreteVectorE.Dims()[0] == 1 {
+			concrete = concreteVectorE.At(0, 0)
+		} else {
+			concrete = concreteVectorE
+		}
+
+	case [][]ScalarExpression:
+		concreteMatrixE := ConcretizeMatrixExpression(e.([][]ScalarExpression))
+		// If matrix expression is a scalar (i.e., has 1 row and 1 column), return the scalar expression
+		switch {
+		case concreteMatrixE.Dims()[0] == 1 && concreteMatrixE.Dims()[1] == 1: // If the matrix is a scalar
+			concrete = concreteMatrixE.At(0, 0)
+		case concreteMatrixE.Dims()[1] == 1: // If the matrix is a column vector
+			interm := make([]ScalarExpression, concreteMatrixE.Dims()[0])
+			for ii := 0; ii < concreteMatrixE.Dims()[0]; ii++ {
+				interm[ii] = concreteMatrixE.At(ii, 0)
+			}
+			concrete = ConcretizeVectorExpression(interm)
+		default:
+			concrete = concreteMatrixE
+		}
+	default:
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "ConcretizeExpression",
+				Input:        e,
+			},
+		)
+	}
+
+	return concrete
 }
