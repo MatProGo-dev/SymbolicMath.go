@@ -125,3 +125,37 @@ func CheckDimensionsInMultiplication(left, right MatrixLike) error {
 	// If dimensions match, then return nothing.
 	return nil
 }
+
+/*
+CheckDimensionsInHStack
+Description:
+
+	This function checks that the dimensions of the left and right expressions
+	are compatible for horizontal stacking.
+	We allow:
+	- Stacking if the number of rows match
+*/
+func CheckDimensionsInHStack(sliceToStack ...MatrixLike) error {
+	// Check that the size of columns in left and right agree
+	var nRowsInSlice []int
+	for _, slice := range sliceToStack {
+		nRowsInSlice = append(nRowsInSlice, slice.Dims()[0])
+	}
+
+	// Check that the number of rows in each slice is the same
+	for ii := 1; ii < len(nRowsInSlice); ii++ {
+		// If the number of rows in the slice is not the same as the previous slice,
+		// then return an error
+		dimsAreMatched := nRowsInSlice[ii] == nRowsInSlice[ii-1]
+		if !dimsAreMatched {
+			return DimensionError{
+				Operation: "HStack",
+				Arg1:      sliceToStack[ii-1],
+				Arg2:      sliceToStack[ii],
+			}
+		}
+	}
+
+	// If dimensions match, then return nothing.
+	return nil
+}

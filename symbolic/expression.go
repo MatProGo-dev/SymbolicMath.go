@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
-	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 )
 
 /*
@@ -225,8 +224,10 @@ func HStack(eIn ...Expression) Expression {
 				tempRow = append(tempRow, eIn[stackIndex_ii].At(rowIndex, colIndex))
 			}
 		}
+		// Add the row to the result
+		result = append(result, tempRow)
 	}
 
 	// Return the simplified form of the expression
-	return symbolic.ConcretizeMatrixExpression(result)
+	return ConcretizeMatrixExpression(result)
 }
