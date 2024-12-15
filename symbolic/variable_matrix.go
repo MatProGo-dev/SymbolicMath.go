@@ -91,9 +91,7 @@ func (vm VariableMatrix) Variables() []Variable {
 	// Algorithm
 	var variables []Variable
 	for _, vmRow := range vm {
-		for _, v := range vmRow {
-			variables = append(variables, v)
-		}
+		variables = append(variables, vmRow...) // Unrolls all of vmRow and appends it to variables
 	}
 
 	return UniqueVars(variables)
@@ -629,7 +627,7 @@ func NewVariableMatrixClassic(nRows, nCols int, envs ...*Environment) VariableMa
 		env = envs[0]
 	default:
 		panic(
-			fmt.Errorf("Too many inputs provided to NewVariableMatrix() method."),
+			fmt.Errorf("Too many inputs provided to NewVariableMatrix() method"),
 		)
 	}
 

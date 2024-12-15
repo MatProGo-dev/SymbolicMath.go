@@ -217,15 +217,63 @@ func HStack(eIn ...Expression) Expression {
 	var result [][]ScalarExpression
 	for rowIndex := 0; rowIndex < eIn[0].Dims()[0]; rowIndex++ {
 		var tempRow []ScalarExpression
-		for stackIndex_ii := 0; stackIndex_ii < len(eIn); stackIndex_ii++ {
-			nCols_ii := nCols[stackIndex_ii]
+		for stackIndexII := 0; stackIndexII < len(eIn); stackIndexII++ {
+			nCols_ii := nCols[stackIndexII]
 			// Add all of the columns from the current expression to the row
 			for colIndex := 0; colIndex < nCols_ii; colIndex++ {
-				tempRow = append(tempRow, eIn[stackIndex_ii].At(rowIndex, colIndex))
+				tempRow = append(tempRow, eIn[stackIndexII].At(rowIndex, colIndex))
 			}
 		}
 		// Add the row to the result
 		result = append(result, tempRow)
+	}
+
+	// Return the simplified form of the expression
+	return ConcretizeMatrixExpression(result)
+}
+
+/*
+VStack
+Description:
+
+	Stacks the input expressions vertically.
+*/
+func VStack(eIn ...Expression) Expression {
+	// Input Checking
+
+	// Panic if there are 0 expressions in the input
+	if len(eIn) == 0 {
+		panic(
+			fmt.Errorf("VStack: There must be at least one expression in the input; received 0"),
+		)
+	}
+
+	// Check that all the expressions have the same number of columns
+	var mlSlice []smErrors.MatrixLike // First convert expression slice to matrix like slice
+	for _, e := range eIn {
+		mlSlice = append(mlSlice, e)
+	}
+
+	err := smErrors.CheckDimensionsInVStack(mlSlice...)
+	if err != nil {
+		panic(err)
+	}
+
+	// Setup
+
+	// Create the resulting Matrix's shape
+	var result [][]ScalarExpression
+	for stackIndexII := 0; stackIndexII < len(eIn); stackIndexII++ {
+		// Each row will be made from the rows of the current expression
+		eII := eIn[stackIndexII]
+		for rowIndex := 0; rowIndex < eII.Dims()[0]; rowIndex++ {
+			var tempRow []ScalarExpression
+			for colIndex := 0; colIndex < eII.Dims()[1]; colIndex++ {
+				tempRow = append(tempRow, eII.At(rowIndex, colIndex))
+			}
+			// Add the row to the result
+			result = append(result, tempRow)
+		}
 	}
 
 	// Return the simplified form of the expression
