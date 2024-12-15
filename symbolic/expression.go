@@ -229,7 +229,7 @@ func HStack(eIn ...Expression) Expression {
 	}
 
 	// Return the simplified form of the expression
-	return ConcretizeMatrixExpression(result)
+	return ConcretizeExpression(result)
 }
 
 /*
