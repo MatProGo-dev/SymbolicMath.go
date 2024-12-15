@@ -398,7 +398,7 @@ func (m Monomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	}
 
 	if len(wrtVars) == 0 {
-		panic(smErrors.CanNotGetLinearCoeffOfConstantError{m})
+		panic(smErrors.CanNotGetLinearCoeffOfConstantError{Expression: m})
 	}
 
 	// Algorithm

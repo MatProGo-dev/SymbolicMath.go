@@ -702,7 +702,7 @@ func (p Polynomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 
 	// If there are no variables in the slice, then return a vector of length 1 containing zero.
 	if len(wrtVars) == 0 {
-		panic(smErrors.CanNotGetLinearCoeffOfConstantError{p})
+		panic(smErrors.CanNotGetLinearCoeffOfConstantError{Expression: p})
 	}
 
 	// Algorithm

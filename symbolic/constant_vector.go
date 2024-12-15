@@ -75,7 +75,7 @@ func (kv KVector) AtVec(idx int) ScalarExpression {
 	// Input Processing
 
 	// Check to see whether or not the index is valid.
-	err := smErrors.CheckIndexOnMatrix(idx, 0, mc)
+	err := smErrors.CheckIndexOnMatrix(idx, 0, kv)
 	if err != nil {
 		panic(err)
 	}

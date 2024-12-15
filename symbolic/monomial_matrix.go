@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -35,7 +36,7 @@ Description:
 func (mm MonomialMatrix) Check() error {
 	// Check that the matrix has at least one row
 	if len(mm) == 0 {
-		return smErrors.EmptyMatrixError{mm}
+		return smErrors.EmptyMatrixError{Expression: mm}
 	}
 
 	// Check that the number of columns is the same in each row

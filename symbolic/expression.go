@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
-	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 )
 
 /*
@@ -70,7 +69,7 @@ type Expression interface {
 	Power(exponent int) Expression
 
 	// At returns the value at the given row and column index
-	At(rowIndex, colIndex, nCols int) symbolic.ScalarExpression
+	At(ii, jj int) ScalarExpression
 }
 
 /*
@@ -215,18 +214,118 @@ func HStack(eIn ...Expression) Expression {
 	}
 
 	// Create the resulting Matrix's shape
-	var result [][]symbolic.ScalarExpression
+	var result [][]ScalarExpression
 	for rowIndex := 0; rowIndex < eIn[0].Dims()[0]; rowIndex++ {
-		var tempRow []symbolic.ScalarExpression
-		for stackIndex_ii := 0; stackIndex_ii < len(eIn); stackIndex_ii++ {
-			nCols_ii := nCols[stackIndex_ii]
+		var tempRow []ScalarExpression
+		for stackIndexII := 0; stackIndexII < len(eIn); stackIndexII++ {
+			nCols_ii := nCols[stackIndexII]
 			// Add all of the columns from the current expression to the row
 			for colIndex := 0; colIndex < nCols_ii; colIndex++ {
-				tempRow = append(tempRow, eIn[stackIndex_ii].At(rowIndex, colIndex, nCols_ii))
+				tempRow = append(tempRow, eIn[stackIndexII].At(rowIndex, colIndex))
 			}
+		}
+		// Add the row to the result
+		result = append(result, tempRow)
+	}
+
+	// Return the simplified form of the expression
+	return ConcretizeExpression(result)
+}
+
+/*
+VStack
+Description:
+
+	Stacks the input expressions vertically.
+*/
+func VStack(eIn ...Expression) Expression {
+	// Input Checking
+
+	// Panic if there are 0 expressions in the input
+	if len(eIn) == 0 {
+		panic(
+			fmt.Errorf("VStack: There must be at least one expression in the input; received 0"),
+		)
+	}
+
+	// Check that all the expressions have the same number of columns
+	var mlSlice []smErrors.MatrixLike // First convert expression slice to matrix like slice
+	for _, e := range eIn {
+		mlSlice = append(mlSlice, e)
+	}
+
+	err := smErrors.CheckDimensionsInVStack(mlSlice...)
+	if err != nil {
+		panic(err)
+	}
+
+	// Setup
+
+	// Create the resulting Matrix's shape
+	var result [][]ScalarExpression
+	for stackIndexII := 0; stackIndexII < len(eIn); stackIndexII++ {
+		// Each row will be made from the rows of the current expression
+		eII := eIn[stackIndexII]
+		for rowIndex := 0; rowIndex < eII.Dims()[0]; rowIndex++ {
+			var tempRow []ScalarExpression
+			for colIndex := 0; colIndex < eII.Dims()[1]; colIndex++ {
+				tempRow = append(tempRow, eII.At(rowIndex, colIndex))
+			}
+			// Add the row to the result
+			result = append(result, tempRow)
 		}
 	}
 
 	// Return the simplified form of the expression
-	return symbolic.ConcretizeMatrixExpression(result)
+	return ConcretizeExpression(result)
+}
+
+/*
+ConcretizeExpression
+Description:
+
+	Converts the input expression to a valid type that implements "Expression".
+*/
+func ConcretizeExpression(e interface{}) Expression {
+	// Input Processing
+
+	// Convert
+	var (
+		concrete Expression
+	)
+	switch e.(type) {
+	case []ScalarExpression:
+		concreteVectorE := ConcretizeVectorExpression(e.([]ScalarExpression))
+		// If vector expression is a scalar (i.e., has 1 row), return the scalar expression
+		if concreteVectorE.Dims()[0] == 1 {
+			concrete = concreteVectorE.At(0, 0)
+		} else {
+			concrete = concreteVectorE
+		}
+
+	case [][]ScalarExpression:
+		concreteMatrixE := ConcretizeMatrixExpression(e.([][]ScalarExpression))
+		// If matrix expression is a scalar (i.e., has 1 row and 1 column), return the scalar expression
+		switch {
+		case concreteMatrixE.Dims()[0] == 1 && concreteMatrixE.Dims()[1] == 1: // If the matrix is a scalar
+			concrete = concreteMatrixE.At(0, 0)
+		case concreteMatrixE.Dims()[1] == 1: // If the matrix is a column vector
+			interm := make([]ScalarExpression, concreteMatrixE.Dims()[0])
+			for ii := 0; ii < concreteMatrixE.Dims()[0]; ii++ {
+				interm[ii] = concreteMatrixE.At(ii, 0)
+			}
+			concrete = ConcretizeVectorExpression(interm)
+		default:
+			concrete = concreteMatrixE
+		}
+	default:
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "ConcretizeExpression",
+				Input:        e,
+			},
+		)
+	}
+
+	return concrete
 }

@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -353,7 +354,7 @@ func ConcretizeMatrixExpression(sliceIn [][]ScalarExpression) MatrixExpression {
 		return out
 
 	case isAllVariables:
-		// Convert to a variable vector
+		// Convert to a variable matrix
 		var out VariableMatrix
 		for _, row_ii := range sliceIn {
 			var tempRow []Variable

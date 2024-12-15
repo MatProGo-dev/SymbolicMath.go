@@ -60,7 +60,7 @@ func (v Variable) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	}
 
 	if len(wrtVars) == 0 {
-		panic(smErrors.CanNotGetLinearCoeffOfConstantError{v})
+		panic(smErrors.CanNotGetLinearCoeffOfConstantError{Expression: v})
 	}
 
 	// Constants
