@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -35,7 +36,7 @@ Description:
 func (pm PolynomialMatrix) Check() error {
 	// Check that the matrix has at least one row
 	if len(pm) == 0 {
-		return smErrors.EmptyMatrixError{pm}
+		return smErrors.EmptyMatrixError{Expression: pm}
 	}
 
 	// Check that the number of columns is the same in each row

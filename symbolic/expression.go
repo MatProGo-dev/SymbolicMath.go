@@ -70,7 +70,7 @@ type Expression interface {
 	Power(exponent int) Expression
 
 	// At returns the value at the given row and column index
-	At(rowIndex, colIndex, nCols int) symbolic.ScalarExpression
+	At(ii, jj int) ScalarExpression
 }
 
 /*
@@ -215,14 +215,14 @@ func HStack(eIn ...Expression) Expression {
 	}
 
 	// Create the resulting Matrix's shape
-	var result [][]symbolic.ScalarExpression
+	var result [][]ScalarExpression
 	for rowIndex := 0; rowIndex < eIn[0].Dims()[0]; rowIndex++ {
-		var tempRow []symbolic.ScalarExpression
+		var tempRow []ScalarExpression
 		for stackIndex_ii := 0; stackIndex_ii < len(eIn); stackIndex_ii++ {
 			nCols_ii := nCols[stackIndex_ii]
 			// Add all of the columns from the current expression to the row
 			for colIndex := 0; colIndex < nCols_ii; colIndex++ {
-				tempRow = append(tempRow, eIn[stackIndex_ii].At(rowIndex, colIndex, nCols_ii))
+				tempRow = append(tempRow, eIn[stackIndex_ii].At(rowIndex, colIndex))
 			}
 		}
 	}

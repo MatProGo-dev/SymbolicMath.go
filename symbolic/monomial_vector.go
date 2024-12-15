@@ -31,7 +31,7 @@ Description:
 func (mv MonomialVector) Check() error {
 	// Check that the polynomial has at least one monomial
 	if len(mv) == 0 {
-		return smErrors.EmptyVectorError{mv}
+		return smErrors.EmptyVectorError{Expression: mv}
 	}
 
 	// Check that each of the monomials are well formed
