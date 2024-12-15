@@ -1,7 +1,10 @@
 package symbolic
 
 import (
+	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 )
 
 /*
@@ -65,6 +68,9 @@ type Expression interface {
 	// Power
 	// Raises the scalar expression to the power of the input integer
 	Power(exponent int) Expression
+
+	// At returns the value at the given row and column index
+	At(rowIndex, colIndex, nCols int) symbolic.ScalarExpression
 }
 
 /*
@@ -173,4 +179,54 @@ func IsQuadratic(e Expression) bool {
 	eAsPL, _ := ToPolynomialLike(e)
 
 	return eAsPL.Degree() <= 2
+}
+
+/*
+HStack
+Description:
+
+	Stacks the input expressions horizontally.
+*/
+func HStack(eIn ...Expression) Expression {
+	// Input Checking
+
+	// TODO: Panic if there are 0 expressions in the input
+	if len(eIn) == 0 {
+		panic(
+			fmt.Errorf("HStack: There must be at least one expression in the input; received 0."),
+		)
+	}
+
+	// Check that all the expressions have the same number of rows
+	var mlSlice []smErrors.MatrixLike // First convert expression slice to matrix like slice
+	for _, e := range eIn {
+		mlSlice = append(mlSlice, e)
+	}
+
+	err := smErrors.CheckDimensionsInHStack(mlSlice...)
+	if err != nil {
+		panic(err)
+	}
+
+	// Setup
+	var nCols []int
+	for _, e := range eIn {
+		nCols = append(nCols, e.Dims()[1])
+	}
+
+	// Create the resulting Matrix's shape
+	var result [][]symbolic.ScalarExpression
+	for rowIndex := 0; rowIndex < eIn[0].Dims()[0]; rowIndex++ {
+		var tempRow []symbolic.ScalarExpression
+		for stackIndex_ii := 0; stackIndex_ii < len(eIn); stackIndex_ii++ {
+			nCols_ii := nCols[stackIndex_ii]
+			// Add all of the columns from the current expression to the row
+			for colIndex := 0; colIndex < nCols_ii; colIndex++ {
+				tempRow = append(tempRow, eIn[stackIndex_ii].At(rowIndex, colIndex, nCols_ii))
+			}
+		}
+	}
+
+	// Return the simplified form of the expression
+	return symbolic.ConcretizeMatrixExpression(result)
 }

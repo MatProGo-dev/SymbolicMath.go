@@ -8,6 +8,7 @@ Description:
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -66,6 +67,9 @@ type VectorExpression interface {
 
 	// Len returns the length of the vector expression.
 	Len() int
+
+	// At returns the expression at a given indices
+	At(ii, jj int) ScalarExpression
 
 	//AtVec returns the expression at a given index
 	AtVec(idx int) ScalarExpression

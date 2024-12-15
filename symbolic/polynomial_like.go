@@ -69,6 +69,9 @@ type PolynomialLike interface {
 
 	// Power returns the expression raised to the power of the input exponent
 	Power(exponent int) Expression
+
+	// At returns the value at the given row and column index
+	At(ii, jj int) ScalarExpression
 }
 
 /*

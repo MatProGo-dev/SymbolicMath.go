@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -74,6 +75,9 @@ type PolynomialLikeScalar interface {
 
 	// Power raises the expression to the power of the input integer
 	Power(exponent int) Expression
+
+	// At returns the value at the given row and column index
+	At(ii, jj int) ScalarExpression
 }
 
 /*

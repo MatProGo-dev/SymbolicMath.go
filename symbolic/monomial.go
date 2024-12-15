@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -745,4 +746,26 @@ Description:
 */
 func (m Monomial) Power(exponent int) Expression {
 	return ScalarPowerTemplate(m, exponent)
+}
+
+/*
+At
+Description:
+
+	Returns the value at the given row and column index.
+*/
+func (m Monomial) At(ii, jj int) ScalarExpression {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = smErrors.CheckIndexOnMatrix(ii, jj, m)
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	return m
 }

@@ -1,6 +1,8 @@
 package symbolic
 
 import (
+	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -10,10 +12,6 @@ vector_constant_test.go
 Description:
 	Creates a vector extension of the constant type K from the original goop.
 */
-
-import (
-	"fmt"
-)
 
 /*
 KVector
@@ -44,6 +42,30 @@ func (kv KVector) Check() error {
 }
 
 /*
+At
+Description:
+
+	This function returns the value at the ii, jj index.
+
+Note:
+
+	For a constant vector, the jj index should always be 0.
+*/
+func (kv KVector) At(ii, jj int) ScalarExpression {
+	// Input Processing
+
+	// Check to see whether or not the index is valid.
+	err := smErrors.CheckIndexOnMatrix(ii, jj, kv)
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	return kv.AtVec(ii)
+
+}
+
+/*
 AtVec
 Description:
 
@@ -51,8 +73,11 @@ Description:
 */
 func (kv KVector) AtVec(idx int) ScalarExpression {
 	// Input Processing
-	if idx < 0 || idx >= kv.Len() {
-		// TODO: Create new error type to handle this; maybe put it in new package?
+
+	// Check to see whether or not the index is valid.
+	err := smErrors.CheckIndexOnMatrix(idx, 0, mc)
+	if err != nil {
+		panic(err)
 	}
 
 	// Algorithm

@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -65,6 +66,32 @@ Description:
 */
 func (pv PolynomialVector) Len() int {
 	return pv.Length()
+}
+
+/*
+At
+Description:
+
+	Returns the polynomial at the (ii,jj) index.
+
+Note:
+
+  - The jj index should always be 0.
+*/
+func (pv PolynomialVector) At(ii, jj int) ScalarExpression {
+	// Input Processing
+	err := pv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = smErrors.CheckIndexOnMatrix(ii, jj, pv)
+	if err != nil {
+		panic(err)
+	}
+
+	// Return the polynomial at the index
+	return pv[ii]
 }
 
 /*

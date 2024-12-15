@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -519,6 +520,36 @@ func (mv MonomialVector) DerivativeWrt(v Variable) Expression {
 		}
 		return out
 	}
+}
+
+/*
+At
+Description:
+
+	This function returns the value of the monomial vector at the
+	(ii, jj)-th index.
+
+Note:
+
+	Because this is a vector, the jj input should always be 0.
+*/
+func (mv MonomialVector) At(ii, jj int) ScalarExpression {
+	// Input Processing
+
+	// Check that the monomial vector is well formed
+	err := mv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check that the input is valid
+	err = smErrors.CheckIndexOnMatrix(ii, jj, mv)
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	return mv[ii]
 }
 
 /*

@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -73,6 +74,9 @@ type ScalarExpression interface {
 	// Power
 	// Raises the scalar expression to the power of the input integer
 	Power(exponent int) Expression
+
+	// At returns the value at the given row and column index
+	At(ii, jj int) ScalarExpression
 }
 
 // NewExpr returns a new expression with a single additive constant value, c,

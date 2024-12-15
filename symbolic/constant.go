@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -412,4 +413,27 @@ Description:
 */
 func (c K) Power(exponent int) Expression {
 	return ScalarPowerTemplate(c, exponent)
+}
+
+/*
+At
+Description:
+
+	Returns the value at the given row and column index.
+
+Note:
+
+	For a constant, this is always the constant itself.
+	The value of ii and jj should always be 0.
+*/
+func (c K) At(ii, jj int) ScalarExpression {
+	// Input Processing
+
+	// Check to see whether or not the index is valid.
+	err := smErrors.CheckIndexOnMatrix(ii, jj, c)
+	if err != nil {
+		panic(err)
+	}
+
+	return c
 }

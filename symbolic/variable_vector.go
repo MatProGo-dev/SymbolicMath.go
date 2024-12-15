@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -48,10 +49,43 @@ func (vv VariableVector) Len() int {
 At
 Description:
 
+	Returns the variable at the (ii, jj)-th index of the vector.
+
+Note:
+
+	Because this is a vector, the jj index SHOULD always 0.
+*/
+func (vv VariableVector) At(ii, jj int) ScalarExpression {
+	// Input Checking
+	err := vv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check to see whether or not the index is valid.
+	err = smErrors.CheckIndexOnMatrix(ii, jj, vv)
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	return vv[ii]
+}
+
+/*
+AtVec
+Description:
+
 	Mirrors the gonum api for vectors. This extracts the element of the variable vector at the index x.
 */
 func (vv VariableVector) AtVec(idx int) ScalarExpression {
 	// Constants
+
+	// Check to see whether or not the index is valid.
+	err := smErrors.CheckIndexOnMatrix(idx, 0, vv)
+	if err != nil {
+		panic(err)
+	}
 
 	// Algorithm
 	return vv[idx]
