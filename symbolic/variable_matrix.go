@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -305,6 +306,12 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 			}
 			return result
 		}
+	case *mat.VecDense:
+		// Use the KVector case
+		return vm.Multiply(VecDenseToKVector(*right))
+	case mat.VecDense:
+		// Use the KVector case
+		return vm.Multiply(VecDenseToKVector(right))
 	case *mat.Dense:
 		// Use the mat.Dense case
 		return vm.Multiply(DenseToKMatrix(*right))

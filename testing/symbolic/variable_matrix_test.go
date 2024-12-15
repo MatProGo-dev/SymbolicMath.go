@@ -1,13 +1,14 @@
 package symbolic_test
 
 import (
+	"strings"
+	"testing"
+
 	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"gonum.org/v1/gonum/mat"
-	"strings"
-	"testing"
 )
 
 /*
@@ -993,6 +994,66 @@ func TestVariableMatrix_Multiply12(t *testing.T) {
 		if len(pv[i].Monomials) != 2 {
 			t.Errorf("Expected each polynomial to contain 2 monomials; received %v", len(pv[i].Monomials))
 		}
+	}
+}
+
+/*
+TestVariableMatrix_Multiply13
+Description:
+
+	Tests the Multiply method for a VariableMatrix object that is well-defined
+	of a dimension (1, 3) being multiplied by a *mat.VecDense object of dimension (3, 1).
+	The product should be a Polynomial of dimension (1, 1) with three monomials.
+*/
+func TestVariableMatrix_Multiply13(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	cv := mat.NewVecDense(3, []float64{1, 2, 3})
+
+	// Compute Product
+	result := vm.Multiply(cv)
+
+	// Check that object is a Polynomial
+	if _, ok := result.(symbolic.Polynomial); !ok {
+		t.Errorf("Expected Multiply to return a Polynomial; received %T", result)
+	}
+
+	// Check that the polynomial contains three monomials.
+	p := result.(symbolic.Polynomial)
+	if len(p.Monomials) != 3 {
+		t.Errorf("Expected the polynomial to contain 3 monomials; received %v", len(p.Monomials))
+	}
+}
+
+/*
+TestVariableMatrix_Multiply14
+Description:
+
+	Tests the Multiply method for a VariableMatrix object that is well-defined
+	of a dimension (1, 3) being multiplied by a mat.VecDense object of dimension (3, 1).
+	The product should be a Polynomial of dimension (1, 1) with three monomials.
+*/
+func TestVariableMatrix_Multiply14(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	cv := mat.NewVecDense(3, []float64{1, 2, 3})
+
+	// Compute Product
+	result := vm.Multiply(*cv)
+
+	// Check that object is a Polynomial
+	if _, ok := result.(symbolic.Polynomial); !ok {
+		t.Errorf("Expected Multiply to return a Polynomial; received %T", result)
+	}
+
+	// Check that the polynomial contains three monomials.
+	p := result.(symbolic.Polynomial)
+	if len(p.Monomials) != 3 {
+		t.Errorf("Expected the polynomial to contain 3 monomials; received %v", len(p.Monomials))
 	}
 }
 
