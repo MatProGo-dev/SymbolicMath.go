@@ -22,3 +22,6 @@ go.work
 
 # Ignore Goland IDE files
 .idea/
+
+# Ignore Mac OS X system files
+.DS_Store
