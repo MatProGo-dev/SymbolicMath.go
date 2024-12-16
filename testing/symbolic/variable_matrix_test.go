@@ -1058,6 +1058,36 @@ func TestVariableMatrix_Multiply14(t *testing.T) {
 }
 
 /*
+TestVariableMatrix_Multiply15
+Description:
+
+	Tests the Multiply method for a VariableMatrix object that is well-defined
+	of a dimension (3, 2) being multiplied by a VariableVector of dimension (2, 1).
+	The product should be a PolynomialVector of dimension (3, 1) with two monomials in each polynomial.
+*/
+func TestVariableMatrix_Multiply15(t *testing.T) {
+	// Constants
+	vm2 := symbolic.NewVariableMatrix(3, 2)
+	vv1 := symbolic.NewVariableVector(2)
+
+	// Compute Product
+	result := vm2.Multiply(vv1)
+
+	// Check that object is a PolynomialVector
+	if _, ok := result.(symbolic.PolynomialVector); !ok {
+		t.Errorf("Expected Multiply to return a PolynomialVector; received %T", result)
+	}
+
+	// Check that each polynomial in the result contains two monomials.
+	pv := result.(symbolic.PolynomialVector)
+	for i := 0; i < pv.Dims()[0]; i++ {
+		if len(pv[i].Monomials) != 2 {
+			t.Errorf("Expected each polynomial to contain 2 monomials; received %v", len(pv[i].Monomials))
+		}
+	}
+}
+
+/*
 TestVariableMatrix_Transpose1
 Description:
 

@@ -1,6 +1,7 @@
 package symbolic_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
@@ -251,6 +252,37 @@ func TestExpression_HStack5(t *testing.T) {
 }
 
 /*
+TestExpression_HStack6
+Description:
+
+	Tests that the HStack function panics when called with no arguments.
+*/
+func TestExpression_HStack6(t *testing.T) {
+	// Test
+	defer func() {
+		err := recover().(error)
+		if err == nil {
+			t.Errorf("The HStack function should panic when called with no arguments")
+		}
+
+		// Collect the expected error which should be a dimension error and
+		// compare it with the recovered error
+		expectedError := fmt.Errorf(
+			"HStack: There must be at least one expression in the input; received 0",
+		)
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected the error to be %v; received %v",
+				expectedError,
+				err,
+			)
+		}
+
+	}()
+	symbolic.HStack()
+}
+
+/*
 TestExpression_VStack1
 Description:
 
@@ -452,6 +484,142 @@ func TestExpression_VStack6(t *testing.T) {
 	if result.Dims()[0] != 6 || result.Dims()[1] != 2 {
 		t.Errorf(
 			"Expected the result to be a 6x2 matrix; received %v",
+			result.Dims(),
+		)
+	}
+
+	// Verify that the result is a monomial matrix
+	if _, ok := result.(symbolic.MonomialMatrix); !ok {
+		t.Errorf(
+			"Expected the result to be a MonomialMatrix; received %T",
+			result,
+		)
+	}
+}
+
+/*
+TestExpression_VStack7
+Description:
+
+	Tests that the VStack function panics when called with no arguments.
+*/
+func TestExpression_VStack7(t *testing.T) {
+	// Test
+	defer func() {
+		err := recover().(error)
+		if err == nil {
+			t.Errorf("The VStack function should panic when called with no arguments")
+		}
+
+		// Collect the expected error which should be a dimension error and
+		// compare it with the recovered error
+		expectedError := fmt.Errorf(
+			"VStack: There must be at least one expression in the input; received 0",
+		)
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected the error to be %v; received %v",
+				expectedError,
+				err,
+			)
+		}
+
+	}()
+	symbolic.VStack()
+}
+
+/*
+TestExpression_ConcretizeExpression1
+Description:
+
+	Tests the ConcretizeExpression function for a slice of scalar expressions.
+	The result should be a monomial matrix with three rows and 1 column1.
+*/
+func TestExpression_ConcretizeExpression1(t *testing.T) {
+	// Constants
+	expressions := []symbolic.ScalarExpression{
+		symbolic.K(1.0),
+		symbolic.K(2.0),
+		symbolic.NewVariable(),
+	}
+
+	// Test
+	result := symbolic.ConcretizeExpression(expressions)
+	if result.Dims()[0] != 3 || result.Dims()[1] != 1 {
+		t.Errorf(
+			"Expected the result to be a 3x1 matrix; received %v",
+			result.Dims(),
+		)
+	}
+
+	// Verify that the result is a monomial matrix
+	if _, ok := result.(symbolic.MonomialVector); !ok {
+		t.Errorf(
+			"Expected the result to be a MonomialVector; received %T",
+			result,
+		)
+	}
+}
+
+/*
+TestExpression_ConcretizeExpression2
+Description:
+
+	Tests the ConcretizeExpression function for a slice of scalar expressions.
+	The slice contains only one scalar expression. This should return a scalar expression.
+*/
+func TestExpression_ConcretizeExpression2(t *testing.T) {
+	// Constants
+	expressions := []symbolic.ScalarExpression{
+		symbolic.K(1.0),
+	}
+
+	// Test
+	result := symbolic.ConcretizeExpression(expressions)
+	if result.Dims()[0] != 1 || result.Dims()[1] != 1 {
+		t.Errorf(
+			"Expected the result to be a 1x1 matrix; received %v",
+			result.Dims(),
+		)
+	}
+
+	// Verify that the result is a scalar expression
+	if _, ok := result.(symbolic.K); !ok {
+		t.Errorf(
+			"Expected the result to be a K; received %T",
+			result,
+		)
+	}
+}
+
+/*
+TestExpression_ConcretizeExpression3
+Description:
+
+	Tests the ConcretizeExpression function for a slice of slices of scalar expressions.
+	The result should be a monomial matrix with three rows and 2 columns.
+*/
+func TestExpression_ConcretizeExpression3(t *testing.T) {
+	// Constants
+	expressions := [][]symbolic.ScalarExpression{
+		{
+			symbolic.K(1.0),
+			symbolic.K(2.0),
+		}, {
+			symbolic.K(3.0),
+			symbolic.NewVariable(),
+		},
+		{
+			symbolic.K(4.0),
+			symbolic.NewVariable(),
+		},
+	}
+
+	// Test
+	result := symbolic.ConcretizeExpression(expressions)
+	if result.Dims()[0] != 3 || result.Dims()[1] != 2 {
+		t.Errorf(
+			"Expected the result to be a 3x2 matrix; received %v",
 			result.Dims(),
 		)
 	}

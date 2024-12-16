@@ -288,6 +288,17 @@ func (vv VariableVector) Multiply(rightIn interface{}) Expression {
 			mvOut = append(mvOut, v.Multiply(right).(Monomial))
 		}
 		return mvOut
+	case Variable:
+		// Is output a scalar?
+		if nResultRows == 1 {
+			return vv[0].Multiply(right)
+		}
+		// Create a new vector of monomials.
+		var mvOut MonomialVector
+		for _, v := range vv {
+			mvOut = append(mvOut, v.Multiply(right).(Monomial))
+		}
+		return mvOut
 	case Monomial:
 		// Is output a scalar?
 		if nResultRows == 1 {

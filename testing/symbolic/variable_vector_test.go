@@ -7,12 +7,13 @@ Description:
 */
 
 import (
+	"strings"
+	"testing"
+
 	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
-	"strings"
-	"testing"
 )
 
 /*
@@ -1007,8 +1008,46 @@ func TestVariableVector_Multiply11(t *testing.T) {
 
 /*
 TestVariableVector_Multiply12
+Description:
 
+	This test verifies that the multiplication of a well-formed variable vector
+	of length 11 with a well-formed variable (scalar) returns a monomial vector.
 */
+func TestVariableVector_Multiply12(t *testing.T) {
+	// Constants
+	N := 11
+	vv1 := symbolic.NewVariableVector(N)
+	v2 := symbolic.NewVariable()
+
+	// Test
+	r := vv1.Multiply(v2)
+	if _, ok := r.(symbolic.MonomialVector); !ok {
+		t.Errorf(
+			"Expected vv1.Multiply(v2) to return a Monomial object; received %T",
+			r,
+		)
+	}
+
+	// Each element of the monomial vector should contain the variable v2
+	rAsMV, _ := r.(symbolic.MonomialVector)
+	for ii := 0; ii < N; ii++ {
+		monomialII := rAsMV.AtVec(ii).(symbolic.Monomial)
+		v2Found := false
+		for _, variableJJInII := range monomialII.Variables() {
+			if variableJJInII.ID == v2.ID {
+				v2Found = true
+			}
+		}
+		if !v2Found {
+			t.Errorf(
+				"Expected r.AtVec(%v) to contain v2; received %v",
+				ii,
+				monomialII,
+			)
+		}
+	}
+
+}
 
 /*
 TestVariableVector_Comparison1
