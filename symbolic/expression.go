@@ -192,7 +192,7 @@ func HStack(eIn ...Expression) Expression {
 	// TODO: Panic if there are 0 expressions in the input
 	if len(eIn) == 0 {
 		panic(
-			fmt.Errorf("HStack: There must be at least one expression in the input; received 0."),
+			fmt.Errorf("HStack: There must be at least one expression in the input; received 0"),
 		)
 	}
 
@@ -293,9 +293,9 @@ func ConcretizeExpression(e interface{}) Expression {
 	var (
 		concrete Expression
 	)
-	switch e.(type) {
+	switch concreteVal := e.(type) {
 	case []ScalarExpression:
-		concreteVectorE := ConcretizeVectorExpression(e.([]ScalarExpression))
+		concreteVectorE := ConcretizeVectorExpression(concreteVal)
 		// If vector expression is a scalar (i.e., has 1 row), return the scalar expression
 		if concreteVectorE.Dims()[0] == 1 {
 			concrete = concreteVectorE.At(0, 0)
@@ -304,7 +304,7 @@ func ConcretizeExpression(e interface{}) Expression {
 		}
 
 	case [][]ScalarExpression:
-		concreteMatrixE := ConcretizeMatrixExpression(e.([][]ScalarExpression))
+		concreteMatrixE := ConcretizeMatrixExpression(concreteVal)
 		// If matrix expression is a scalar (i.e., has 1 row and 1 column), return the scalar expression
 		switch {
 		case concreteMatrixE.Dims()[0] == 1 && concreteMatrixE.Dims()[1] == 1: // If the matrix is a scalar

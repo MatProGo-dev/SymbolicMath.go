@@ -310,6 +310,21 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 	case mat.VecDense:
 		// Use the KVector case
 		return vm.Multiply(VecDenseToKVector(right))
+	case VariableVector:
+		// Output will be another vector
+		nVMCols := vm.Dims()[1]
+		var result Expression = K(0.0)
+		for ii := 0; ii < nVMCols; ii++ {
+			// Create a new vector from the ii-th column of the matrix
+			var vmCol VariableVector
+			for jj := 0; jj < vm.Dims()[0]; jj++ {
+				vmCol = append(vmCol, vm[jj][ii])
+			}
+			result = result.Plus(
+				vmCol.Multiply(right[ii]),
+			)
+		}
+		return result
 	case *mat.Dense:
 		// Use the mat.Dense case
 		return vm.Multiply(DenseToKMatrix(*right))
