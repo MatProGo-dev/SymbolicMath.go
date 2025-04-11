@@ -158,6 +158,77 @@ func TestVariableVector_LinearCoeff1(t *testing.T) {
 }
 
 /*
+TestVariableVector_LinearCoeff2
+Description:
+
+	Verifies that the LinearCoeff method returns a non-square matrix when it is a
+	LONG vector composed of only 2 different variables.
+*/
+func TestVariableVector_LinearCoeff2(t *testing.T) {
+	// Constants
+	N := 111
+	vv := symbolic.NewVariableVector(2)
+	var vvSlice2 []symbolic.Variable
+	for ii := 0; ii < N; ii++ {
+		if ii%2 == 0 {
+			vvSlice2 = append(vvSlice2, vv[0])
+		} else {
+			vvSlice2 = append(vvSlice2, vv[1])
+		}
+	}
+	vv2 := symbolic.VariableVector(vvSlice2)
+
+	// Test
+	L2 := vv2.LinearCoeff()
+
+	// Compare dimensions
+	nRows, nCols := L2.Dims()
+	if nRows != N {
+		t.Errorf("Expeected L2 to contain %v rows; received %v", N, nRows)
+	}
+
+	if nCols != 2 {
+		t.Errorf("Expected L2 to contain %v rows; received %v", 2, nCols)
+	}
+
+	// Check the elements
+	for ii := 0; ii < nRows; ii++ {
+		if ii%2 == 0 {
+			if L2.At(ii, 0) != 1 {
+				t.Errorf(
+					"Expected vv.LinearCoeff().At(%v,%v) to be 1; received %v",
+					ii, 0,
+					L2.At(ii, 0),
+				)
+			}
+			if L2.At(ii, 1) != 0 {
+				t.Errorf(
+					"Expected vv.LinearCoeff().At(%v,%v) to be 0; received %v",
+					ii, 1,
+					L2.At(ii, 1),
+				)
+			}
+			continue
+		} else {
+			if L2.At(ii, 0) != 0 {
+				t.Errorf(
+					"Expected vv.LinearCoeff().At(%v,%v) to be 0; received %v",
+					ii, 0,
+					L2.At(ii, 0),
+				)
+			}
+			if L2.At(ii, 1) != 1 {
+				t.Errorf(
+					"Expected vv.LinearCoeff().At(%v,%v) to be 1; received %v",
+					ii, 1,
+					L2.At(ii, 1),
+				)
+			}
+		}
+	}
+}
+
+/*
 TestVariableVector_Plus1
 Description:
 
