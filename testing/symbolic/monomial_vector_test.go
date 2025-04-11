@@ -2,13 +2,14 @@ package symbolic_test
 
 import (
 	"fmt"
+	"math"
+	"strings"
+	"testing"
+
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"gonum.org/v1/gonum/mat"
-	"math"
-	"strings"
-	"testing"
 )
 
 /*
@@ -1840,5 +1841,44 @@ func TestMonomialVector_Power2(t *testing.T) {
 			"expected monomial.Coefficient to be 3.14^3; received %v",
 			power.(symbolic.Monomial).Coefficient,
 		)
+	}
+}
+
+/*
+TestMonomialVector_LinearCoeff1
+Description:
+
+	Tests that the LinearCoeff1 method properly returns a matrix of all zeros,
+	when called on a monomial vector containing ALL monomials with degree > 1.
+*/
+func TestMonomialVector_LinearCoeff1(t *testing.T) {
+	// Setup
+	n := 11
+	x1 := symbolic.NewVariable()
+	x2 := symbolic.NewVariable()
+
+	var mSlice []symbolic.Monomial
+	for ii := 0; ii < n; ii++ {
+		// Assemble Monomial slice
+		mSlice = append(
+			mSlice,
+			symbolic.Monomial{
+				Coefficient:     3.14,
+				VariableFactors: []symbolic.Variable{x1, x2},
+				Exponents:       []int{1, ii + 1},
+			},
+		)
+	}
+
+	// Create monomial vector
+	mv0 := symbolic.MonomialVector(mSlice)
+
+	// Find LinearCoeff
+	L0 := mv0.LinearCoeff()
+
+	// Compare all elements to zeros
+	ZerosMat1 := symbolic.ZerosMatrix(n, 2)
+	if !mat.EqualApprox(&L0, &ZerosMat1, 0.001) {
+		t.Errorf("The two matrices are not equal!")
 	}
 }

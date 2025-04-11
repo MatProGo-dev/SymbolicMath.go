@@ -7,10 +7,11 @@ Description:
 */
 
 import (
-	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
-	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
 	"testing"
+
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 )
 
 /*
@@ -525,7 +526,7 @@ func TestPolynomialVector_LinearCoeff1(t *testing.T) {
 TestPolynomialVector_LinearCoeff2
 Description:
 
-	This test verifies that the LinearCoeff method panics when a polynomial of all
+	This test verifies that the LinearCoeff method DOES NOT PANIC when a polynomial of all
 	constants is provided to the method.
 */
 func TestPolynomialVector_LinearCoeff2(t *testing.T) {

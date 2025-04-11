@@ -714,3 +714,20 @@ Description:
 func (mv MonomialVector) Power(exponent int) Expression {
 	return VectorPowerTemplate(mv, exponent)
 }
+
+/*
+LinearCoeff
+Description:
+
+	This function retrieves the "linear coefficient" of the monomial vector.
+	In math, this is extracting the matrix A such that:
+
+		mv' = L * v
+
+	where:
+	- v is the vector of variables for the monomial vector.
+	- mv' is the monomial vector mv with ONLY the terms that have degree 1
+*/
+func (mv MonomialVector) LinearCoeff(wrt ...[]Variable) mat.Dense {
+	return PolynomialLikeVector_SharedLinearCoeffCalc(mv, wrt...)
+}

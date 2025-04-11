@@ -101,8 +101,8 @@ Description:
 
 	This function returns a slice of the coefficients in the expression. For constants, this is always nil.
 */
-func (kv KVector) LinearCoeff() mat.Dense {
-	return ZerosMatrix(kv.Len(), kv.Len())
+func (kv KVector) LinearCoeff(wrt ...[]Variable) mat.Dense {
+	return PolynomialLikeVector_SharedLinearCoeffCalc(kv, wrt...)
 }
 
 /*

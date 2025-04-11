@@ -8,12 +8,13 @@ Description:
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"gonum.org/v1/gonum/mat"
-	"strings"
-	"testing"
 )
 
 /*
@@ -150,11 +151,12 @@ func TestConstantVector_LinearCoeff1(t *testing.T) {
 	// Constants
 	N := 11
 	kv := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	vv := symbolic.NewVariableVector(13)
 
 	// Test
 	for ii := 0; ii < N; ii++ {
-		for jj := 0; jj < N; jj++ {
-			if L := kv.LinearCoeff(); L.At(ii, jj) != 0 {
+		for jj := 0; jj < vv.Len(); jj++ {
+			if L := kv.LinearCoeff(vv); L.At(ii, jj) != 0 {
 				t.Errorf(
 					"Expected kv.LinearCoeff().At(%v,%v) to be 0; received %v",
 					ii, jj,
