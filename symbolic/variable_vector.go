@@ -119,8 +119,8 @@ Description:
 	Returns the matrix which is multiplied by Variables to get the current "expression".
 	For a single vector, this is an identity matrix.
 */
-func (vv VariableVector) LinearCoeff() mat.Dense {
-	return Identity(vv.Len())
+func (vv VariableVector) LinearCoeff(wrt ...[]Variable) mat.Dense {
+	return PolynomialLikeVector_SharedLinearCoeffCalc(vv, wrt...)
 }
 
 /*

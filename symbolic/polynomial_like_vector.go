@@ -9,6 +9,7 @@ Description:
 import (
 	"fmt"
 
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -29,8 +30,8 @@ type PolynomialLikeVector interface {
 	// Variables returns the number of variables in the expression.
 	Variables() []Variable
 
-	//// Coeffs returns a slice of the coefficients in the expression
-	//LinearCoeff() mat.Dense
+	// Coeffs returns a slice of the coefficients in the expression
+	LinearCoeff(wrt ...[]Variable) mat.Dense
 
 	// Constant returns the constant additive value in the expression
 	Constant() mat.VecDense
@@ -156,4 +157,57 @@ func ToPolynomialLikeVector(e interface{}) (PolynomialLikeVector, error) {
 			e,
 		)
 	}
+}
+
+/*
+PolynomialLikeVector_SharedLinearCoeffCalc
+Description:
+
+	This function retrieves the "linear coefficient" of the monomial vector.
+	In math, this is extracting the matrix A such that:
+
+		mv = L * v
+
+	where v is the vector of variables for the monomial vector.
+*/
+func PolynomialLikeVector_SharedLinearCoeffCalc(plv PolynomialLikeVector, wrt ...[]Variable) mat.Dense {
+	// Input Processing
+	err := plv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check to see if the user provided a slice of variables
+	var wrtVars []Variable
+	switch len(wrt) {
+	case 0:
+		wrtVars = plv.Variables()
+	case 1:
+		wrtVars = wrt[0]
+	default:
+		panic(fmt.Errorf("Too many inputs provided to LinearCoeff() method."))
+	}
+
+	// Check the wrtVars
+	if len(wrtVars) == 0 {
+		panic(
+			smErrors.CanNotGetLinearCoeffOfConstantError{plv},
+		)
+	}
+
+	// Iterate through each monomial in the vector and extract the Linear Coefficient vector
+	// for each
+	L := mat.NewDense(plv.Len(), len(wrtVars), nil)
+
+	for ii := 0; ii < plv.Len(); ii++ {
+		mvII := plv.AtVec(ii)
+
+		// Get Coefficients for mvII and populate it
+		coeffsII := mvII.LinearCoeff(wrtVars)
+		for jj := 0; jj < len(wrtVars); jj++ {
+			L.Set(ii, jj, coeffsII.AtVec(jj))
+		}
+	}
+
+	return *L
 }

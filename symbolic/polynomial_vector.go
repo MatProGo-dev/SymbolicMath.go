@@ -161,47 +161,8 @@ Description:
 	The output is a matrix where element (ii,jj) of the matrix describes the coefficient
 	of variable jj (from pv.Variables()) in the polynomial at index ii.
 */
-func (pv PolynomialVector) LinearCoeff(vSlices ...[]Variable) mat.Dense {
-	// Input Processing
-	err := pv.Check()
-	if err != nil {
-		panic(err)
-	}
-
-	// Check to see if the user provided a slice of variables
-	var varSlice []Variable
-	switch len(vSlices) {
-	case 0:
-		varSlice = pv.Variables()
-	case 1:
-		varSlice = vSlices[0]
-	default:
-		panic(fmt.Errorf("Too many inputs provided to LinearCoeff() method."))
-	}
-
-	if len(varSlice) == 0 {
-		panic(
-			smErrors.CanNotGetLinearCoeffOfConstantError{Expression: pv},
-		)
-	}
-
-	// Constants
-	var linearCoeff mat.Dense = ZerosMatrix(pv.Len(), len(varSlice))
-
-	// Algorithm
-	for rowIndex := 0; rowIndex < pv.Len(); rowIndex++ {
-		// Row i of the matrix linearCoeff is the linear coefficients of the polynomial at index i
-		polynomialII := pv[rowIndex]
-		linearCoeffsII := polynomialII.LinearCoeff(varSlice)
-
-		// Convert linearCoeffsII to a slice of float64's
-		linearCoeffsIIAsSlice := make([]float64, linearCoeffsII.Len())
-		for jj := 0; jj < linearCoeffsII.Len(); jj++ {
-			linearCoeffsIIAsSlice[jj] = linearCoeffsII.AtVec(jj)
-		}
-		linearCoeff.SetRow(rowIndex, linearCoeffsIIAsSlice)
-	}
-	return linearCoeff
+func (pv PolynomialVector) LinearCoeff(wrt ...[]Variable) mat.Dense {
+	return PolynomialLikeVector_SharedLinearCoeffCalc(pv, wrt...)
 }
 
 /*
