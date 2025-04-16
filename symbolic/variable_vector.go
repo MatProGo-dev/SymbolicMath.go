@@ -155,6 +155,9 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 
 	// Algorithm
 	switch right := rightIn.(type) {
+	case K, Variable, Monomial, Polynomial:
+		rightAsScalar := right.(ScalarExpression)
+		return rightAsScalar.Plus(vv)
 	case *mat.VecDense:
 		// Use KVector's method
 		return vv.Plus(VecDenseToKVector(*right))
@@ -401,6 +404,10 @@ func (vv VariableVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 
 	// Algorithm
 	switch rhsConverted := rightIn.(type) {
+	case *mat.VecDense:
+		rhsAsKVector := VecDenseToKVector(*rhsConverted)
+		return vv.Comparison(rhsAsKVector, sense)
+
 	case mat.VecDense:
 		rhsAsKVector := VecDenseToKVector(rhsConverted)
 

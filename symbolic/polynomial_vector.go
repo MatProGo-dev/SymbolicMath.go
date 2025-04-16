@@ -203,6 +203,14 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 			pvCopy[ii] = sum.(Polynomial)
 		}
 		return pvCopy
+	case Variable:
+		pvCopy := pv
+		for ii, polynomial := range pv {
+			sum := polynomial.Plus(right)
+			pvCopy[ii] = sum.(Polynomial)
+		}
+		return pvCopy
+
 	case Polynomial:
 		pvCopy := pv
 
@@ -417,6 +425,22 @@ func (pv PolynomialVector) Comparison(e interface{}, senseIn ConstrSense) Constr
 	//		Expression: pv.Plus(right.Multiply(K(-1))),
 	//		Sense:      senseIn,
 	//	}
+	case *mat.VecDense:
+		// Convert the vector to a KVector
+		tempKVector := VecDenseToKVector(*right)
+		return VectorConstraint{
+			LeftHandSide:  pv,
+			RightHandSide: tempKVector,
+			Sense:         senseIn,
+		}
+	case mat.VecDense:
+		// Convert the vector to a KVector
+		tempKVector := VecDenseToKVector(right)
+		return VectorConstraint{
+			LeftHandSide:  pv,
+			RightHandSide: tempKVector,
+			Sense:         senseIn,
+		}
 	case KVector, VariableVector, MonomialVector, PolynomialVector:
 		rightAsVE, _ := ToVectorExpression(right)
 		return VectorConstraint{

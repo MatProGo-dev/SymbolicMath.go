@@ -128,7 +128,7 @@ func (sc ScalarConstraint) LinearInequalityConstraintRepresentation() (A mat.Vec
 		if !IsLinear(sc.RightHandSide) {
 			panic(smErrors.LinearExpressionRequiredError{
 				Operation:  "LinearInequalityConstraintRepresentation",
-				Expression: sc,
+				Expression: sc.RightHandSide,
 			})
 		}
 	}

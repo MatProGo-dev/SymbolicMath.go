@@ -92,11 +92,11 @@ func (vc VectorConstraint) Check() error {
 
 	// Check dimensions of left and right hand sides.
 	if vc.LeftHandSide.Len() != vc.RightHandSide.Len() {
-		return fmt.Errorf(
-			"Left hand side has dimension %v, but right hand side has dimension %v!",
-			vc.LeftHandSide.Len(),
-			vc.RightHandSide.Len(),
-		)
+		return smErrors.DimensionError{
+			Operation: "VectorConstraint.Check",
+			Arg1:      vc.LeftHandSide,
+			Arg2:      vc.RightHandSide,
+		}
 	}
 
 	// All Checks Passed!
@@ -159,14 +159,16 @@ func (vc VectorConstraint) LinearInequalityConstraintRepresentation() (A mat.Den
 		if !IsLinear(vc.RightHandSide) {
 			panic(smErrors.LinearExpressionRequiredError{
 				Operation:  "LinearInequalityConstraintRepresentation",
-				Expression: vc,
+				Expression: vc.RightHandSide,
 			})
 		}
 	}
 
 	// Create A
 	newLHS := vc.Left().(PolynomialLikeVector)
-	newLHS = newLHS.Minus(vc.Right()).(PolynomialLikeVector)
+	rhsWithoutConst := vc.Right().(PolynomialLikeVector)
+	rhsWithoutConst = rhsWithoutConst.Minus(rhsWithoutConst.Constant()).(PolynomialLikeVector)
+	newLHS = newLHS.Minus(rhsWithoutConst).(PolynomialLikeVector)
 
 	A = newLHS.LinearCoeff()
 
@@ -174,13 +176,19 @@ func (vc VectorConstraint) LinearInequalityConstraintRepresentation() (A mat.Den
 		A.Scale(-1, &A)
 	}
 
+	fmt.Printf("vc: %v\n", vc)
+
 	// Create b
-	var newRHS *mat.VecDense
+	N := vc.Left().(VectorExpression).Len()
+	var newRHS *mat.VecDense = mat.NewVecDense(N, make([]float64, N))
 	rightConst := vc.Right().(VectorExpression).Constant()
 	leftConst := vc.Left().(VectorExpression).Constant()
+	fmt.Printf("rightConst: %v\n", rightConst)
+	fmt.Printf("leftConst: %v\n", leftConst)
 
 	newRHS.SubVec(&rightConst, &leftConst)
 	b = *newRHS
+	fmt.Printf("b: %v\n", b)
 
 	if vc.Sense == SenseGreaterThanEqual {
 		b.ScaleVec(-1, &b)
