@@ -2,7 +2,9 @@ package symbolic
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"gonum.org/v1/gonum/mat"
 )
 
 /*
@@ -128,4 +130,62 @@ Description:
 */
 func (vc VectorConstraint) IsLinear() bool {
 	return IsLinear(vc.RightHandSide) && IsLinear(vc.LeftHandSide)
+}
+
+/*
+LinearInequalityConstraintRepresentation
+Description:
+
+	Returns the linear constraint representation of the scalar constraint.
+	Returns a tuple of the form (A, b) where A is a vector and b is a constant such that:
+	A.Dot(x) <= b
+*/
+func (vc VectorConstraint) LinearInequalityConstraintRepresentation() (A mat.Dense, b mat.VecDense) {
+	// Check that the constraint is well formed.
+	err := vc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check that the constraint is linear.
+	if !vc.IsLinear() {
+		if !IsLinear(vc.LeftHandSide) {
+			panic(smErrors.LinearExpressionRequiredError{
+				Operation:  "LinearInequalityConstraintRepresentation",
+				Expression: vc.LeftHandSide,
+			})
+		}
+
+		if !IsLinear(vc.RightHandSide) {
+			panic(smErrors.LinearExpressionRequiredError{
+				Operation:  "LinearInequalityConstraintRepresentation",
+				Expression: vc,
+			})
+		}
+	}
+
+	// Create A
+	newLHS := vc.Left().(PolynomialLikeVector)
+	newLHS = newLHS.Minus(vc.Right()).(PolynomialLikeVector)
+
+	A = newLHS.LinearCoeff()
+
+	if vc.Sense == SenseGreaterThanEqual {
+		A.Scale(-1, &A)
+	}
+
+	// Create b
+	var newRHS *mat.VecDense
+	rightConst := vc.Right().(VectorExpression).Constant()
+	leftConst := vc.Left().(VectorExpression).Constant()
+
+	newRHS.SubVec(&rightConst, &leftConst)
+	b = *newRHS
+
+	if vc.Sense == SenseGreaterThanEqual {
+		b.ScaleVec(-1, &b)
+	}
+
+	// Return the tuple
+	return A, b
 }

@@ -1,5 +1,10 @@
 package symbolic
 
+import (
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"gonum.org/v1/gonum/mat"
+)
+
 // ScalarConstraint represnts a linear constraint of the form x <= y, x >= y, or
 // x == y. ScalarConstraint uses a left and right hand side expressions along with a
 // constraint sense (<=, >=, ==) to represent a generalized linear constraint
@@ -94,4 +99,58 @@ func (sc ScalarConstraint) Check() error {
 
 	// All Checks Passed!
 	return nil
+}
+
+/*
+LinearInequalityConstraintRepresentation
+Description:
+
+	Returns the linear constraint representation of the scalar constraint.
+	Returns a tuple of the form (A, b) where A is a vector and b is a constant such that:
+	A.Dot(x) <= b
+*/
+func (sc ScalarConstraint) LinearInequalityConstraintRepresentation() (A mat.VecDense, b float64) {
+	// Check that the constraint is well formed.
+	err := sc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check that the constraint is linear.
+	if !sc.IsLinear() {
+		if !IsLinear(sc.LeftHandSide) {
+			panic(smErrors.LinearExpressionRequiredError{
+				Operation:  "LinearInequalityConstraintRepresentation",
+				Expression: sc.LeftHandSide,
+			})
+		}
+
+		if !IsLinear(sc.RightHandSide) {
+			panic(smErrors.LinearExpressionRequiredError{
+				Operation:  "LinearInequalityConstraintRepresentation",
+				Expression: sc,
+			})
+		}
+	}
+
+	// Create A
+	newLHS := sc.Left().(ScalarExpression)
+	newLHS = newLHS.Minus(sc.Right()).(ScalarExpression)
+
+	A = newLHS.LinearCoeff()
+
+	if sc.Sense == SenseGreaterThanEqual {
+		A.ScaleVec(-1, &A)
+	}
+
+	// Create b
+	newRHS := sc.Right().(ScalarExpression).Constant() - sc.Left().(ScalarExpression).Constant()
+	b = newRHS
+
+	if sc.Sense == SenseGreaterThanEqual {
+		b = -b
+	}
+
+	// Return the tuple
+	return A, b
 }
