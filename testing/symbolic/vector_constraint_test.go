@@ -440,3 +440,44 @@ func TestVectorConstraint_LinearEqualityConstraintRepresentation4(t *testing.T) 
 		)
 	}
 }
+
+/*
+TestVectorConstraint_LinearInequalityConstraintRepresentation5
+Description:
+
+	This function tests that the LinearInequalityConstraintRepresentation method
+	properly panics if the left hand side is not linear.
+*/
+func TestVectorConstraint_LinearInequalityConstraintRepresentation5(t *testing.T) {
+	// Constants
+	N := 7
+	right := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	x := symbolic.NewVariableVector(N)
+	left := x.Plus(x.Transpose().Multiply(x))
+	vc := left.GreaterEq(right).(symbolic.VectorConstraint)
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.LinearInequalityConstraintRepresentation() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.LinearExpressionRequiredError{
+			Operation:  "LinearInequalityConstraintRepresentation",
+			Expression: vc.Left(),
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.LinearInequalityConstraintRepresentation() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	vc.LinearInequalityConstraintRepresentation()
+}
