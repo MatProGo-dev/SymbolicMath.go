@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 )
 
@@ -547,4 +548,106 @@ func TestScalarConstraint_LinearInequalityConstraintRepresentation3(t *testing.T
 	if b != 2.5 {
 		t.Errorf("Expected b to be 2.5; received %v", b)
 	}
+}
+
+/*
+TestScalarConstraint_LinearInequalityConstraintRepresentation4
+Description:
+
+	Tests the LinearInequalityConstraintRepresentation() method of a scalar
+	constraint. This test verifies that the method panics if the left hand side
+	is not a polynomial like scalar.
+*/
+func TestScalarConstraint_LinearInequalityConstraintRepresentation4(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariableVector(2)
+	c2 := symbolic.K(2.5)
+
+	// Create constraint
+	sc := x.Transpose().Multiply(x).LessEq(c2)
+
+	// Verify that the constraint is linear
+	if sc.IsLinear() {
+		t.Errorf(
+			"Expected sc to be nonlinear; received IsLinear() = %v",
+			sc.IsLinear(),
+		)
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.LinearInequalityConstraintRepresentation() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.LinearExpressionRequiredError{
+			Operation:  "LinearInequalityConstraintRepresentation",
+			Expression: sc.Left(),
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.LinearInequalityConstraintRepresentation() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	// Get linear representation
+	sc.(symbolic.ScalarConstraint).LinearInequalityConstraintRepresentation()
+}
+
+/*
+TestScalarConstraint_LinearInequalityConstraintRepresentation5
+Description:
+
+	Tests the LinearInequalityConstraintRepresentation() method of a scalar
+	constraint. This test verifies that the method panics if the RIGHT hand side
+	is not a polynomial like scalar.
+*/
+func TestScalarConstraint_LinearInequalityConstraintRepresentation5(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariableVector(2)
+	c2 := symbolic.K(2.5)
+
+	// Create constraint
+	sc := c2.LessEq(x.Transpose().Multiply(x))
+
+	// Verify that the constraint is linear
+	if sc.IsLinear() {
+		t.Errorf(
+			"Expected sc to be nonlinear; received IsLinear() = %v",
+			sc.IsLinear(),
+		)
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.LinearInequalityConstraintRepresentation() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.LinearExpressionRequiredError{
+			Operation:  "LinearInequalityConstraintRepresentation",
+			Expression: sc.Right(),
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.LinearInequalityConstraintRepresentation() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	// Get linear representation
+	sc.(symbolic.ScalarConstraint).LinearInequalityConstraintRepresentation()
 }
