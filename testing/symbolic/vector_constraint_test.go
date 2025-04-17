@@ -481,3 +481,50 @@ func TestVectorConstraint_LinearInequalityConstraintRepresentation5(t *testing.T
 
 	vc.LinearInequalityConstraintRepresentation()
 }
+
+/*
+TestVectorConstraint_LinearInequalityConstraintRepresentation6
+Description:
+
+	This function tests that the LinearInequalityConstraintRepresentation method
+	properly flips the sign of the matrices and vectors.
+	In this case, we will create the same expressions as
+	TestVectorConstraint_LinearInequalityConstraintRepresentation3 but with a GreaterEq constraint
+	sense.
+*/
+func TestVectorConstraint_LinearInequalityConstraintRepresentation6(t *testing.T) {
+	// Constants
+	N := 2
+	x := symbolic.NewVariableVector(N)
+	left := symbolic.VecDenseToKVector(symbolic.ZerosVector(N)).Plus(x.AtVec(0)).Plus(x.AtVec(1))
+	right := mat.NewVecDense(N, []float64{1, 2})
+	vc := left.GreaterEq(right).(symbolic.VectorConstraint)
+
+	// Test
+	A, b := vc.LinearInequalityConstraintRepresentation()
+
+	nRowsA, nColsA := A.Dims()
+	if nRowsA != N || nColsA != 2 {
+		t.Errorf(
+			"Expected vc.LinearInequalityConstraintRepresentation() to return a matrix of dimension %v; received dimension (%v, %v)",
+			[]int{N, 2},
+			nRowsA, nColsA,
+		)
+	}
+
+	if b.AtVec(0) != -1 {
+		t.Errorf(
+			"Expected vc.LinearInequalityConstraintRepresentation()'s b vector to contain a -1 at the %v-th index; received %v",
+			0,
+			b.AtVec(0),
+		)
+	}
+
+	if b.AtVec(1) != -2 {
+		t.Errorf(
+			"Expected vc.LinearInequalityConstraintRepresentation()'s b vector to contain a -2 at the %v-th index; received %v",
+			1,
+			b.AtVec(1),
+		)
+	}
+}
