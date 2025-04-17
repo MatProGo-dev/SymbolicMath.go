@@ -488,7 +488,7 @@ func TestMonomialVector_Plus3(t *testing.T) {
 
 		if !strings.Contains(
 			rAsE.Error(),
-			smErrors.DimensionError{
+			smErrors.MatrixDimensionError{
 				Operation: "Plus",
 				Arg1:      mv,
 				Arg2:      pm,
@@ -952,7 +952,7 @@ func TestMonomialVector_Minus3(t *testing.T) {
 
 		if !strings.Contains(
 			rAsE.Error(),
-			smErrors.DimensionError{
+			smErrors.MatrixDimensionError{
 				Operation: "Minus",
 				Arg1:      mv,
 				Arg2:      pm,

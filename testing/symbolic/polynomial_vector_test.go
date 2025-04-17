@@ -1498,7 +1498,7 @@ func TestPolynomialVector_Multiply6(t *testing.T) {
 		}
 
 		// Check that the error message is correct
-		if rAsE.Error() != (smErrors.DimensionError{
+		if rAsE.Error() != (smErrors.MatrixDimensionError{
 			Arg1:      pv1,
 			Arg2:      pv2,
 			Operation: "Multiply",

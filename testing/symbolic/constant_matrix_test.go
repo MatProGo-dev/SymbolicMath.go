@@ -8,13 +8,14 @@ Description:
 
 import (
 	"fmt"
-	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
-	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
-	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"math"
 	"reflect"
 	"strings"
 	"testing"
+
+	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 )
 
 /*
@@ -63,7 +64,7 @@ func TestConstantMatrix_Plus1(t *testing.T) {
 			t.Errorf("Expected recovered value to be an error; received %T", recoveredVal)
 		}
 
-		expectedError := smErrors.DimensionError{
+		expectedError := smErrors.MatrixDimensionError{
 			Operation: "Plus",
 			Arg1:      km1,
 			Arg2:      symbolic.DenseToKMatrix(eye2),
@@ -394,7 +395,7 @@ func TestKMatrix_Multiply2(t *testing.T) {
 			t.Errorf("Expected recovered value to be an error; received %T", recoveredVal)
 		}
 
-		err2 := smErrors.DimensionError{
+		err2 := smErrors.MatrixDimensionError{
 			Operation: "Multiply",
 			Arg1:      km1,
 			Arg2:      km2,
@@ -851,7 +852,7 @@ func TestKMatrix_LessEq2(t *testing.T) {
 		}
 
 		var expectedSense symbolic.ConstrSense = symbolic.SenseLessThanEqual
-		err2 := smErrors.DimensionError{
+		err2 := smErrors.MatrixDimensionError{
 			Operation: "Comparison (" + expectedSense.String() + ")",
 			Arg1:      km1,
 			Arg2:      symbolic.NewVariableMatrix(3, 2),

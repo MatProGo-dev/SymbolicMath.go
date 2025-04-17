@@ -259,7 +259,7 @@ func TestVariableVector_Plus1(t *testing.T) {
 		}
 
 		// Check that the error message is correct
-		if rAsE.Error() != (smErrors.DimensionError{
+		if rAsE.Error() != (smErrors.MatrixDimensionError{
 			Operation: "Plus",
 			Arg1:      vv1,
 			Arg2:      vv2,
@@ -575,7 +575,7 @@ func TestVariableVector_Minus2(t *testing.T) {
 		}
 
 		// Check that the error message is correct
-		if rAsE.Error() != (smErrors.DimensionError{
+		if rAsE.Error() != (smErrors.MatrixDimensionError{
 			Operation: "Minus",
 			Arg1:      vv1,
 			Arg2:      vv2,
@@ -791,7 +791,7 @@ func TestVariableVector_Multiply3(t *testing.T) {
 		}
 
 		// Check that the error message is correct
-		if rAsE.Error() != (smErrors.DimensionError{
+		if rAsE.Error() != (smErrors.MatrixDimensionError{
 			Operation: "Multiply",
 			Arg1:      vv1,
 			Arg2:      vv2,
@@ -1250,7 +1250,7 @@ func TestVariableVector_Comparison3(t *testing.T) {
 
 		// Check that the error message is correct
 		var tempSense symbolic.ConstrSense = symbolic.SenseLessThanEqual
-		if rAsE.Error() != (smErrors.DimensionError{
+		if rAsE.Error() != (smErrors.MatrixDimensionError{
 			Operation: "Comparison (" + tempSense.String() + ")",
 			Arg1:      vv1,
 			Arg2:      vv2,

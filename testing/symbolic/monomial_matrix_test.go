@@ -1,11 +1,12 @@
 package symbolic_test
 
 import (
+	"strings"
+	"testing"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"gonum.org/v1/gonum/mat"
-	"strings"
-	"testing"
 )
 
 /*
@@ -400,7 +401,7 @@ func TestMonomialMatrix_Plus3(t *testing.T) {
 		{v1.ToMonomial(), v1.ToMonomial()},
 		{v1.ToMonomial(), v1.ToMonomial()},
 	}
-	expectedError := smErrors.DimensionError{
+	expectedError := smErrors.MatrixDimensionError{
 		Arg1:      mm,
 		Arg2:      mm2,
 		Operation: "Plus",
@@ -881,7 +882,7 @@ func TestMonomialMatrix_Minus3(t *testing.T) {
 		{v1.ToMonomial(), v1.ToMonomial()},
 		{v1.ToMonomial(), v1.ToMonomial()},
 	}
-	expectedError := smErrors.DimensionError{
+	expectedError := smErrors.MatrixDimensionError{
 		Arg1:      mm,
 		Arg2:      mm2,
 		Operation: "Minus",
@@ -1072,7 +1073,7 @@ func TestMonomialMatrix_Multiply3(t *testing.T) {
 	}
 	km2 := symbolic.DenseToKMatrix(symbolic.OnesMatrix(3, 2))
 
-	expectedError := smErrors.DimensionError{
+	expectedError := smErrors.MatrixDimensionError{
 		Arg1:      mm,
 		Arg2:      km2,
 		Operation: "Multiply",

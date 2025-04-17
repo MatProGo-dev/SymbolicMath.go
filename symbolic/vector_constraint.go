@@ -91,12 +91,9 @@ func (vc VectorConstraint) Check() error {
 	}
 
 	// Check dimensions of left and right hand sides.
-	if vc.LeftHandSide.Len() != vc.RightHandSide.Len() {
-		return smErrors.DimensionError{
-			Operation: "VectorConstraint.Check",
-			Arg1:      vc.LeftHandSide,
-			Arg2:      vc.RightHandSide,
-		}
+	err = smErrors.CheckDimensionsInComparison(vc.Left(), vc.Right(), vc.ConstrSense().String())
+	if err != nil {
+		return err
 	}
 
 	// All Checks Passed!

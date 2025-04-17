@@ -37,9 +37,15 @@ func TestVectorConstraint_Check1(t *testing.T) {
 			"Expected vc.Check() to return an error; received nil",
 		)
 	} else {
-		if err.Error() != "Left hand side has dimension 3, but right hand side has dimension 4!" {
+		expectedError := smErrors.VectorDimensionError{
+			Arg1:      left,
+			Arg2:      right,
+			Operation: fmt.Sprintf("Comparison (%v)", vc.Sense),
+		}
+		if err.Error() != expectedError.Error() {
 			t.Errorf(
-				"Expected vc.Check() to return error \"Left hand side has dimension 3, but right hand side has dimension 4!\"; received \"%v\"",
+				"Expected vc.Check() to return error \"%v\"; received \"%v\"",
+				expectedError.Error(),
 				err.Error(),
 			)
 		}
@@ -118,15 +124,15 @@ func TestVectorConstraint_Dims2(t *testing.T) {
 		}
 
 		rAsError := r.(error)
-		if rAsError.Error() != (fmt.Errorf(
-			"Left hand side has dimension %v, but right hand side has dimension %v!",
-			vc.LeftHandSide.Len(),
-			vc.RightHandSide.Len(),
-		)).Error() {
+		expectedError := smErrors.VectorDimensionError{
+			Arg1:      vc.LeftHandSide,
+			Arg2:      vc.RightHandSide,
+			Operation: fmt.Sprintf("Comparison (%v)", vc.Sense),
+		}
+		if rAsError.Error() != expectedError.Error() {
 			t.Errorf(
-				"Expected vc.Dims() to panic with error \"Left hand side has dimension %v, but right hand side has dimension %v!\"; received \"%v\"",
-				vc.LeftHandSide.Len(),
-				vc.RightHandSide.Len(),
+				"Expected vc.Dims() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
 				rAsError.Error(),
 			)
 		}
@@ -236,11 +242,12 @@ func TestVectorConstraint_AtVec3(t *testing.T) {
 		}
 
 		rAsError := r.(error)
-		if rAsError.Error() != (fmt.Errorf(
-			"Left hand side has dimension %v, but right hand side has dimension %v!",
-			vc.LeftHandSide.Len(),
-			vc.RightHandSide.Len(),
-		)).Error() {
+		expectedError := smErrors.VectorDimensionError{
+			Arg1:      vc.LeftHandSide,
+			Arg2:      vc.RightHandSide,
+			Operation: fmt.Sprintf("Comparison (%v)", vc.Sense),
+		}
+		if rAsError.Error() != expectedError.Error() {
 			t.Errorf(
 				"Expected vc.Dims() to panic with error \"Left hand side has dimension %v, but right hand side has dimension %v!\"; received \"%v\"",
 				vc.LeftHandSide.Len(),
@@ -277,8 +284,8 @@ func TestVectorConstraint_LinearInequalityConstraintRepresentation1(t *testing.T
 		}
 
 		rAsError := r.(error)
-		expectedError := smErrors.DimensionError{
-			Operation: "VectorConstraint.Check",
+		expectedError := smErrors.VectorDimensionError{
+			Operation: fmt.Sprintf("Comparison (%v)", vc.Sense),
 			Arg1:      vc.LeftHandSide,
 			Arg2:      vc.RightHandSide,
 		}

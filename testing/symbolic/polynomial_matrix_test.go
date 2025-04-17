@@ -1,13 +1,14 @@
 package symbolic_test
 
 import (
+	"strings"
+	"testing"
+
 	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"gonum.org/v1/gonum/mat"
-	"strings"
-	"testing"
 )
 
 /*
@@ -333,7 +334,7 @@ func TestPolynomialMatrix_Plus2(t *testing.T) {
 			)
 		}
 
-		if rAsError.Error() != (smErrors.DimensionError{
+		if rAsError.Error() != (smErrors.MatrixDimensionError{
 			Operation: "Plus",
 			Arg1:      pm1,
 			Arg2:      pm2,
@@ -717,7 +718,7 @@ func TestPolynomialMatrix_Minus2(t *testing.T) {
 			)
 		}
 
-		if rAsError.Error() != (smErrors.DimensionError{
+		if rAsError.Error() != (smErrors.MatrixDimensionError{
 			Operation: "Minus",
 			Arg1:      pm1,
 			Arg2:      pm2,
@@ -957,7 +958,7 @@ func TestPolynomialMatrix_Multiply3(t *testing.T) {
 
 		if !strings.Contains(
 			rAsError.Error(),
-			smErrors.DimensionError{
+			smErrors.MatrixDimensionError{
 				Operation: "Multiply",
 				Arg1:      pm1,
 				Arg2:      kv1,
