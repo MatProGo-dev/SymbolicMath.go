@@ -160,19 +160,18 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 
 		// Add the values
 		return kv.Plus(VecDenseToKVector(eAsVec))
-	case K:
-		// Return Addition
-		return kv.Plus(float64(right))
-	case Variable:
+	case K, Variable, Monomial, Polynomial:
 		// Create a new polynomial vector
-		var pvOut PolynomialVector
+		var out []ScalarExpression
 		for _, element := range kv {
-			pvOut = append(pvOut, element.Plus(right).(Polynomial))
+			out = append(out, element.Plus(right).(ScalarExpression))
 		}
-		return pvOut
+		return ConcretizeVectorExpression(out)
 
 	case *mat.VecDense:
 		return kv.Plus(VecDenseToKVector(*right)) // Convert to KVector
+	case mat.VecDense:
+		return kv.Plus(VecDenseToKVector(right)) // Convert to KVector
 
 	case KVector:
 		// Compute Addition
@@ -234,6 +233,9 @@ func (kv KVector) Minus(e interface{}) Expression {
 		return kv.Minus(VecDenseToKVector(right)) // Convert to KVector
 	case *mat.VecDense:
 		return kv.Minus(VecDenseToKVector(*right)) // Convert to KVector
+	case K, Variable, Monomial, Polynomial:
+		rightAsSE := right.(ScalarExpression)
+		return kv.Plus(rightAsSE.Multiply(-1.0)) // Reuse K case
 	case KVector, VariableVector, MonomialVector, PolynomialVector:
 		// Force the right hand side to be a VectorExpression
 		rhsAsVE := right.(VectorExpression)

@@ -137,7 +137,7 @@ func (sc ScalarConstraint) LinearInequalityConstraintRepresentation(wrt ...[]Var
 	newLHS := sc.Left().(ScalarExpression)
 	newLHS = newLHS.Minus(sc.Right()).(ScalarExpression)
 
-	A = newLHS.LinearCoeff()
+	A = newLHS.LinearCoeff(wrt...)
 
 	if sc.Sense == SenseGreaterThanEqual {
 		A.ScaleVec(-1, &A)
@@ -199,7 +199,7 @@ func (sc ScalarConstraint) LinearEqualityConstraintRepresentation(wrt ...[]Varia
 	// Create C
 	newLHS := sc.Left().(ScalarExpression)
 	newLHS = newLHS.Minus(sc.Right()).(ScalarExpression)
-	C = newLHS.LinearCoeff()
+	C = newLHS.LinearCoeff(wrt...)
 
 	// Create d
 	newRHS := sc.Right().(ScalarExpression).Constant() - sc.Left().(ScalarExpression).Constant()

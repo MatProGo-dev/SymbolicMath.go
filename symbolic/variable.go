@@ -121,6 +121,9 @@ func (v Variable) Plus(rightIn interface{}) Expression {
 		return right.Plus(v)
 	case *mat.VecDense:
 		return v.Plus(VecDenseToKVector(*right))
+	case mat.VecDense:
+		// Convert to KVector
+		return v.Plus(VecDenseToKVector(right))
 	case KVector, VariableVector, MonomialVector, PolynomialVector:
 		ve, _ := ToVectorExpression(rightIn)
 		return ve.Plus(v)
