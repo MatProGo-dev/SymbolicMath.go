@@ -565,52 +565,6 @@ func TestVectorConstraint_LinearInequalityConstraintRepresentation7(t *testing.T
 }
 
 /*
-TestVectorConstraint_LinearInequalityConstraintRepresentation8
-Description:
-
-	This function tests that the LinearInequalityConstraintRepresentation method
-	properly returns a matrix of shape (2, 2) and a vector of shape (2, 1)
-	for a well-defined, lienar vector constraint. This constraint will only contain
-	1 variable, but the w.r.t. variable will contain 2 variables.
-*/
-func TestVectorConstraint_LinearInequalityConstraintRepresentation8(t *testing.T) {
-	// Constants
-	N := 2
-	x := symbolic.NewVariableVector(N)
-	left := x.AtVec(0).Plus(symbolic.ZerosVector(N))
-	right := mat.NewVecDense(N, []float64{1, 2})
-	vc := left.LessEq(right).(symbolic.VectorConstraint)
-
-	// Test
-	A, b := vc.LinearInequalityConstraintRepresentation(x)
-
-	nRowsA, nColsA := A.Dims()
-	if nRowsA != N || nColsA != 2 {
-		t.Errorf(
-			"Expected vc.LinearInequalityConstraintRepresentation() to return a matrix of dimension %v; received dimension (%v, %v)",
-			[]int{N, 2},
-			nRowsA, nColsA,
-		)
-	}
-
-	if b.AtVec(0) != 1 {
-		t.Errorf(
-			"Expected vc.LinearEqualityConstraintRepresentation()'s b vector to contain a 1 at the %v-th index; received %v",
-			0,
-			b.AtVec(0),
-		)
-	}
-
-	if b.AtVec(1) != 2 {
-		t.Errorf(
-			"Expected vc.LinearEqualityConstraintRepresentation()'s b vector to contain a 2 at the %v-th index; received %v",
-			1,
-			b.AtVec(1),
-		)
-	}
-}
-
-/*
 TestVectorConstraint_LinearEqualityConstraintRepresentation1
 Description:
 

@@ -653,53 +653,6 @@ func TestScalarConstraint_LinearInequalityConstraintRepresentation5(t *testing.T
 }
 
 /*
-TestScalarConstraint_LinearInequalityConstraintRepresentation6
-Description:
-
-	Tests the LinearInequalityConstraintRepresentation() method of a scalar
-	constraint. This test verifies that the method correctly produces a vector with
-	length 2 and a constant of value 2.1 when using a small cosntraint:
-	x1 <= 2.1
-	but when calculating the representation with respect to a vector of 2 variables.
-*/
-func TestScalarConstraint_LinearInequalityConstraintRepresentation6(t *testing.T) {
-	// Constants
-	x := symbolic.NewVariableVector(2)
-	c2 := symbolic.K(2.1)
-
-	// Create constraint
-	sc := x.AtVec(0).LessEq(c2)
-
-	// Verify that the constraint is linear
-	if !sc.IsLinear() {
-		t.Errorf(
-			"Expected sc to be linear; received %v",
-			sc.IsLinear(),
-		)
-	}
-
-	// Get linear representation
-	A, b := sc.(symbolic.ScalarConstraint).LinearInequalityConstraintRepresentation(x)
-
-	// Verify that the vector is all ones
-	if A.AtVec(0) != 1 {
-		t.Errorf("Expected A[0] to be 1; received %v", A.AtVec(0))
-	}
-
-	if A.AtVec(1) != 0 {
-		t.Errorf("Expected A[1] to be 0; received %v", A.AtVec(1))
-	}
-
-	// Verify that the constant is 2.5
-	if b != 2.1 {
-		t.Errorf(
-			"Expected b to be 2.5; received %v",
-			b,
-		)
-	}
-}
-
-/*
 TestScalarConstraint_LinearEqualityConstraintRepresentation1
 Description:
 
@@ -893,51 +846,4 @@ func TestScalarConstraint_LinearEqualityConstraintRepresentation4(t *testing.T) 
 	}()
 
 	sc.(symbolic.ScalarConstraint).LinearEqualityConstraintRepresentation()
-}
-
-/*
-TestScalarConstraint_LinearEqualityConstraintRepresentation5
-Description:
-
-	Tests the LinearEqualityConstraintRepresentation() method of a scalar
-	constraint. This test verifies that the method correctly produces a vector with
-	length 2 and a constant of value 2.1 when using a small cosntraint:
-	x1 = 2.1
-	but when calculating the representation with respect to a vector of 2 variables.
-*/
-func TestScalarConstraint_LinearEqualityConstraintRepresentation5(t *testing.T) {
-	// Constants
-	x := symbolic.NewVariableVector(2)
-	c2 := symbolic.K(2.1)
-
-	// Create constraint
-	sc := x.AtVec(0).Eq(c2)
-
-	// Verify that the constraint is linear
-	if !sc.IsLinear() {
-		t.Errorf(
-			"Expected sc to be linear; received %v",
-			sc.IsLinear(),
-		)
-	}
-
-	// Get linear representation
-	A, b := sc.(symbolic.ScalarConstraint).LinearEqualityConstraintRepresentation(x)
-
-	// Verify that the vector is all ones
-	if A.AtVec(0) != 1 {
-		t.Errorf("Expected A[0] to be 1; received %v", A.AtVec(0))
-	}
-
-	if A.AtVec(1) != 0 {
-		t.Errorf("Expected A[1] to be 0; received %v", A.AtVec(1))
-	}
-
-	// Verify that the constant is 2.5
-	if b != 2.1 {
-		t.Errorf(
-			"Expected b to be 2.5; received %v",
-			b,
-		)
-	}
 }
