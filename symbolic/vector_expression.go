@@ -30,8 +30,8 @@ type VectorExpression interface {
 	// Variables returns the number of variables in the expression.
 	Variables() []Variable
 
-	//// Coeffs returns a slice of the coefficients in the expression
-	//LinearCoeff() mat.Dense
+	// LinearCoeffs returns a slice of the coefficients in the expression
+	LinearCoeff(wrt ...[]Variable) mat.Dense
 
 	// Constant returns the constant additive value in the expression
 	Constant() mat.VecDense
