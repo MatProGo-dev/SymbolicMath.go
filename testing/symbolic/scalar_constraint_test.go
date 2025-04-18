@@ -7,9 +7,11 @@ Description:
 */
 
 import (
-	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
 	"testing"
+
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 )
 
 /*
@@ -409,4 +411,439 @@ func TestScalarConstraint_Check4(t *testing.T) {
 			err,
 		)
 	}
+}
+
+/*
+TestScalarConstraint_LinearInequalityConstraintRepresentation1
+Description:
+
+	Tests the LinearInequalityConstraintRepresentation() method of a scalar
+	constraint. Here, we provide a constraint with two variables that are LessThanEqual
+	to a constant. The expected output is a vector of all ones and a constant 2.5.
+*/
+func TestScalarConstraint_LinearInequalityConstraintRepresentation1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariableVector(2)
+	c2 := symbolic.K(2.5)
+
+	// Create constraint
+	sc := x.Transpose().Multiply(symbolic.OnesVector(2)).LessEq(c2)
+
+	// Verify that the constraint is linear
+	if !sc.IsLinear() {
+		t.Errorf(
+			"Expected sc to be linear; received %v",
+			sc.IsLinear(),
+		)
+	}
+
+	// Get linear representation
+	A, b := sc.(symbolic.ScalarConstraint).LinearInequalityConstraintRepresentation()
+
+	// Verify that the vector is all ones
+	for ii := 0; ii < A.Len(); ii++ {
+		if A.AtVec(ii) != 1 {
+			t.Errorf(
+				"Expected A[%v] to be 1; received %v",
+				ii,
+				A.AtVec(ii),
+			)
+		}
+	}
+
+	// Verify that the constant is 2.5
+	if b != 2.5 {
+		t.Errorf(
+			"Expected b to be 2.5; received %v",
+			b,
+		)
+	}
+}
+
+/*
+TestScalarConstraint_LinearInequalityConstraintRepresentation2
+Description:
+
+	Tests the LinearInequalityConstraintRepresentation() method of a scalar
+	constraint. Here, we provide a constraint with two variables that are GreaterThanEqual
+	to a constant. The expected output is a vector of all negative ones and a constant -2.5.
+*/
+func TestScalarConstraint_LinearInequalityConstraintRepresentation2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariableVector(2)
+	c2 := symbolic.K(2.5)
+
+	// Create constraint
+	sc := x.Transpose().Multiply(symbolic.OnesVector(2)).GreaterEq(c2)
+
+	// Verify that the constraint is linear
+	if !sc.IsLinear() {
+		t.Errorf(
+			"Expected sc to be linear; received %v",
+			sc.IsLinear(),
+		)
+	}
+
+	// Get linear representation
+	A, b := sc.(symbolic.ScalarConstraint).LinearInequalityConstraintRepresentation()
+
+	// Verify that the vector is all negative ones
+	for ii := 0; ii < A.Len(); ii++ {
+		if A.AtVec(ii) != -1 {
+			t.Errorf(
+				"Expected A[%v] to be -1; received %v",
+				ii,
+				A.AtVec(ii),
+			)
+		}
+	}
+
+	// Verify that the constant is -2.5
+	if b != -2.5 {
+		t.Errorf(
+			"Expected b to be -2.5; received %v",
+			b,
+		)
+	}
+}
+
+/*
+TestScalarConstraint_LinearInequalityConstraintRepresentation3
+Description:
+
+	Tests the LinearInequalityConstraintRepresentation() method of a scalar
+	constraint. Here, we provide a constraint with two variable that is LessThanEqual
+	to one variable added to a constant. The expected output is a vector with a
+	single one and a single zero and a constant 2.5.
+*/
+func TestScalarConstraint_LinearInequalityConstraintRepresentation3(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariableVector(2)
+	c2 := symbolic.K(2.5)
+
+	// Create constraint
+	sc := x.Transpose().Multiply(symbolic.OnesVector(2)).LessEq(x.AtVec(1).Plus(c2))
+
+	// Verify that the constraint is linear
+	if !sc.IsLinear() {
+		t.Errorf(
+			"Expected sc to be linear; received %v",
+			sc.IsLinear(),
+		)
+	}
+
+	// Get linear representation
+	A, b := sc.(symbolic.ScalarConstraint).LinearInequalityConstraintRepresentation()
+
+	// Verify that the vector is all ones
+
+	if A.AtVec(0) != 1 {
+		t.Errorf("Expected A[0] to be 1; received %v", A.AtVec(0))
+	}
+	if A.AtVec(1) != 0.0 {
+		t.Errorf("Expected A[1] to be 0; received %v", A.AtVec(1))
+	}
+
+	// Verify that the constant is 2.5
+	if b != 2.5 {
+		t.Errorf("Expected b to be 2.5; received %v", b)
+	}
+}
+
+/*
+TestScalarConstraint_LinearInequalityConstraintRepresentation4
+Description:
+
+	Tests the LinearInequalityConstraintRepresentation() method of a scalar
+	constraint. This test verifies that the method panics if the left hand side
+	is not a polynomial like scalar.
+*/
+func TestScalarConstraint_LinearInequalityConstraintRepresentation4(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariableVector(2)
+	c2 := symbolic.K(2.5)
+
+	// Create constraint
+	sc := x.Transpose().Multiply(x).LessEq(c2)
+
+	// Verify that the constraint is linear
+	if sc.IsLinear() {
+		t.Errorf(
+			"Expected sc to be nonlinear; received IsLinear() = %v",
+			sc.IsLinear(),
+		)
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.LinearInequalityConstraintRepresentation() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.LinearExpressionRequiredError{
+			Operation:  "LinearInequalityConstraintRepresentation",
+			Expression: sc.Left(),
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.LinearInequalityConstraintRepresentation() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	// Get linear representation
+	sc.(symbolic.ScalarConstraint).LinearInequalityConstraintRepresentation()
+}
+
+/*
+TestScalarConstraint_LinearInequalityConstraintRepresentation5
+Description:
+
+	Tests the LinearInequalityConstraintRepresentation() method of a scalar
+	constraint. This test verifies that the method panics if the RIGHT hand side
+	is not a polynomial like scalar.
+*/
+func TestScalarConstraint_LinearInequalityConstraintRepresentation5(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariableVector(2)
+	c2 := symbolic.K(2.5)
+
+	// Create constraint
+	sc := c2.LessEq(x.Transpose().Multiply(x))
+
+	// Verify that the constraint is linear
+	if sc.IsLinear() {
+		t.Errorf(
+			"Expected sc to be nonlinear; received IsLinear() = %v",
+			sc.IsLinear(),
+		)
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.LinearInequalityConstraintRepresentation() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.LinearExpressionRequiredError{
+			Operation:  "LinearInequalityConstraintRepresentation",
+			Expression: sc.Right(),
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.LinearInequalityConstraintRepresentation() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	// Get linear representation
+	sc.(symbolic.ScalarConstraint).LinearInequalityConstraintRepresentation()
+}
+
+/*
+TestScalarConstraint_LinearEqualityConstraintRepresentation1
+Description:
+
+	Tests the LinearEqualityConstraintRepresentation() method of a scalar
+	constraint. Here, we provide a constraint with two variables that are LessThanEqual
+	to a constant. The expected output is a vector of all ones and a constant 2.5.
+*/
+func TestScalarConstraint_LinearEqualityConstraintRepresentation1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariableVector(2)
+	c2 := symbolic.K(2.5)
+
+	// Create constraint
+	sc := x.Transpose().Multiply(symbolic.OnesVector(2)).Eq(c2)
+
+	// Verify that the constraint is linear
+	if !sc.IsLinear() {
+		t.Errorf(
+			"Expected sc to be linear; received %v",
+			sc.IsLinear(),
+		)
+	}
+
+	// Get linear representation
+	A, b := sc.(symbolic.ScalarConstraint).LinearEqualityConstraintRepresentation()
+
+	// Verify that the vector is all ones
+	for ii := 0; ii < A.Len(); ii++ {
+		if A.AtVec(ii) != 1 {
+			t.Errorf(
+				"Expected A[%v] to be 1; received %v",
+				ii,
+				A.AtVec(ii),
+			)
+		}
+	}
+
+	// Verify that the constant is 2.5
+	if b != 2.5 {
+		t.Errorf(
+			"Expected b to be 2.5; received %v",
+			b,
+		)
+	}
+}
+
+/*
+TestScalarConstraint_LinearEqualityConstraintRepresentation2
+Description:
+
+	Tests the LinearEqualityConstraintRepresentation() method of a scalar
+	constraint. Here, we check that the method properly panics when we call
+	the method on a constraint that is not an equality constraint.
+*/
+func TestScalarConstraint_LinearEqualityConstraintRepresentation2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariableVector(2)
+	c2 := symbolic.K(2.5)
+
+	// Create constraint
+	sc := x.Transpose().Multiply(symbolic.OnesVector(2)).LessEq(c2)
+
+	// Verify that the constraint is linear
+	if !sc.IsLinear() {
+		t.Errorf(
+			"Expected sc to be linear; received %v",
+			sc.IsLinear(),
+		)
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.EqualityConstraintRequiredError{
+			Operation: "LinearEqualityConstraintRepresentation",
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	sc.(symbolic.ScalarConstraint).LinearEqualityConstraintRepresentation()
+}
+
+/*
+TestScalarConstraint_LinearEqualityConstraintRepresentation3
+Description:
+
+	Tests the LinearEqualityConstraintRepresentation() method of a scalar
+	constraint. This test verifies that the method panics if the left hand side
+	is not a polynomial like scalar (in this case, it will be nonlinear).
+*/
+func TestScalarConstraint_LinearEqualityConstraintRepresentation3(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariableVector(2)
+	c2 := symbolic.K(2.5)
+
+	// Create constraint
+	sc := x.Transpose().Multiply(x).Eq(c2)
+
+	// Verify that the constraint is linear
+	if sc.IsLinear() {
+		t.Errorf(
+			"Expected sc to be nonlinear; received IsLinear() = %v",
+			sc.IsLinear(),
+		)
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.LinearExpressionRequiredError{
+			Operation:  "LinearEqualityConstraintRepresentation",
+			Expression: sc.Left(),
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	sc.(symbolic.ScalarConstraint).LinearEqualityConstraintRepresentation()
+}
+
+/*
+TestScalarConstraint_LinearEqualityConstraintRepresentation4
+Description:
+
+	Tests the LinearEqualityConstraintRepresentation() method of a scalar
+	constraint. This test verifies that the method panics if the RIGHT hand side
+	is not a polynomial like scalar (in this case, it will be nonlinear).
+*/
+func TestScalarConstraint_LinearEqualityConstraintRepresentation4(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariableVector(2)
+	c2 := symbolic.K(2.5)
+
+	// Create constraint
+	sc := c2.Eq(x.Transpose().Multiply(x))
+
+	// Verify that the constraint is linear
+	if sc.IsLinear() {
+		t.Errorf(
+			"Expected sc to be nonlinear; received IsLinear() = %v",
+			sc.IsLinear(),
+		)
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.LinearExpressionRequiredError{
+			Operation:  "LinearEqualityConstraintRepresentation",
+			Expression: sc.Right(),
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	sc.(symbolic.ScalarConstraint).LinearEqualityConstraintRepresentation()
 }

@@ -394,7 +394,7 @@ func (p Polynomial) Multiply(e interface{}) Expression {
 		// Multiply each monomial of the polynomial by the polynomial
 		var productOut Expression = K(0.0)
 		for ii := 0; ii < len(right.Monomials); ii++ {
-			fmt.Println(fmt.Sprintf("pCopy.Multiply(right.Monomials[ii]): %v", pCopy.Multiply(right.Monomials[ii])))
+			// fmt.Println(fmt.Sprintf("pCopy.Multiply(right.Monomials[ii]): %v", pCopy.Multiply(right.Monomials[ii])))
 			productOut = productOut.Plus(
 				pCopy.Multiply(right.Monomials[ii]),
 			)

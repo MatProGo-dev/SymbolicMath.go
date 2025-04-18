@@ -197,7 +197,7 @@ func TestExpression_HStack4(t *testing.T) {
 
 		// Collect the expected error which should be a dimension error and
 		// compare it with the recovered error
-		expectedError := smErrors.DimensionError{
+		expectedError := smErrors.MatrixDimensionError{
 			Operation: "HStack",
 			Arg1:      km1,
 			Arg2:      vv2,
@@ -399,7 +399,7 @@ func TestExpression_VStack4(t *testing.T) {
 
 		// Collect the expected error which should be a dimension error and
 		// compare it with the recovered error
-		expectedError := smErrors.DimensionError{
+		expectedError := smErrors.MatrixDimensionError{
 			Operation: "VStack",
 			Arg1:      km1,
 			Arg2:      vv2,
@@ -443,7 +443,7 @@ func TestExpression_VStack5(t *testing.T) {
 
 		// Collect the expected error which should be a dimension error and
 		// compare it with the recovered error
-		expectedError := smErrors.DimensionError{
+		expectedError := smErrors.MatrixDimensionError{
 			Operation: "VStack",
 			Arg1:      km1,
 			Arg2:      km2,

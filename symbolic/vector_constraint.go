@@ -1,8 +1,8 @@
 package symbolic
 
 import (
-	"fmt"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"gonum.org/v1/gonum/mat"
 )
 
 /*
@@ -89,12 +89,9 @@ func (vc VectorConstraint) Check() error {
 	}
 
 	// Check dimensions of left and right hand sides.
-	if vc.LeftHandSide.Len() != vc.RightHandSide.Len() {
-		return fmt.Errorf(
-			"Left hand side has dimension %v, but right hand side has dimension %v!",
-			vc.LeftHandSide.Len(),
-			vc.RightHandSide.Len(),
-		)
+	err = smErrors.CheckDimensionsInComparison(vc.Left(), vc.Right(), vc.ConstrSense().String())
+	if err != nil {
+		return err
 	}
 
 	// All Checks Passed!
@@ -128,4 +125,135 @@ Description:
 */
 func (vc VectorConstraint) IsLinear() bool {
 	return IsLinear(vc.RightHandSide) && IsLinear(vc.LeftHandSide)
+}
+
+/*
+LinearInequalityConstraintRepresentation
+Description:
+
+	Returns the linear constraint representation of the scalar constraint.
+	Returns a tuple of the form (A, b) where A is a vector and b is a constant such that:
+	A.Dot(x) <= b
+*/
+func (vc VectorConstraint) LinearInequalityConstraintRepresentation(wrt ...[]Variable) (A mat.Dense, b mat.VecDense) {
+	// Check that the constraint is well formed.
+	err := vc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check that the constraint is linear.
+	if !vc.IsLinear() {
+		if !IsLinear(vc.LeftHandSide) {
+			panic(smErrors.LinearExpressionRequiredError{
+				Operation:  "LinearInequalityConstraintRepresentation",
+				Expression: vc.LeftHandSide,
+			})
+		}
+
+		if !IsLinear(vc.RightHandSide) {
+			panic(smErrors.LinearExpressionRequiredError{
+				Operation:  "LinearInequalityConstraintRepresentation",
+				Expression: vc.RightHandSide,
+			})
+		}
+	}
+
+	// Check that the sense is inequality.
+	if vc.Sense == SenseEqual {
+		panic(
+			smErrors.InequalityConstraintRequiredError{
+				Operation: "LinearInequalityConstraintRepresentation",
+			},
+		)
+	}
+
+	// Create A
+	newLHS := vc.Left().(PolynomialLikeVector)
+	rhsWithoutConst := vc.Right().(PolynomialLikeVector)
+	rhsWithoutConst = rhsWithoutConst.Minus(rhsWithoutConst.Constant()).(PolynomialLikeVector)
+	newLHS = newLHS.Minus(rhsWithoutConst).(PolynomialLikeVector)
+
+	A = newLHS.LinearCoeff(wrt...)
+
+	if vc.Sense == SenseGreaterThanEqual {
+		A.Scale(-1, &A)
+	}
+
+	// Create b
+	N := vc.Left().(VectorExpression).Len()
+	var newRHS *mat.VecDense = mat.NewVecDense(N, make([]float64, N))
+	rightConst := vc.Right().(VectorExpression).Constant()
+	leftConst := vc.Left().(VectorExpression).Constant()
+
+	newRHS.SubVec(&rightConst, &leftConst)
+	b = *newRHS
+
+	if vc.Sense == SenseGreaterThanEqual {
+		b.ScaleVec(-1, &b)
+	}
+
+	// Return the tuple
+	return A, b
+}
+
+/*
+LinearEqualityConstraintRepresentation
+Description:
+
+	Returns the representation of the constraint as a linear equality constraint.
+	Returns a tuple of the form (C, d) where C is a matrix and d is a vector such that:
+	C*x = d
+*/
+func (vc VectorConstraint) LinearEqualityConstraintRepresentation(wrt ...[]Variable) (C mat.Dense, d mat.VecDense) {
+	// Check that the constraint is well formed.
+	err := vc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check that the constraint is linear.
+	if !vc.IsLinear() {
+		if !IsLinear(vc.LeftHandSide) {
+			panic(smErrors.LinearExpressionRequiredError{
+				Operation:  "LinearEqualityConstraintRepresentation",
+				Expression: vc.LeftHandSide,
+			})
+		}
+
+		if !IsLinear(vc.RightHandSide) {
+			panic(smErrors.LinearExpressionRequiredError{
+				Operation:  "LinearEqualityConstraintRepresentation",
+				Expression: vc.RightHandSide,
+			})
+		}
+	}
+
+	// Check that the sense is equality.
+	if vc.Sense != SenseEqual {
+		panic(
+			smErrors.EqualityConstraintRequiredError{
+				Operation: "LinearEqualityConstraintRepresentation",
+			},
+		)
+	}
+
+	// Create C
+	newLHS := vc.Left().(PolynomialLikeVector)
+	rhsWithoutConst := vc.Right().(PolynomialLikeVector)
+	rhsWithoutConst = rhsWithoutConst.Minus(rhsWithoutConst.Constant()).(PolynomialLikeVector)
+	newLHS = newLHS.Minus(rhsWithoutConst).(PolynomialLikeVector)
+
+	C = newLHS.LinearCoeff(wrt...)
+
+	// Create d
+	N := vc.Left().(VectorExpression).Len()
+	var newRHS *mat.VecDense = mat.NewVecDense(N, make([]float64, N))
+	rightConst := vc.Right().(VectorExpression).Constant()
+	leftConst := vc.Left().(VectorExpression).Constant()
+	newRHS.SubVec(&rightConst, &leftConst)
+	d = *newRHS
+
+	// Return the tuple
+	return C, d
 }

@@ -221,7 +221,7 @@ func TestConstantVector_Plus1(t *testing.T) {
 			)
 		}
 
-		if rAsError.Error() != (smErrors.DimensionError{
+		if rAsError.Error() != (smErrors.MatrixDimensionError{
 			Operation: "Plus",
 			Arg1:      kv1,
 			Arg2:      kv2,
@@ -577,7 +577,7 @@ func TestConstantVector_LessEq1(t *testing.T) {
 		}
 
 		var sense0 symbolic.ConstrSense = symbolic.SenseLessThanEqual
-		if rAsError.Error() != (smErrors.DimensionError{
+		if rAsError.Error() != (smErrors.MatrixDimensionError{
 			Operation: "Comparison (" + sense0.String() + ")",
 			Arg1:      kv1,
 			Arg2:      kv2,
@@ -792,7 +792,7 @@ func TestConstantVector_Multiply2(t *testing.T) {
 		}
 
 		// Check that the error is the DimensionError
-		expectedError := smErrors.DimensionError{
+		expectedError := smErrors.MatrixDimensionError{
 			Operation: "Multiply",
 			Arg1:      kv1,
 			Arg2:      vv2,

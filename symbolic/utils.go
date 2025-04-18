@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 )
 
@@ -148,7 +149,7 @@ func CheckDimensionsInComparison(left, right Expression, senseIn ConstrSense) er
 	dimsAreMatched = dimsAreMatched || IsScalarExpression(right)
 
 	if !dimsAreMatched {
-		return smErrors.DimensionError{
+		return smErrors.MatrixDimensionError{
 			Operation: "Comparison (" + senseIn.String() + ")",
 			Arg1:      left,
 			Arg2:      right,

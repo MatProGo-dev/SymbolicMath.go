@@ -234,6 +234,14 @@ func (kv KVector) Minus(e interface{}) Expression {
 		return kv.Minus(VecDenseToKVector(right)) // Convert to KVector
 	case *mat.VecDense:
 		return kv.Minus(VecDenseToKVector(*right)) // Convert to KVector
+	case KVector, VariableVector, MonomialVector, PolynomialVector:
+		// Force the right hand side to be a VectorExpression
+		rhsAsVE := right.(VectorExpression)
+
+		// Compute Subtraction using our Multiply method
+		return kv.Plus(
+			rhsAsVE.Multiply(-1.0),
+		)
 	}
 
 	// Default response is a panic
@@ -297,14 +305,6 @@ func (kv KVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint 
 	}
 
 	switch rhsConverted := rightIn.(type) {
-	case KVector:
-		// Return constraint
-		return VectorConstraint{
-			LeftHandSide:  kv,
-			RightHandSide: rhsConverted,
-			Sense:         sense,
-		}
-
 	case mat.VecDense:
 		// Use KVector's Comparison method
 		return kv.Comparison(VecDenseToKVector(rhsConverted), sense)
@@ -313,11 +313,14 @@ func (kv KVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint 
 		// Use KVector's Comparison method
 		return kv.Comparison(VecDenseToKVector(*rhsConverted), sense)
 
-	case VariableVector:
+	case KVector, VariableVector, MonomialVector, PolynomialVector:
+		// Pass the rhsConverted object into a container marked as a "VectorExpression" interface
+		rhsAsVE := rhsConverted.(VectorExpression)
+
 		// Return constraint
 		return VectorConstraint{
 			LeftHandSide:  kv,
-			RightHandSide: rhsConverted,
+			RightHandSide: rhsAsVE,
 			Sense:         sense,
 		}
 
