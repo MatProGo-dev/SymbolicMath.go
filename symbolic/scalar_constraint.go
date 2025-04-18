@@ -109,7 +109,7 @@ Description:
 	Returns a tuple of the form (A, b) where A is a vector and b is a constant such that:
 	A.Dot(x) <= b
 */
-func (sc ScalarConstraint) LinearInequalityConstraintRepresentation() (A mat.VecDense, b float64) {
+func (sc ScalarConstraint) LinearInequalityConstraintRepresentation(wrt ...[]Variable) (A mat.VecDense, b float64) {
 	// Check that the constraint is well formed.
 	err := sc.Check()
 	if err != nil {
@@ -153,4 +153,58 @@ func (sc ScalarConstraint) LinearInequalityConstraintRepresentation() (A mat.Vec
 
 	// Return the tuple
 	return A, b
+}
+
+/*
+LinearEqualityConstraintRepresentation
+Description:
+
+	Returns the linear constraint representation of the scalar constraint.
+	Returns a tuple of the form (C, d) where C is a vector and d is a constant such that:
+	C.Dot(x) == d
+*/
+func (sc ScalarConstraint) LinearEqualityConstraintRepresentation(wrt ...[]Variable) (C mat.VecDense, d float64) {
+	// Check that the constraint is well formed.
+	err := sc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check that the constraint is linear.
+	if !sc.IsLinear() {
+		if !IsLinear(sc.LeftHandSide) {
+			panic(smErrors.LinearExpressionRequiredError{
+				Operation:  "LinearEqualityConstraintRepresentation",
+				Expression: sc.LeftHandSide,
+			})
+		}
+
+		if !IsLinear(sc.RightHandSide) {
+			panic(smErrors.LinearExpressionRequiredError{
+				Operation:  "LinearEqualityConstraintRepresentation",
+				Expression: sc.RightHandSide,
+			})
+		}
+	}
+
+	// Check that the sense is equality.
+	if sc.Sense != SenseEqual {
+		panic(
+			smErrors.EqualityConstraintRequiredError{
+				Operation: "LinearEqualityConstraintRepresentation",
+			},
+		)
+	}
+
+	// Create C
+	newLHS := sc.Left().(ScalarExpression)
+	newLHS = newLHS.Minus(sc.Right()).(ScalarExpression)
+	C = newLHS.LinearCoeff()
+
+	// Create d
+	newRHS := sc.Right().(ScalarExpression).Constant() - sc.Left().(ScalarExpression).Constant()
+	d = newRHS
+
+	// Return
+	return C, d
 }
