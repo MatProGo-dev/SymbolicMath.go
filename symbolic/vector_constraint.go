@@ -159,6 +159,15 @@ func (vc VectorConstraint) LinearInequalityConstraintRepresentation(wrt ...[]Var
 		}
 	}
 
+	// Check that the sense is inequality.
+	if vc.Sense == SenseEqual {
+		panic(
+			smErrors.InequalityConstraintRequiredError{
+				Operation: "LinearInequalityConstraintRepresentation",
+			},
+		)
+	}
+
 	// Create A
 	newLHS := vc.Left().(PolynomialLikeVector)
 	rhsWithoutConst := vc.Right().(PolynomialLikeVector)

@@ -397,20 +397,16 @@ Description:
 	returns the proper matrix and vector for a well-defined, lienar vector constraint.
 	We will construct a vector constraint of the form:
 	 [1, 0;
-	  0, 1] * x = [1; 2]
+	  0, 1] * x <= [1; 2]
 	where x is a vector of variables.
 */
-func TestVectorConstraint_LinearEqualityConstraintRepresentation4(t *testing.T) {
+func TestVectorConstraint_LinearInequalityConstraintRepresentation4(t *testing.T) {
 	// Constants
 	N := 2
 	x := symbolic.NewVariableVector(N)
 	left := x
 	right := mat.NewVecDense(N, []float64{1, 2})
-	vc := left.Eq(right).(symbolic.VectorConstraint)
-
-	fmt.Printf("vc: %v\n", vc)
-	fmt.Printf("vc.LeftHandSide: %v\n", vc.LeftHandSide)
-	fmt.Printf("vc.RightHandSide: %v\n", vc.RightHandSide)
+	vc := left.LessEq(right).(symbolic.VectorConstraint)
 
 	// Test
 	A, b := vc.LinearInequalityConstraintRepresentation()
@@ -527,4 +523,253 @@ func TestVectorConstraint_LinearInequalityConstraintRepresentation6(t *testing.T
 			b.AtVec(1),
 		)
 	}
+}
+
+/*
+TestVectorConstraint_LinearInequalityConstraintRepresentation7
+Description:
+
+	This function tests that the LinearInequalityConstraintRepresentation method
+	properly panics when called with a constraint that is not based on inequality.
+*/
+func TestVectorConstraint_LinearInequalityConstraintRepresentation7(t *testing.T) {
+	// Constants
+	N := 7
+	left := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	right := symbolic.NewVariableVector(N)
+	vc := symbolic.VectorConstraint{left, right, symbolic.SenseEqual}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.LinearInequalityConstraintRepresentation() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.InequalityConstraintRequiredError{
+			Operation: "LinearInequalityConstraintRepresentation",
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.LinearInequalityConstraintRepresentation() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	vc.LinearInequalityConstraintRepresentation()
+}
+
+/*
+TestVectorConstraint_LinearEqualityConstraintRepresentation1
+Description:
+
+	This function tests that the LinearEqualityConstraintRepresentation method
+	properly panics if the input VectorConstraint is not well defined.
+*/
+func TestVectorConstraint_LinearEqualityConstraintRepresentation1(t *testing.T) {
+	// Constants
+	N := 7
+	left := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	right := symbolic.NewVariableVector(N + 1)
+	vc := symbolic.VectorConstraint{left, right, symbolic.SenseEqual}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.VectorDimensionError{
+			Operation: fmt.Sprintf("Comparison (%v)", vc.Sense),
+			Arg1:      vc.LeftHandSide,
+			Arg2:      vc.RightHandSide,
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	vc.LinearEqualityConstraintRepresentation()
+}
+
+/*
+TestVectorConstraint_LinearEqualityConstraintRepresentation2
+Description:
+
+	This function tests that the LinearEqualityConstraintRepresentation method
+	properly panics when the LEFT hand side is not linear.
+*/
+func TestVectorConstraint_LinearEqualityConstraintRepresentation2(t *testing.T) {
+	// Constants
+	N := 7
+	right := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	x := symbolic.NewVariableVector(N)
+	left := x.Plus(x.Transpose().Multiply(x))
+	vc := left.Eq(right).(symbolic.VectorConstraint)
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.LinearExpressionRequiredError{
+			Operation:  "LinearEqualityConstraintRepresentation",
+			Expression: vc.Left(),
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	vc.LinearEqualityConstraintRepresentation()
+}
+
+/*
+TestVectorConstraint_LinearEqualityConstraintRepresentation3
+Description:
+
+	This function tests that the LinearEqualityConstraintRepresentation method
+	properly panics when the RIGHT hand side is not linear.
+*/
+func TestVectorConstraint_LinearEqualityConstraintRepresentation3(t *testing.T) {
+	// Constants
+	N := 7
+	left := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	x := symbolic.NewVariableVector(N)
+	right := x.Plus(x.Transpose().Multiply(x))
+	vc := left.Eq(right).(symbolic.VectorConstraint)
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.LinearExpressionRequiredError{
+			Operation:  "LinearEqualityConstraintRepresentation",
+			Expression: vc.Right(),
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	vc.LinearEqualityConstraintRepresentation()
+}
+
+/*
+TestVectorConstraint_LinearEqualityConstraintRepresentation4
+Description:
+
+	This function tests that the LinearEqualityConstraintRepresentation method
+	properly returns the matrix and vector for a well-defined, lienar vector constraint.
+	In this case, we will create a vector constraint of the form:
+	 [1, 0;
+	  0, 1] * x = [1; 2]
+	where x is a vector of variables.
+*/
+func TestVectorConstraint_LinearEqualityConstraintRepresentation4(t *testing.T) {
+	// Constants
+	N := 2
+	x := symbolic.NewVariableVector(N)
+	left := x
+	right := mat.NewVecDense(N, []float64{1, 2})
+	vc := left.Eq(right).(symbolic.VectorConstraint)
+
+	// Test
+	C, d := vc.LinearEqualityConstraintRepresentation()
+
+	nRowsC, nColsC := C.Dims()
+	if nRowsC != N || nColsC != N {
+		t.Errorf(
+			"Expected vc.LinearEqualityConstraintRepresentation() to return a matrix of dimension %v; received dimension (%v, %v)",
+			[]int{N, N},
+			nRowsC, nColsC,
+		)
+	}
+
+	if d.AtVec(0) != 1 {
+		t.Errorf(
+			"Expected vc.LinearEqualityConstraintRepresentation()'s d vector to contain a 1 at the %v-th index; received %v",
+			0,
+			d.AtVec(0),
+		)
+	}
+
+	if d.AtVec(1) != 2 {
+		t.Errorf(
+			"Expected vc.LinearEqualityConstraintRepresentation()'s d vector to contain a 2 at the %v-th index; received %v",
+			1,
+			d.AtVec(1),
+		)
+	}
+}
+
+/*
+TestVectorConstraint_LinearEqualityConstraintRepresentation5
+Description:
+
+	This function tests that the LinearEqualityConstraintRepresentation method
+	properly panics when called with a constraint that is not based on equality.
+*/
+func TestVectorConstraint_LinearEqualityConstraintRepresentation5(t *testing.T) {
+	// Constants
+	N := 7
+	left := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	right := symbolic.NewVariableVector(N)
+	vc := symbolic.VectorConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.EqualityConstraintRequiredError{
+			Operation: "LinearEqualityConstraintRepresentation",
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.LinearEqualityConstraintRepresentation() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	vc.LinearEqualityConstraintRepresentation()
 }
