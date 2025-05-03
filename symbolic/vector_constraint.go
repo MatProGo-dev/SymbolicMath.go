@@ -299,3 +299,20 @@ func (vc VectorConstraint) SubstituteAccordingTo(subMap map[Variable]Expression)
 	// Return the new constraint
 	return VectorConstraint{newLHS, newRHS, vc.Sense}
 }
+
+/*
+Len
+Description:
+
+	Returns the length of the vector constraint.
+*/
+func (vc VectorConstraint) Len() int {
+	// Check that the constraint is well formed.
+	err := vc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Return the length of the vector constraint.
+	return vc.LeftHandSide.Len()
+}
