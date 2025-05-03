@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 )
 
@@ -144,4 +145,49 @@ Description:
 */
 func (mc MatrixConstraint) IsLinear() bool {
 	return IsLinear(mc.RightHandSide) && IsLinear(mc.LeftHandSide)
+}
+
+/*
+Substitute
+Description:
+
+	Substitutes the variable vIn with the scalar expression seIn
+*/
+func (mc MatrixConstraint) Substitute(vIn Variable, seIn ScalarExpression) Constraint {
+	// Check that the constraint is well formed.
+	err := mc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Substitute the variable in the left hand side
+	newLHS := mc.LeftHandSide.Substitute(vIn, seIn).(MatrixExpression)
+
+	// Substitute the variable in the right hand side
+	newRHS := mc.RightHandSide.Substitute(vIn, seIn).(MatrixExpression)
+
+	return MatrixConstraint{newLHS, newRHS, mc.Sense}
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes the variables in the map with the corresponding expressions
+	in the given scalar constraint.
+*/
+func (mc MatrixConstraint) SubstituteAccordingTo(subMap map[Variable]Expression) Constraint {
+	// Check that the constraint is well formed.
+	err := mc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Substitute the variable in the left hand side
+	newLHS := mc.LeftHandSide.SubstituteAccordingTo(subMap).(MatrixExpression)
+
+	// Substitute the variable in the right hand side
+	newRHS := mc.RightHandSide.SubstituteAccordingTo(subMap).(MatrixExpression)
+
+	return MatrixConstraint{newLHS, newRHS, mc.Sense}
 }
