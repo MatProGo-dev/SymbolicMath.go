@@ -727,11 +727,13 @@ func (m Monomial) SubstituteAccordingTo(subMap map[Variable]Expression) Expressi
 
 	// Algorithm
 	// Create the monomial
-	var out Expression = K(0.0)
+	var out Expression = K(m.Coefficient)
 
 	// Iterate through each variable in the monomial
-	for tempVar, tempExp := range subMap {
-		out = out.Substitute(tempVar, tempExp.(ScalarExpression))
+	for ii, varII := range m.VariableFactors {
+		out = out.Multiply(
+			varII.SubstituteAccordingTo(subMap).Power(m.Exponents[ii]),
+		)
 	}
 
 	// Return
