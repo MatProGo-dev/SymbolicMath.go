@@ -8,9 +8,10 @@ Description:
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
-	"testing"
 )
 
 /*
@@ -431,4 +432,212 @@ func TestMatrixConstraint_At3(t *testing.T) {
 	}()
 
 	mc.At(0, 0)
+}
+
+/*
+TestMatrixConstraint_Substitute1
+Description:
+
+	Tests that the Substitute() method properly panics
+	when the left hand side is not a well-formed matrix expression.
+	(In this case, the left hand side is a monomial matrix that is not well-formed)
+*/
+func TestMatrixConstraint_Substitute1(t *testing.T) {
+	// Constants
+	left := symbolic.MonomialMatrix{}
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 4))
+	mc := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	expectedError := left.Check()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mc.Substitute() to panic; did not panic",
+			)
+		}
+
+		// Check that the error is the expected error
+		err, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"Expected mc.Substitute() to panic with type error; received %T",
+				r,
+			)
+		}
+
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected mc.Substitute() to panic with error \"%v\"; received \"%v\"",
+				expectedError,
+				err,
+			)
+		}
+
+	}()
+
+	mc.Substitute(symbolic.NewVariable(), symbolic.NewVariable())
+
+	t.Errorf(
+		"Expected mc.Substitute() to panic; did not panic",
+	)
+}
+
+/*
+TestMatrixConstraint_Substitute2
+Description:
+
+	Tests that the Substitute() method properly returns a
+	well-formed matrix constraint when the left and right hand sides
+	are well-formed and the sense is well-formed.
+	The left hand side is a monomial matrix and the right hand side
+	is a constant matrix.
+	After substitution, the left hand side should be a polynomial matrix
+	and the right hand side should be a constant matrix.
+*/
+func TestMatrixConstraint_Substitute2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	left := symbolic.MonomialMatrix{
+		{v1.ToMonomial(), v1.ToMonomial(), v1.ToMonomial(), v1.ToMonomial()},
+	}
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(1, 4))
+	mc := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	// Test
+	mcSubstituted := mc.Substitute(v1, v2.Plus(v2).(symbolic.ScalarExpression))
+
+	// Verify that mcSubstituted is a MatrixConstraint type
+	mcSubstitutedAsMC, ok := mcSubstituted.(symbolic.MatrixConstraint)
+	if !ok {
+		t.Errorf(
+			"Expected mcSubstituted to be of type MatrixConstraint; received %T",
+			mcSubstituted,
+		)
+	}
+
+	// Verify that the left hand side is a polynomial matrix
+	if _, ok := mcSubstitutedAsMC.LeftHandSide.(symbolic.PolynomialMatrix); !ok {
+		t.Errorf(
+			"Expected mcSubstituted.LeftHandSide to be of type PolynomialMatrix; received %T",
+			mcSubstitutedAsMC.LeftHandSide,
+		)
+	}
+
+	// Verify that the right hand side is a constant matrix
+	if _, ok := mcSubstitutedAsMC.RightHandSide.(symbolic.KMatrix); !ok {
+		t.Errorf(
+			"Expected mcSubstituted.RightHandSide to be of type KMatrix; received %T",
+			mcSubstitutedAsMC.RightHandSide,
+		)
+	}
+}
+
+/*
+TestMatrixConstraint_SubstituteAccordingTo1
+Description:
+
+	Tests that the SubstituteAccordingTo() method properly panics
+	when the left hand side is not a well-formed matrix expression.
+	(In this case, the left hand side is a monomial matrix that is not well-formed)
+*/
+func TestMatrixConstraint_SubstituteAccordingTo1(t *testing.T) {
+	// Constants
+	left := symbolic.MonomialMatrix{}
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 4))
+	mc := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	expectedError := left.Check()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mc.SubstituteAccordingTo() to panic; did not panic",
+			)
+		}
+
+		// Check that the error is the expected error
+		err, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"Expected mc.SubstituteAccordingTo() to panic with type error; received %T",
+				r,
+			)
+		}
+
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected mc.SubstituteAccordingTo() to panic with error \"%v\"; received \"%v\"",
+				expectedError,
+				err,
+			)
+		}
+
+	}()
+
+	mc.SubstituteAccordingTo(map[symbolic.Variable]symbolic.Expression{})
+
+	t.Errorf(
+		"Expected mc.SubstituteAccordingTo() to panic; did not panic",
+	)
+}
+
+/*
+TestMatrixConstraint_SubstituteAccordingTo2
+Description:
+
+	Tests that the SubstituteAccordingTo() method properly returns a
+	well-formed matrix constraint when the left and right hand sides
+	are well-formed and the sense is well-formed.
+	The left hand side is a monomial matrix and the right hand side
+	is a constant matrix.
+	After substitution, the left hand side should be a polynomial matrix
+	and the right hand side should be a constant matrix.
+*/
+func TestMatrixConstraint_SubstituteAccordingTo2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	left := symbolic.MonomialMatrix{
+		{v1.ToMonomial(), v1.ToMonomial(), v1.ToMonomial(), v1.ToMonomial()},
+	}
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(1, 4))
+	mc := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	// Test
+	mcSubstituted := mc.SubstituteAccordingTo(
+		map[symbolic.Variable]symbolic.Expression{
+			v1: v2.Plus(v2).(symbolic.ScalarExpression),
+		},
+	)
+
+	// Verify that mcSubstituted is a MatrixConstraint type
+	mcSubstitutedAsMC, ok := mcSubstituted.(symbolic.MatrixConstraint)
+	if !ok {
+		t.Errorf(
+			"Expected mcSubstituted to be of type MatrixConstraint; received %T",
+			mcSubstituted,
+		)
+	}
+
+	// Verify that the left hand side is a polynomial matrix
+	if _, ok := mcSubstitutedAsMC.LeftHandSide.(symbolic.PolynomialMatrix); !ok {
+		t.Errorf(
+			"Expected mcSubstituted.LeftHandSide to be of type PolynomialMatrix; received %T",
+			mcSubstitutedAsMC.LeftHandSide,
+		)
+	}
+
+	// Verify that the right hand side is a constant matrix
+	if _, ok := mcSubstitutedAsMC.RightHandSide.(symbolic.KMatrix); !ok {
+		t.Errorf(
+			"Expected mcSubstituted.RightHandSide to be of type KMatrix; received %T",
+			mcSubstitutedAsMC.RightHandSide,
+		)
+	}
 }
