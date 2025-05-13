@@ -1206,3 +1206,54 @@ func TestScalarConstraint_SubstituteAccordingTo2(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestScalarConstraint_String1
+Description:
+
+	Tests the String() method of a scalar constraint. This test verifies
+	that the method properly returns a string representation of the
+	constraint.
+	We will double check that the string contains
+		- the left hand side's string representation
+		- the right hand side's string representation
+		- the sense of the constraint
+*/
+func TestScalarConstraint_String1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{x, c2, symbolic.SenseLessThanEqual}
+
+	// Get string representation
+	s := sc.String()
+
+	// Verify that the string contains the left hand side
+	if !strings.Contains(s, sc.Left().String()) {
+		t.Errorf(
+			"Expected s to contain %v; received %v",
+			sc.Left().String(),
+			s,
+		)
+	}
+
+	// Verify that the string contains the right hand side
+	if !strings.Contains(s, sc.Right().String()) {
+		t.Errorf(
+			"Expected s to contain %v; received %v",
+			sc.Right().String(),
+			s,
+		)
+	}
+
+	// Verify that the string contains the sense
+	if !strings.Contains(s, sc.ConstrSense().String()) {
+		t.Errorf(
+			"Expected s to contain %v; received %v",
+			sc.ConstrSense().String(),
+			s,
+		)
+	}
+}
