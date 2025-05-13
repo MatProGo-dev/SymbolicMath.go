@@ -941,3 +941,319 @@ func TestScalarConstraint_LinearEqualityConstraintRepresentation5(t *testing.T) 
 		)
 	}
 }
+
+/*
+TestScalarConstraint_Substitute1
+Description:
+
+	This tests that the ScalarConstraint.Substitute() method properly panics
+	when the left hand side is not a valid monomial.
+*/
+func TestScalarConstraint_Substitute1(t *testing.T) {
+	// Constants
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1},
+		VariableFactors: []symbolic.Variable{},
+	}
+	v2 := symbolic.NewVariable()
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: v2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Create the panic handling function
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected sc.Substitute() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := m1.Check()
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected sc.Substitute() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	// Call the method
+	sc.Substitute(v2, symbolic.K(1))
+
+	t.Errorf(
+		"Expected sc.Substitute() to panic; received nil",
+	)
+}
+
+/*
+TestScalarConstraint_Substitute2
+Description:
+
+	This tests that the ScalarConstraint.Substitute() method properly
+	returns a new ScalarConstraint when the left hand side is a valid monomial.
+	In this case, we substitute a variable for a sum of two variables,
+	which should lead to a new constraint with the same sense.
+*/
+func TestScalarConstraint_Substitute2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1, 1},
+		VariableFactors: []symbolic.Variable{x, y},
+	}
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: c2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Substitute
+	sum := y.Plus(x)
+	sumAsSE, ok := sum.(symbolic.ScalarExpression)
+	if !ok {
+		t.Errorf(
+			"Expected sum to be a symbolic.ScalarExpression; received %T",
+			sum,
+		)
+	}
+
+	newSc := sc.Substitute(x, sumAsSE)
+
+	// Verify that the new left hand side is a polynomial and NOT a monomial
+	if _, ok := newSc.Left().(symbolic.Monomial); ok {
+		t.Errorf(
+			"Expected newSc.LeftHandSide to be a symbolic.Polynomial; received %T",
+			newSc.Left(),
+		)
+	}
+
+	if _, ok := newSc.Left().(symbolic.Polynomial); !ok {
+		t.Errorf(
+			"Expected newSc.LeftHandSide to be a symbolic.Polynomial; received %T",
+			newSc.Left(),
+		)
+	}
+
+	// Verify that the new right hand side is a constant 3.14
+	m2, ok := newSc.Right().(symbolic.K)
+	if !ok {
+		t.Errorf(
+			"Expected newSc.RightHandSide to be a symbolic.K; received %T",
+			newSc.Right(),
+		)
+	}
+
+	// Verify that the new right hand side is a constant 3.14
+	if float64(m2) != 3.14 {
+		t.Errorf(
+			"Expected newSc.RightHandSide to be 3.14; received %v",
+			m2,
+		)
+	}
+
+	// Verify that the new constraint has the same sense
+	if newSc.ConstrSense() != sc.Sense {
+		t.Errorf(
+			"Expected newSc.Sense to be %v; received %v",
+			sc.Sense,
+			newSc.ConstrSense(),
+		)
+	}
+}
+
+/*
+TestScalarConstraint_SubstituteAccordingTo1
+Description:
+
+	This tests that the ScalarConstraint.SubstituteAccordingTo() method
+	properly panics when the left hand side is not a valid monomial.
+*/
+func TestScalarConstraint_SubstituteAccordingTo1(t *testing.T) {
+	// Constants
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1},
+		VariableFactors: []symbolic.Variable{},
+	}
+	v2 := symbolic.NewVariable()
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: v2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Create the panic handling function
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected sc.SubstituteAccordingTo() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := m1.Check()
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected sc.SubstituteAccordingTo() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	sc.SubstituteAccordingTo(nil)
+
+	t.Errorf(
+		"Expected sc.SubstituteAccordingTo() to panic; received nil",
+	)
+}
+
+/*
+TestScalarConstraint_SubstituteAccordingTo2
+Description:
+
+	This tests that the ScalarConstraint.SubstituteAccordingTo() method
+	properly returns a new ScalarConstraint when the left hand side is a valid monomial.
+	In this case, we substitute a variable for a sum of two variables,
+	which should lead to a new constraint with the same sense.
+*/
+func TestScalarConstraint_SubstituteAccordingTo2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1, 1},
+		VariableFactors: []symbolic.Variable{x, y},
+	}
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: c2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Substitute
+	sum := y.Plus(x)
+	sumAsSE, ok := sum.(symbolic.ScalarExpression)
+	if !ok {
+		t.Errorf(
+			"Expected sum to be a symbolic.ScalarExpression; received %T",
+			sum,
+		)
+	}
+
+	newSc := sc.SubstituteAccordingTo(
+		map[symbolic.Variable]symbolic.Expression{
+			x: sumAsSE,
+		},
+	)
+
+	// Verify that the new left hand side is a polynomial and NOT a monomial
+	if _, ok := newSc.Left().(symbolic.Monomial); ok {
+		t.Errorf(
+			"Expected newSc.LeftHandSide to be a symbolic.Polynomial; received %T",
+			newSc.Left(),
+		)
+	}
+
+	if _, ok := newSc.Left().(symbolic.Polynomial); !ok {
+		t.Errorf(
+			"Expected newSc.LeftHandSide to be a symbolic.Polynomial; received %T",
+			newSc.Left(),
+		)
+	}
+
+	// Verify that the new right hand side is a constant 3.14
+	m2, ok := newSc.Right().(symbolic.K)
+	if !ok {
+		t.Errorf(
+			"Expected newSc.RightHandSide to be a symbolic.K; received %T",
+			newSc.Right(),
+		)
+	}
+
+	if float64(m2) != 3.14 {
+		t.Errorf(
+			"Expected newSc.RightHandSide to be 3.14; received %v",
+			m2,
+		)
+	}
+
+	if newSc.ConstrSense() != sc.Sense {
+		t.Errorf(
+			"Expected newSc.Sense to be %v; received %v",
+			sc.Sense,
+			newSc.ConstrSense(),
+		)
+	}
+}
+
+/*
+TestScalarConstraint_String1
+Description:
+
+	Tests the String() method of a scalar constraint. This test verifies
+	that the method properly returns a string representation of the
+	constraint.
+	We will double check that the string contains
+		- the left hand side's string representation
+		- the right hand side's string representation
+		- the sense of the constraint
+*/
+func TestScalarConstraint_String1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{x, c2, symbolic.SenseLessThanEqual}
+
+	// Get string representation
+	s := sc.String()
+
+	// Verify that the string contains the left hand side
+	if !strings.Contains(s, sc.Left().String()) {
+		t.Errorf(
+			"Expected s to contain %v; received %v",
+			sc.Left().String(),
+			s,
+		)
+	}
+
+	// Verify that the string contains the right hand side
+	if !strings.Contains(s, sc.Right().String()) {
+		t.Errorf(
+			"Expected s to contain %v; received %v",
+			sc.Right().String(),
+			s,
+		)
+	}
+
+	// Verify that the string contains the sense
+	if !strings.Contains(s, sc.ConstrSense().String()) {
+		t.Errorf(
+			"Expected s to contain %v; received %v",
+			sc.ConstrSense().String(),
+			s,
+		)
+	}
+}

@@ -13,6 +13,8 @@ type Constraint interface {
 	ConstrSense() ConstrSense
 	Check() error
 	IsLinear() bool
+	Substitute(vIn Variable, seIn ScalarExpression) Constraint
+	SubstituteAccordingTo(subMap map[Variable]Expression) Constraint
 }
 
 func IsConstraint(c interface{}) bool {

@@ -208,3 +208,76 @@ func (sc ScalarConstraint) LinearEqualityConstraintRepresentation(wrt ...[]Varia
 	// Return
 	return C, d
 }
+
+/*
+Substitute
+Description:
+
+	Substitutes the variable vIn with the scalar expression seIn in the
+	given scalar constraint.
+*/
+func (sc ScalarConstraint) Substitute(vIn Variable, seIn ScalarExpression) Constraint {
+	// Check that the constraint is well formed.
+	err := sc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Substitute the variable in the left hand side
+	newLHS := sc.LeftHandSide.Substitute(vIn, seIn).(ScalarExpression)
+
+	// Substitute the variable in the right hand side
+	newRHS := sc.RightHandSide.Substitute(vIn, seIn).(ScalarExpression)
+
+	// Return the new constraint
+	return ScalarConstraint{
+		LeftHandSide:  newLHS,
+		RightHandSide: newRHS,
+		Sense:         sc.Sense,
+	}
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes the variables in the map with the corresponding expressions
+	in the given scalar constraint.
+*/
+func (sc ScalarConstraint) SubstituteAccordingTo(subMap map[Variable]Expression) Constraint {
+	// Check that the constraint is well formed.
+	err := sc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Substitute the variable in the left hand side
+	newLHS := sc.LeftHandSide.SubstituteAccordingTo(subMap).(ScalarExpression)
+
+	// Substitute the variable in the right hand side
+	newRHS := sc.RightHandSide.SubstituteAccordingTo(subMap).(ScalarExpression)
+
+	// Return the new constraint
+	return ScalarConstraint{
+		LeftHandSide:  newLHS,
+		RightHandSide: newRHS,
+		Sense:         sc.Sense,
+	}
+}
+
+/*
+String
+Description:
+
+	Returns a string representation of the scalar constraint.
+*/
+func (sc ScalarConstraint) String() string {
+	// Check that the constraint is well formed.
+	err := sc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Create the string representation
+	return sc.LeftHandSide.String() + " " + sc.Sense.String() + " " + sc.RightHandSide.String()
+}

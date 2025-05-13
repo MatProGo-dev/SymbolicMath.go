@@ -257,3 +257,62 @@ func (vc VectorConstraint) LinearEqualityConstraintRepresentation(wrt ...[]Varia
 	// Return the tuple
 	return C, d
 }
+
+/*
+Substitute
+Description:
+
+	Substitutes the variable vIn with the scalar expression seIn in the vector constraint.
+*/
+func (vc VectorConstraint) Substitute(vIn Variable, seIn ScalarExpression) Constraint {
+	// Check that the constraint is well formed.
+	err := vc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Substitute the variable in the left and right hand sides.
+	newLHS := vc.LeftHandSide.Substitute(vIn, seIn).(VectorExpression)
+	newRHS := vc.RightHandSide.Substitute(vIn, seIn).(VectorExpression)
+
+	// Return the new constraint
+	return VectorConstraint{newLHS, newRHS, vc.Sense}
+}
+
+/*
+SubstituteAccordingTo
+Description:
+
+	Substitutes the variables in the map with the corresponding expressions
+*/
+func (vc VectorConstraint) SubstituteAccordingTo(subMap map[Variable]Expression) Constraint {
+	// Check that the constraint is well formed.
+	err := vc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Substitute the variable in the left and right hand sides.
+	newLHS := vc.LeftHandSide.SubstituteAccordingTo(subMap).(VectorExpression)
+	newRHS := vc.RightHandSide.SubstituteAccordingTo(subMap).(VectorExpression)
+
+	// Return the new constraint
+	return VectorConstraint{newLHS, newRHS, vc.Sense}
+}
+
+/*
+Len
+Description:
+
+	Returns the length of the vector constraint.
+*/
+func (vc VectorConstraint) Len() int {
+	// Check that the constraint is well formed.
+	err := vc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Return the length of the vector constraint.
+	return vc.LeftHandSide.Len()
+}
