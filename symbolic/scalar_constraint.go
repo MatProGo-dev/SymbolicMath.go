@@ -264,3 +264,20 @@ func (sc ScalarConstraint) SubstituteAccordingTo(subMap map[Variable]Expression)
 		Sense:         sc.Sense,
 	}
 }
+
+/*
+String
+Description:
+
+	Returns a string representation of the scalar constraint.
+*/
+func (sc ScalarConstraint) String() string {
+	// Check that the constraint is well formed.
+	err := sc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Create the string representation
+	return sc.LeftHandSide.String() + " " + sc.Sense.String() + " " + sc.RightHandSide.String()
+}
