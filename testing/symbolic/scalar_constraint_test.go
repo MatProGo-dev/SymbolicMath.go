@@ -1166,10 +1166,6 @@ func TestScalarConstraint_SubstituteAccordingTo2(t *testing.T) {
 			x: sumAsSE,
 		},
 	)
-	t.Errorf(
-		"newSc = %v",
-		newSc,
-	)
 
 	// Verify that the new left hand side is a polynomial and NOT a monomial
 	if _, ok := newSc.Left().(symbolic.Monomial); ok {
