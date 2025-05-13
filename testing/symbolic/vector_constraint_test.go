@@ -927,3 +927,116 @@ func TestVectorConstraint_Substitute2(t *testing.T) {
 	}
 
 }
+
+/*
+TestVectorConstraint_SubstituteAccordingTo1
+Description:
+
+	This function tests that the SubstituteAccordingTo method properly panics
+	if the input scalar expression is not well defined.
+	(In this case, the left hand side is a monomial that is not well-defined.)
+*/
+func TestVectorConstraint_SubstituteAccordingTo1(t *testing.T) {
+	// Setup
+	N := 7
+	x := symbolic.NewVariable()
+	left := symbolic.VecDenseToKVector(symbolic.OnesVector(N)).ToMonomialVector()
+	left[6] = symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1, 0},
+		VariableFactors: []symbolic.Variable{x},
+	}
+	right := symbolic.NewVariableVector(N)
+
+	// Create the vector constraint
+	vc := symbolic.VectorConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	// Create the function for handling the panic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.SubstituteAccordingTo() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := left[6].Check()
+		if !strings.Contains(rAsError.Error(), expectedError.Error()) {
+			t.Errorf(
+				"Expected vc.SubstituteAccordingTo() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	// Test
+	subMap := map[symbolic.Variable]symbolic.Expression{
+		x: x.Power(3),
+	}
+	vc.SubstituteAccordingTo(subMap)
+
+	// Raise an error if the test did not panic
+	t.Errorf(
+		"Expected vc.SubstituteAccordingTo() to panic; received nil",
+	)
+
+}
+
+/*
+TestVectorConstraint_SubstituteAccordingTo2
+Description:
+
+	This function tests that the SubstituteAccordingTo method properly returns
+	a new vector constraint when the input scalar expressions are well-defined.
+	In this case, we will start with a vector of monomials on the left and
+	a vector of constants on the right.
+	We will substitute a variable on the left hand side with a polynomial
+	and expect the result to be a vector of polynomials on the left hand side
+	and a vector of constants on the right hand side.
+*/
+func TestVectorConstraint_SubstituteAccordingTo2(t *testing.T) {
+	// Setup
+	N := 7
+	x := symbolic.NewVariableVector(N)
+	left := x.ToMonomialVector()
+	right := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+
+	// Create the vector constraint
+	vc := symbolic.VectorConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	// Create the new expression to replace one of the variables with:
+	newExpr := x[0].Plus(x[1]).(symbolic.ScalarExpression)
+
+	// Substitute the variable
+	subMap := map[symbolic.Variable]symbolic.Expression{
+		x[0]: newExpr,
+	}
+	newVC := vc.SubstituteAccordingTo(subMap).(symbolic.VectorConstraint)
+
+	// Check the left hand side
+	// it should now be a vector of polynomials
+	if _, ok := newVC.LeftHandSide.(symbolic.PolynomialVector); !ok {
+		t.Errorf(
+			"Expected vc.SubstituteAccordingTo() to return a vector constraint with a polynomial vector on the left hand side; received %v",
+			newVC.LeftHandSide,
+		)
+	}
+
+	// Check the right hand side
+	if _, ok := newVC.RightHandSide.(symbolic.KVector); !ok {
+		t.Errorf(
+			"Expected vc.SubstituteAccordingTo() to return a vector constraint with a constant vector on the right hand side; received %v",
+			newVC.RightHandSide,
+		)
+	}
+
+	// Check the sense
+	if newVC.Sense != vc.Sense {
+		t.Errorf(
+			"Expected vc.SubstituteAccordingTo() to return a vector constraint with the same sense; received %v",
+			newVC.Sense,
+		)
+	}
+}
