@@ -650,3 +650,11 @@ func (v Variable) At(ii, jj int) ScalarExpression {
 	// Algorithm
 	return v
 }
+
+func UnionOfVariables(varSlices ...[]Variable) []Variable {
+	var allVars []Variable
+	for _, varSlice := range varSlices {
+		allVars = append(allVars, varSlice...)
+	}
+	return UniqueVars(allVars)
+}

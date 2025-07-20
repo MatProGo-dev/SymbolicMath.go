@@ -641,3 +641,55 @@ func TestMatrixConstraint_SubstituteAccordingTo2(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestMatrixConstraint_AsSimplifiedConstraint1
+Description:
+
+	This test verifies that AsSimplifiedConstraint() properly panics
+	whenever a malformed MatrixConstraint is used to call it.
+*/
+func TestMatrixConstraint_AsSimplifiedConstraint1(t *testing.T) {
+	// Create constraint
+	left := symbolic.MonomialMatrix{}
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 4))
+	mc := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	expectedError := left.Check()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mc.SubstituteAccordingTo() to panic; did not panic",
+			)
+		}
+
+		// Check that the error is the expected error
+		err, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"Expected mc.SubstituteAccordingTo() to panic with type error; received %T",
+				r,
+			)
+		}
+
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected mc.SubstituteAccordingTo() to panic with error \"%v\"; received \"%v\"",
+				expectedError,
+				err,
+			)
+		}
+
+	}()
+
+	// Call AsSimplifiedConstraint()
+	mc.AsSimplifiedConstraint()
+
+	t.Errorf(
+		"Expected mc.AsSimplifiedConstraint() to panic; did not panic",
+	)
+
+}
