@@ -1703,3 +1703,87 @@ func TestScalarConstraint_ImpliesThisIsAlsoSatisfied4(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied5
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly returns true when the
+	constraint DOES imply the other constraint AND they are both single-variable
+	constraints. In this case, we have
+	x >= 4 and x >= 3. The first constraint DOES imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied5(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.GreaterEq(4.0)
+
+	// Create a second constraint
+	sc2 := x.GreaterEq(3.0)
+
+	// Verify that the first constraint DOES imply the second
+	if !sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be true; received false",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied6
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly returns true when the
+	constraint DOES imply the other constraint AND they are both single-variable
+	constraints. In this case, we have
+	x = 3 and x <= 4. The first constraint DOES imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied6(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.Eq(3.0)
+
+	// Create a second constraint
+	sc2 := x.LessEq(4.0)
+
+	// Verify that the first constraint DOES imply the second
+	if !sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be true; received false",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied7
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly returns true when the
+	constraint DOES imply the other constraint AND they are both single-variable
+	constraints. In this case, we have
+	x = 3 and x >= 2. The first constraint DOES imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied7(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.Eq(3.0)
+
+	// Create a second constraint
+	sc2 := x.GreaterEq(2.0)
+
+	// Verify that the first constraint DOES imply the second
+	if !sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be true; received false",
+		)
+	}
+}
