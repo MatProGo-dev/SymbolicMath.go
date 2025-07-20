@@ -350,11 +350,11 @@ func (sc ScalarConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
 
 	// Simplify both constraints
 	sc = sc.Simplify()
-	other = other.AsSimplifiedConstraint().(ScalarConstraint)
 
 	switch otherC := other.(type) {
 	case ScalarConstraint:
-		// Continue
+		otherC = otherC.Simplify()
+
 		// Naive implication check:
 		// 1. Both constraints contain only 1 variable AND it is the same variable. Then, simply check the bounds.
 		containsOneVar := len(sc.Variables()) == 1 && len(otherC.Variables()) == 1

@@ -693,3 +693,183 @@ func TestMatrixConstraint_AsSimplifiedConstraint1(t *testing.T) {
 	)
 
 }
+
+/*
+TestMatrixConstraint_Variables1
+Description:
+
+	Verifies that the Variables() method works as expected.
+	We verify that the method properly returns 9 unique variables when
+	we create a constraint between a 3x3 matrix of variables and a
+	3x3 matrix of constants.
+*/
+func TestMatrixConstraint_Variables1(t *testing.T) {
+	// Constants
+	vm1 := symbolic.NewVariableMatrix(3, 3)
+	km2 := symbolic.DenseToKMatrix(symbolic.OnesMatrix(3, 3))
+
+	mConstr := symbolic.MatrixConstraint{vm1, km2, symbolic.SenseLessThanEqual}
+
+	// Test
+	vars := mConstr.Variables()
+
+	if len(vars) != 9 {
+		t.Errorf(
+			"Expected len(vars) to be 9; received %v",
+			len(vars),
+		)
+	}
+	// Check that each variable is unique
+	varsMap := make(map[symbolic.Variable]bool)
+	for _, v := range vars {
+		if _, ok := varsMap[v]; ok {
+			t.Errorf(
+				"Expected all variables to be unique; received duplicate variable %v",
+				v,
+			)
+		}
+		varsMap[v] = true
+	}
+}
+
+/*
+TestMatrixConstraint_ImpliesThisIsAlsoSatisfied1
+Description:
+
+	Verifies that the ImpliesThisIsAlsoSatisfied method works as expected
+	when the input constraint is a scalar constraint that matches one of
+	the constraints in the original matrix constraint (i.e., the scalar constraint
+	is just the (0,1)-th constraint in the original matrix constraint).
+*/
+func TestMatrixConstraint_ImpliesThisIsAlsoSatisfied1(t *testing.T) {
+	// Constants
+	vm1 := symbolic.NewVariableMatrix(3, 3)
+	km2 := symbolic.DenseToKMatrix(symbolic.OnesMatrix(3, 3))
+
+	mConstr := symbolic.MatrixConstraint{vm1, km2, symbolic.SenseLessThanEqual}
+
+	// Extract the (0,1)-th constraint from mConstr
+	scalarConstraint := mConstr.At(0, 1)
+
+	// Test
+	if !mConstr.ImpliesThisIsAlsoSatisfied(scalarConstraint) {
+		t.Errorf(
+			"Expected mConstr.ImpliesThisIsAlsoSatisfied(scalarConstraint) to be true; received false",
+		)
+	}
+}
+
+/*
+TestMatrixConstraint_ImpliesThisIsAlsoSatisfied2
+Description:
+
+	Verifies that the ImpliesThisIsAlsoSatisfied method correctly panics
+	when the input matrix constraint is malformed.
+*/
+func TestMatrixConstraint_ImpliesThisIsAlsoSatisfied2(t *testing.T) {
+	// Constants
+	vm1 := symbolic.NewVariableMatrix(3, 2)
+	km2 := symbolic.DenseToKMatrix(symbolic.OnesMatrix(3, 3))
+
+	// Create matrix constraint
+	mConstr := symbolic.MatrixConstraint{vm1, km2, symbolic.SenseLessThanEqual}
+
+	// Create normal matrix constraint to use as input
+	left := symbolic.DenseToKMatrix(symbolic.Identity(3))
+	right := symbolic.DenseToKMatrix(symbolic.ZerosMatrix(3, 3))
+	normalMC := symbolic.MatrixConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	expectedError := mConstr.Check()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mConstr.ImpliesThisIsAlsoSatisfied(normalMC) to panic; did not panic",
+			)
+		}
+
+		// Check that the error is the expected error
+		err, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"Expected mConstr.ImpliesThisIsAlsoSatisfied(normalMC) to panic with type error; received %T",
+				r,
+			)
+		}
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected mConstr.ImpliesThisIsAlsoSatisfied(normalMC) to panic with error \"%v\"; received \"%v\"",
+				expectedError,
+				err,
+			)
+		}
+
+	}()
+
+	// Call ImpliesThisIsAlsoSatisfied
+	mConstr.ImpliesThisIsAlsoSatisfied(normalMC)
+
+	t.Errorf(
+		"Expected mConstr.ImpliesThisIsAlsoSatisfied(normalMC) to panic; did not panic",
+	)
+}
+
+/*
+TestConstraint_ImpliesThisIsAlsoSatisfied3
+Description:
+
+	Verifies that the ImpliesThisIsAlsoSatisfied method correctly panics
+	when the receiver is well-defined but the input constraint is not well-formed.
+*/
+func TestConstraint_ImpliesThisIsAlsoSatisfied3(t *testing.T) {
+	// Constants
+	vm1 := symbolic.NewVariableMatrix(3, 3)
+	km2 := symbolic.DenseToKMatrix(symbolic.OnesMatrix(3, 3))
+
+	// Create matrix constraint
+	mConstr := symbolic.MatrixConstraint{vm1, km2, symbolic.SenseLessThanEqual}
+
+	// Create malformed scalar constraint to use as input
+	scLeft := symbolic.Monomial{
+		Exponents: []int{1},
+	}
+	scRight := symbolic.K(5)
+	sc := symbolic.ScalarConstraint{scLeft, scRight, symbolic.SenseEqual}
+	expectedError := sc.Check()
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mConstr.ImpliesThisIsAlsoSatisfied(sc) to panic; did not panic",
+			)
+		}
+
+		// Check that the error is the expected error
+		err, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"Expected mConstr.ImpliesThisIsAlsoSatisfied(sc) to panic with type error; received %T",
+				r,
+			)
+		}
+		if err.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected mConstr.ImpliesThisIsAlsoSatisfied(sc) to panic with error \"%v\"; received \"%v\"",
+				expectedError,
+				err,
+			)
+		}
+
+	}()
+
+	// Call ImpliesThisIsAlsoSatisfied
+	mConstr.ImpliesThisIsAlsoSatisfied(sc)
+
+	t.Errorf(
+		"Expected mConstr.ImpliesThisIsAlsoSatisfied(sc) to panic; did not panic",
+	)
+}
