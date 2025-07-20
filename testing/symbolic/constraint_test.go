@@ -7,8 +7,9 @@ Description:
 */
 
 import (
-	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"testing"
+
+	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 )
 
 /*
@@ -171,6 +172,47 @@ func TestConstraint_IsConstraint7(t *testing.T) {
 		t.Errorf(
 			"Expected IsConstraint(%T) to be true; received false",
 			mConstr,
+		)
+	}
+}
+
+/*
+TestConstraint_VariablesInThisConstraint1
+Description:
+
+	Verifies that the VariablesInThisConstraint function works as expected.
+	We verify that the method properly returns 5 unique variables when
+	there are 3 variables on the left hand side and 3 variables on the right hand side,
+	but one of the variables is shared between the two sides.
+*/
+func TestConstraint_VariablesInThisConstraint1(t *testing.T) {
+	// Constants
+	x1 := symbolic.NewVariable()
+	x2 := symbolic.NewVariable()
+	x3 := symbolic.NewVariable()
+	x4 := symbolic.NewVariable()
+	x5 := symbolic.NewVariable()
+
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1, 2, 1},
+		VariableFactors: []symbolic.Variable{x1, x2, x3},
+	}
+
+	m2 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{3, 1, 1},
+		VariableFactors: []symbolic.Variable{x3, x4, x5},
+	}
+
+	sc := symbolic.ScalarConstraint{m1, m2, symbolic.SenseEqual}
+
+	// Test
+	vars := symbolic.VariablesInThisConstraint(sc)
+	if len(vars) != 5 {
+		t.Errorf(
+			"Expected VariablesInThisConstraint to return 5 unique variables; received %d",
+			len(vars),
 		)
 	}
 }
