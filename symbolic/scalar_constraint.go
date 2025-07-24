@@ -364,7 +364,7 @@ func (sc ScalarConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
 			// Get the coefficient of the single variable
 			scCoeffVector := sc.LeftHandSide.LinearCoeff(sc.Variables())
 			scCoeff := scCoeffVector.AtVec(0)
-			otherCCoeffVector := otherC.RightHandSide.LinearCoeff(otherC.Variables())
+			otherCCoeffVector := otherC.LeftHandSide.LinearCoeff(otherC.Variables())
 			otherCCoeff := otherCCoeffVector.AtVec(0)
 
 			// If the coefficient of scCoeff is < 0,

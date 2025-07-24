@@ -89,6 +89,8 @@ func (v Variable) Plus(rightIn interface{}) Expression {
 	switch right := rightIn.(type) {
 	case float64:
 		return v.Plus(K(right))
+	case int:
+		return v.Plus(K(float64(right)))
 	case K:
 		return Polynomial{
 			Monomials: []Monomial{
@@ -316,6 +318,8 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 	switch right := rightIn.(type) {
 	case float64:
 		return v.Multiply(K(right))
+	case int:
+		return v.Multiply(K(float64(right)))
 	case K:
 		// Create a new monomial
 		monomialOut := Monomial{

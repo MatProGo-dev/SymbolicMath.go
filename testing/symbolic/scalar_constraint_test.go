@@ -1439,6 +1439,44 @@ func TestScalarConstraint_ScaleBy3(t *testing.T) {
 }
 
 /*
+TestScalarConstraint_ScaleBy4
+Description:
+
+	This tests that the ScalarConstraint.ScaleBy() method properly
+	flips the sign of a constraint with the SenseGreaterThanEqual sense
+	when the scale factor is negative.
+*/
+func TestScalarConstraint_ScaleBy4(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1},
+		VariableFactors: []symbolic.Variable{x},
+	}
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: c2,
+		Sense:         symbolic.SenseGreaterThanEqual,
+	}
+
+	// Scale
+	newSc := sc.ScaleBy(-2)
+
+	// Verify that the new constraint has the opposite sense
+	if newSc.ConstrSense() != symbolic.SenseLessThanEqual {
+		t.Errorf(
+			"Expected newSc.Sense to be different from %v; received %v",
+			sc.Sense,
+			newSc.ConstrSense(),
+		)
+	}
+}
+
+/*
 TestScalarConstraint_Variables1
 Description:
 
@@ -1784,6 +1822,119 @@ func TestScalarConstraint_ImpliesThisIsAlsoSatisfied7(t *testing.T) {
 	if !sc.ImpliesThisIsAlsoSatisfied(sc2) {
 		t.Errorf(
 			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be true; received false",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied8
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly handles the case when both
+	constraints contain negative coefficients on the same variable.
+	In this case, we have:
+		-2 x <= 4 and
+		-2 x <= 5
+	as the input constraints. The first constraint DOES imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied8(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.Multiply(-2).LessEq(4.0)
+
+	// Create a second constraint
+	sc2 := x.Multiply(-2).LessEq(5.0)
+
+	// Verify that the first constraint DOES imply the second
+	if !sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be true; received false",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_AsSimplifiedConstraint1
+Description:
+
+	This function tests the AsSimplifiedConstraint() method of a scalar constraint.
+	We will create a scalar constraint with a monomial on the left hand side
+	and a polynomial on the right hand side. The expected output is a new
+	constraint with a polynomial on the left hand side and a constant on the
+	right hand side.
+*/
+func TestScalarConstraint_AsSimplifiedConstraint1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     2,
+		Exponents:       []int{1, 1},
+		VariableFactors: []symbolic.Variable{x, y},
+	}
+	p2 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			{
+				Coefficient:     1,
+				Exponents:       []int{1},
+				VariableFactors: []symbolic.Variable{x},
+			},
+			{
+				Coefficient:     3,
+				Exponents:       []int{1},
+				VariableFactors: []symbolic.Variable{y},
+			},
+			{
+				Coefficient:     4,
+				Exponents:       []int{},
+				VariableFactors: []symbolic.Variable{},
+			},
+		},
+	}
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: p2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Get simplified constraint
+	simplifiedSc := sc.AsSimplifiedConstraint()
+
+	// Verify that the left hand side is a polynomial
+	if _, ok := simplifiedSc.Left().(symbolic.Polynomial); !ok {
+		t.Errorf(
+			"Expected simplifiedSc.LeftHandSide to be a symbolic.Polynomial; received %T",
+			simplifiedSc.Left(),
+		)
+	}
+
+	// Verify that the right hand side is a constant
+	k, ok := simplifiedSc.Right().(symbolic.K)
+	if !ok {
+		t.Errorf(
+			"Expected simplifiedSc.RightHandSide to be a symbolic.K; received %T",
+			simplifiedSc.Right(),
+		)
+	}
+
+	if float64(k) != 4 {
+		t.Errorf(
+			"Expected simplifiedSc.RightHandSide to be 4; received %v",
+			k,
+		)
+	}
+
+	// Verify that the sense is the same
+	if simplifiedSc.ConstrSense() != sc.ConstrSense() {
+		t.Errorf(
+			"Expected simplifiedSc.Sense to be %v; received %v",
+			sc.ConstrSense(),
+			simplifiedSc.ConstrSense(),
 		)
 	}
 }

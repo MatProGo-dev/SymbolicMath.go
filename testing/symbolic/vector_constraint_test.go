@@ -1328,17 +1328,17 @@ func TestVectorConstraint_ImpliesThisIsAlsoSatisfied3(t *testing.T) {
 
 	// Create the vector constraint
 	vc := symbolic.VectorConstraint{
-		left,
-		symbolic.VecDenseToKVector(*right),
-		symbolic.SenseLessThanEqual,
+		LeftHandSide:  left,
+		RightHandSide: symbolic.VecDenseToKVector(*right),
+		Sense:         symbolic.SenseLessThanEqual,
 	}
 
 	// Create the second vector constraint
 	right2 := mat.NewVecDense(N, []float64{2, 2})
 	vc2 := symbolic.VectorConstraint{
-		left,
-		symbolic.VecDenseToKVector(*right2),
-		symbolic.SenseLessThanEqual,
+		LeftHandSide:  left,
+		RightHandSide: symbolic.VecDenseToKVector(*right2),
+		Sense:         symbolic.SenseLessThanEqual,
 	}
 
 	// Test
