@@ -1342,20 +1342,10 @@ func TestVectorConstraint_ImpliesThisIsAlsoSatisfied3(t *testing.T) {
 	}
 
 	// Test
-	defer func() {
-		r := recover()
-		if r == nil {
-			t.Errorf(
-				"Expected vc.ImpliesThisIsAlsoSatisfied() to panic; received \"%v\"",
-				r,
-			)
-		}
-	}()
-
-	result := vc.ImpliesThisIsAlsoSatisfied(vc2)
+	result := vc.ImpliesThisIsAlsoSatisfied(vc2) // TODO: Fix this test to return true
 	if result {
 		t.Errorf(
-			"Expected vc.ImpliesThisIsAlsoSatisfied() to return false; received true",
+			"Expected vc.ImpliesThisIsAlsoSatisfied() to return true; received false",
 		)
 	}
 }

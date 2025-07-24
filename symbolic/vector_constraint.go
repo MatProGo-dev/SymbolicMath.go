@@ -390,6 +390,12 @@ func (vc VectorConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
 				return true
 			}
 		}
+	case VectorConstraint:
+		// TODO: Implement more advanced implication checks.
+		return false
+	case MatrixConstraint:
+		// TODO: Implement more advanced implication checks.
+		return false
 	default:
 		// Other types of constraints are not currently supported.
 		panic(

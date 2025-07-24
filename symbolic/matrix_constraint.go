@@ -259,9 +259,17 @@ func (mc MatrixConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
 				}
 			}
 		}
+	case VectorConstraint:
+		// TODO: Implement more advanced implication checks.
+		return false
+	case MatrixConstraint:
+		// TODO: Implement more advanced implication checks.
+		return false
 	default:
 		// Other types of constraints are not currently supported.
-		return false
+		panic(
+			fmt.Errorf("implication checking between MatrixConstraint and %T is not currently supported", other),
+		)
 	}
 
 	// If no avenues for implication were found, return false.
