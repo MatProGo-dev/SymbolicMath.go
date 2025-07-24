@@ -433,10 +433,7 @@ func (sc ScalarConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
 				panic("unreachable code reached in ScalarConstraint.ImpliesThisIsAlsoSatisfied")
 			}
 		}
-	case VectorConstraint:
-		// TODO: Implement more advanced implication checks.
-		return false
-	case MatrixConstraint:
+	case VectorConstraint, MatrixConstraint:
 		// TODO: Implement more advanced implication checks.
 		return false
 	default:

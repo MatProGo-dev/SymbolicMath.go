@@ -259,10 +259,7 @@ func (mc MatrixConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
 				}
 			}
 		}
-	case VectorConstraint:
-		// TODO: Implement more advanced implication checks.
-		return false
-	case MatrixConstraint:
+	case VectorConstraint, MatrixConstraint:
 		// TODO: Implement more advanced implication checks.
 		return false
 	default:
