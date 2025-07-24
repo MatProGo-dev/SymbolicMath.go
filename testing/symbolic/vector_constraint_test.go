@@ -1359,3 +1359,50 @@ func TestVectorConstraint_ImpliesThisIsAlsoSatisfied3(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestVectorConstraint_ImpliesThisIsAlsoSatisfied4
+Description:
+
+	This function tests that the ImpliesThisIsAlsoSatisfied method properly
+	returns true if:
+	- the receiver vector constraints are well-defined,
+	- the input is a well-defined scalar constraint, and
+	- the input constraint is implied by one of the receiver constraints.
+	In this case, the receiver constraint will be:
+		[1, 0;
+		 0, 1] * x <= [1; 1]
+	and the input constraint will be:
+		[1, 0] * x <= 1
+*/
+func TestVectorConstraint_ImpliesThisIsAlsoSatisfied4(t *testing.T) {
+	// Setup
+	N := 2
+	x := symbolic.NewVariableVector(N)
+	left := x
+	right := mat.NewVecDense(N, []float64{1, 1})
+
+	// Create the vector constraint
+	vc := symbolic.VectorConstraint{
+		LeftHandSide:  left,
+		RightHandSide: symbolic.VecDenseToKVector(*right),
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Create the scalar constraint
+	left2 := x.AtVec(0)
+	right2 := symbolic.K(1)
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  left2,
+		RightHandSide: right2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Test
+	result := vc.ImpliesThisIsAlsoSatisfied(sc)
+	if !result {
+		t.Errorf(
+			"Expected vc.ImpliesThisIsAlsoSatisfied() to return true; received false",
+		)
+	}
+}
