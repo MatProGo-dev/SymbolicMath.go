@@ -1857,6 +1857,68 @@ func TestScalarConstraint_ImpliesThisIsAlsoSatisfied8(t *testing.T) {
 }
 
 /*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied9
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly handles the case when both
+	constraints are SenseGreaterThanEqual and have positive coefficients
+	on the same variable, but they do NOT imply each other.
+	In this case, we have:
+		2 x >= 4 and
+		2 x >= 5
+	as the input constraints. The first constraint does NOT imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied9(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.Multiply(2).GreaterEq(4.0)
+
+	// Create a second constraint
+	sc2 := x.Multiply(2).GreaterEq(5.0)
+
+	// Verify that the first constraint does NOT imply the second
+	if sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be false; received true",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied10
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly handles the case when both
+	cosntraints are SenseEqual and have positive coefficients
+	on the same variable, but they do NOT imply each other.
+	In this case, we have:
+		2 x = 4 and
+		2 x = 5
+	as the input constraints. The first constraint does NOT imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied10(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.Multiply(2).Eq(4.0)
+
+	// Create a second constraint
+	sc2 := x.Multiply(2).Eq(5.0)
+
+	// Verify that the first constraint does NOT imply the second
+	if sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be false; received true",
+		)
+	}
+}
+
+/*
 TestScalarConstraint_AsSimplifiedConstraint1
 Description:
 
