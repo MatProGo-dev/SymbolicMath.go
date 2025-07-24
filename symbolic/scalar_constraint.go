@@ -1,6 +1,8 @@
 package symbolic
 
 import (
+	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -280,4 +282,166 @@ func (sc ScalarConstraint) String() string {
 
 	// Create the string representation
 	return sc.LeftHandSide.String() + " " + sc.Sense.String() + " " + sc.RightHandSide.String()
+}
+
+/*
+Simplify
+Description:
+
+	Simplifies the constraint by moving all variables to the left hand side and the constants to the right.
+*/
+func (sc ScalarConstraint) AsSimplifiedConstraint() Constraint {
+	return sc.Simplify()
+}
+
+func (sc ScalarConstraint) Variables() []Variable {
+	return VariablesInThisConstraint(sc)
+}
+
+func (sc ScalarConstraint) ScaleBy(factor float64) Constraint {
+	// Check that the constraint is well formed.
+	err := sc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Scale the left hand side
+	newLHS := sc.LeftHandSide.Multiply(factor).(ScalarExpression)
+
+	// Scale the right hand side
+	newRHS := sc.RightHandSide.Multiply(factor).(ScalarExpression)
+
+	// If the factor is negative, then flip the sense of the constraint
+	newSense := sc.Sense
+	if factor < 0 {
+		if sc.Sense == SenseLessThanEqual {
+			newSense = SenseGreaterThanEqual
+		} else if sc.Sense == SenseGreaterThanEqual {
+			newSense = SenseLessThanEqual
+		}
+	}
+
+	// Return the new constraint
+	return ScalarConstraint{
+		LeftHandSide:  newLHS,
+		RightHandSide: newRHS,
+		Sense:         newSense,
+	}
+}
+
+/*
+ImpliesThisIsAlsoSatisfied
+Description:
+
+	Returns true if this constraint implies that the other constraint is also satisfied.
+*/
+func (sc ScalarConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
+	// Check that the constraint is well formed.
+	err := sc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check that the other constraint is well formed.
+	err = other.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Simplify both constraints
+	sc = sc.Simplify()
+
+	switch otherC := other.(type) {
+	case ScalarConstraint:
+		otherC = otherC.Simplify()
+
+		// Naive implication check:
+		// 1. Both constraints contain only 1 variable AND it is the same variable. Then, simply check the bounds.
+		containsOneVar := len(sc.Variables()) == 1 && len(otherC.Variables()) == 1
+		scAndOtherShareSameVar := len(UnionOfVariables(sc.Variables(), otherC.Variables())) == 1
+
+		if containsOneVar && scAndOtherShareSameVar {
+			// Get the coefficient of the single variable
+			scCoeffVector := sc.LeftHandSide.LinearCoeff(sc.Variables())
+			scCoeff := scCoeffVector.AtVec(0)
+			otherCCoeffVector := otherC.LeftHandSide.LinearCoeff(otherC.Variables())
+			otherCCoeff := otherCCoeffVector.AtVec(0)
+
+			// If the coefficient of scCoeff is < 0,
+			// then flip the signs of both sides of the constraint
+			if scCoeff < 0 {
+				sc = sc.ScaleBy(-1).(ScalarConstraint)
+			}
+
+			if otherCCoeff < 0 {
+				otherC = otherC.ScaleBy(-1).(ScalarConstraint)
+			}
+
+			// The implication holds if all of the following are true:
+			// 1. The sense of sc and otherC are either the same (or one is equality)
+			// 2. The bounds of the constraint with the LessThanEqual or GreaterThanEqual sense are within the bounds of the other constraint.
+			sensesAreCompatible := sc.Sense == otherC.Sense ||
+				sc.Sense == SenseEqual ||
+				otherC.Sense == SenseEqual
+
+			if !sensesAreCompatible {
+				return false
+			}
+
+			switch sc.Sense {
+			case SenseLessThanEqual:
+				// Check the senses of otherC
+				switch otherC.Sense {
+				case SenseLessThanEqual:
+					// Both are <=
+					// Then the implication holds if the upper bound of sc is <= the upper bound of otherC
+					return sc.RightHandSide.Constant() <= otherC.RightHandSide.Constant()
+				default:
+					// sc is <= and otherC is either >= or ==
+					// Then the implication holds if the upper bound of sc is <= the lower bound of otherC
+					return false
+				}
+			case SenseGreaterThanEqual:
+				// Check the senses of otherC
+				switch otherC.Sense {
+				case SenseGreaterThanEqual:
+					// Both are >=
+					// Then the implication holds if the lower bound of sc is >= the lower bound of otherC
+					return sc.RightHandSide.Constant() >= otherC.RightHandSide.Constant()
+				default:
+					// sc is >= and otherC is either <= or ==
+					// Then the implication holds if the lower bound of sc is >= the upper bound of otherC
+					return false
+				}
+			case SenseEqual:
+				// Check the senses of otherC
+				switch otherC.Sense {
+				case SenseEqual:
+					// Both are ==
+					// Then the implication holds if the bounds are equal
+					return sc.RightHandSide.Constant() == otherC.RightHandSide.Constant()
+				case SenseLessThanEqual:
+					// sc is == and otherC is <=
+					// Then the implication holds if the bound of sc is <= the upper bound of otherC
+					return sc.RightHandSide.Constant() <= otherC.RightHandSide.Constant()
+				case SenseGreaterThanEqual:
+					// sc is == and otherC is >=
+					// Then the implication holds if the bound of sc is >= the lower bound of otherC
+					return sc.RightHandSide.Constant() >= otherC.RightHandSide.Constant()
+				}
+			default:
+				panic("unreachable code reached in ScalarConstraint.ImpliesThisIsAlsoSatisfied")
+			}
+		}
+	case VectorConstraint, MatrixConstraint:
+		// TODO: Implement more advanced implication checks.
+		return false
+	default:
+		// Other types of constraints are not currently supported.
+		panic(
+			fmt.Errorf("implication checking between ScalarConstraint and %T is not currently supported", other),
+		)
+	}
+
+	return false
 }

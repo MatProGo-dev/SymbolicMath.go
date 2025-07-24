@@ -1257,3 +1257,746 @@ func TestScalarConstraint_String1(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestScalarConstraint_ScaleBy1
+Description:
+
+	This tests that the ScalarConstraint.ScaleBy() method properly panics
+	when the left hand side is not a valid monomial.
+*/
+func TestScalarConstraint_ScaleBy1(t *testing.T) {
+	// Constants
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1},
+		VariableFactors: []symbolic.Variable{},
+	}
+	v2 := symbolic.NewVariable()
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: v2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Create the panic handling function
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected sc.ScaleBy() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := m1.Check()
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected sc.ScaleBy() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	sc.ScaleBy(2)
+
+	t.Errorf(
+		"Expected sc.ScaleBy() to panic; received nil",
+	)
+}
+
+/*
+TestScalarConstraint_ScaleBy2
+Description:
+
+	This tests that the ScalarConstraint.ScaleBy() method properly
+	returns a new ScalarConstraint when the left hand side is a valid monomial.
+	In this case, we scale by a negative number, which should lead to a new
+	constraint with the opposite sense.
+*/
+func TestScalarConstraint_ScaleBy2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1, 1},
+		VariableFactors: []symbolic.Variable{x, y},
+	}
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: c2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Scale
+	newSc := sc.ScaleBy(-2)
+
+	// Verify that the new left hand side is a monomial
+	if _, ok := newSc.Left().(symbolic.Monomial); !ok {
+		t.Errorf(
+			"Expected newSc.LeftHandSide to be a symbolic.Monomial; received %T",
+			newSc.Left(),
+		)
+	}
+
+	// Verify that the new right hand side is a constant 6.28
+	m2, ok := newSc.Right().(symbolic.K)
+	if !ok {
+		t.Errorf(
+			"Expected newSc.RightHandSide to be a symbolic.K; received %T",
+			newSc.Right(),
+		)
+	}
+
+	// Verify that the new right hand side is a constant 6.28
+	if float64(m2) != -6.28 {
+		t.Errorf(
+			"Expected newSc.RightHandSide to be 6.28; received %v",
+			m2,
+		)
+	}
+
+	// Verify that the new constraint has the opposite sense
+	if newSc.ConstrSense() != symbolic.SenseGreaterThanEqual {
+		t.Errorf(
+			"Expected newSc.Sense to be different from %v; received %v",
+			sc.Sense,
+			newSc.ConstrSense(),
+		)
+	}
+}
+
+/*
+TestScalarConstraint_ScaleBy3
+Description:
+
+	This tests that the ScalarConstraint.ScaleBy() method properly
+	returns a new ScalarConstraint when the left hand side is a valid monomial.
+	In this case, we scale by a positive number, which should lead to a new
+	constraint with the same sense.
+*/
+func TestScalarConstraint_ScaleBy3(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1, 1},
+		VariableFactors: []symbolic.Variable{x, y},
+	}
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: c2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Scale
+	newSc := sc.ScaleBy(2)
+
+	// Verify that the new left hand side is a monomial
+	if _, ok := newSc.Left().(symbolic.Monomial); !ok {
+		t.Errorf(
+			"Expected newSc.LeftHandSide to be a symbolic.Monomial; received %T",
+			newSc.Left(),
+		)
+	}
+
+	// Verify that the new right hand side is a constant 6.28
+	m2, ok := newSc.Right().(symbolic.K)
+	if !ok {
+		t.Errorf(
+			"Expected newSc.RightHandSide to be a symbolic.K; received %T",
+			newSc.Right(),
+		)
+	}
+
+	// Verify that the new right hand side is a constant 6.28
+	if float64(m2) != 6.28 {
+		t.Errorf(
+			"Expected newSc.RightHandSide to be 6.28; received %v",
+			m2,
+		)
+	}
+
+	// Verify that the new constraint has the same sense
+	if newSc.ConstrSense() != sc.Sense {
+		t.Errorf(
+			"Expected newSc.Sense to be %v; received %v",
+			sc.Sense,
+			newSc.ConstrSense(),
+		)
+	}
+}
+
+/*
+TestScalarConstraint_ScaleBy4
+Description:
+
+	This tests that the ScalarConstraint.ScaleBy() method properly
+	flips the sign of a constraint with the SenseGreaterThanEqual sense
+	when the scale factor is negative.
+*/
+func TestScalarConstraint_ScaleBy4(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1},
+		VariableFactors: []symbolic.Variable{x},
+	}
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: c2,
+		Sense:         symbolic.SenseGreaterThanEqual,
+	}
+
+	// Scale
+	newSc := sc.ScaleBy(-2)
+
+	// Verify that the new constraint has the opposite sense
+	if newSc.ConstrSense() != symbolic.SenseLessThanEqual {
+		t.Errorf(
+			"Expected newSc.Sense to be different from %v; received %v",
+			sc.Sense,
+			newSc.ConstrSense(),
+		)
+	}
+}
+
+/*
+TestScalarConstraint_Variables1
+Description:
+
+	Tests the Variables() method of a scalar constraint. This test verifies
+	that the method properly returns a slice of all variables in the constraint.
+	We will create a constraint with 2 variables (one in a monomial on the left
+	and a constant on the right).
+*/
+func TestScalarConstraint_Variables1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1, 1},
+		VariableFactors: []symbolic.Variable{x, y},
+	}
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: c2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Verify variables
+	vars := sc.Variables()
+	if len(vars) != 2 {
+		t.Errorf(
+			"Expected 2 variables; received %d",
+			len(vars),
+		)
+	}
+}
+
+/*
+TestScalarConstraint_Variables2
+Description:
+
+	Tests the Variables() method of a scalar constraint. This test verifies
+	that the method properly panics when the left hand side is not a valid monomial.
+*/
+func TestScalarConstraint_Variables2(t *testing.T) {
+	// Constants
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1},
+		VariableFactors: []symbolic.Variable{},
+	}
+	v2 := symbolic.NewVariable()
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: v2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Create the panic handling function
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected sc.Variables() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := m1.Check()
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected sc.Variables() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	sc.Variables()
+
+	t.Errorf(
+		"Expected sc.Variables() to panic; received nil",
+	)
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied1
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly panics when the given
+	scalar constraint is not valid (in this case, the left hand side is not
+	a valid monomial).
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied1(t *testing.T) {
+	// Constants
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1},
+		VariableFactors: []symbolic.Variable{},
+	}
+	v2 := symbolic.NewVariable()
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: v2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Create a second constraint
+	sc2 := v2.GreaterEq(symbolic.K(1))
+
+	// Create the panic handling function
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected sc.ImpliesThisIsAlsoSatisfied() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := m1.Check()
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected sc.ImpliesThisIsAlsoSatisfied() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	sc.ImpliesThisIsAlsoSatisfied(sc2)
+
+	t.Errorf(
+		"Expected sc.ImpliesThisIsAlsoSatisfied() to panic; received nil",
+	)
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied2
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly panics when the constraint
+	given as an argument is not valid (in this case, the left hand side is not
+	a valid monomial).
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied2(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1, 1},
+		VariableFactors: []symbolic.Variable{x, y},
+	}
+	c2 := symbolic.K(3.14)
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: c2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Create a second constraint
+	m2 := symbolic.Monomial{
+		Coefficient:     1,
+		Exponents:       []int{1},
+		VariableFactors: []symbolic.Variable{},
+	}
+	v2 := symbolic.NewVariable()
+	sc2 := symbolic.ScalarConstraint{
+		LeftHandSide:  m2,
+		RightHandSide: v2,
+		Sense:         symbolic.SenseGreaterThanEqual,
+	}
+
+	// Create the panic handling function
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected sc.ImpliesThisIsAlsoSatisfied() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := m2.Check()
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected sc.ImpliesThisIsAlsoSatisfied() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	sc.ImpliesThisIsAlsoSatisfied(sc2)
+
+	t.Errorf(
+		"Expected sc.ImpliesThisIsAlsoSatisfied() to panic; received nil",
+	)
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied3
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly returns false when the
+	constraint does not imply the other constraint. In this case, we have
+	x + y <= 3 and y >= 1. The first constraint does NOT imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied3(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+	c2 := symbolic.K(3.0)
+
+	// Create constraint
+	sc := x.Plus(y).LessEq(c2)
+
+	// Create a second constraint
+	sc2 := y.GreaterEq(symbolic.K(1))
+
+	// Verify that the first constraint does NOT imply the second
+	if sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be false; received true",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied4
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly returns true when the
+	constraint DOES imply the other constraint AND they are both single-variable
+	constraints. In this case, we have
+	x <= 3 and x <= 4. The first constraint DOES imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied4(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.LessEq(3.0)
+
+	// Create a second constraint
+	sc2 := x.LessEq(4.0)
+
+	// Verify that the first constraint DOES imply the second
+	if !sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be true; received false",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied5
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly returns true when the
+	constraint DOES imply the other constraint AND they are both single-variable
+	constraints. In this case, we have
+	x >= 4 and x >= 3. The first constraint DOES imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied5(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.GreaterEq(4.0)
+
+	// Create a second constraint
+	sc2 := x.GreaterEq(3.0)
+
+	// Verify that the first constraint DOES imply the second
+	if !sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be true; received false",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied6
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly returns true when the
+	constraint DOES imply the other constraint AND they are both single-variable
+	constraints. In this case, we have
+	x = 3 and x <= 4. The first constraint DOES imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied6(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.Eq(3.0)
+
+	// Create a second constraint
+	sc2 := x.LessEq(4.0)
+
+	// Verify that the first constraint DOES imply the second
+	if !sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be true; received false",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied7
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly returns true when the
+	constraint DOES imply the other constraint AND they are both single-variable
+	constraints. In this case, we have
+	x = 3 and x >= 2. The first constraint DOES imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied7(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.Eq(3.0)
+
+	// Create a second constraint
+	sc2 := x.GreaterEq(2.0)
+
+	// Verify that the first constraint DOES imply the second
+	if !sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be true; received false",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied8
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly handles the case when both
+	constraints contain negative coefficients on the same variable.
+	In this case, we have:
+		-2 x <= 4 and
+		-2 x <= 5
+	as the input constraints. The first constraint DOES imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied8(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.Multiply(-2).LessEq(4.0)
+
+	// Create a second constraint
+	sc2 := x.Multiply(-2).LessEq(5.0)
+
+	// Verify that the first constraint DOES imply the second
+	if !sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be true; received false",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied9
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly handles the case when both
+	constraints are SenseGreaterThanEqual and have positive coefficients
+	on the same variable, but they do NOT imply each other.
+	In this case, we have:
+		2 x >= 4 and
+		2 x >= 5
+	as the input constraints. The first constraint does NOT imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied9(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.Multiply(2).GreaterEq(4.0)
+
+	// Create a second constraint
+	sc2 := x.Multiply(2).GreaterEq(5.0)
+
+	// Verify that the first constraint does NOT imply the second
+	if sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be false; received true",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied10
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test verifies that the method properly handles the case when both
+	cosntraints are SenseEqual and have positive coefficients
+	on the same variable, but they do NOT imply each other.
+	In this case, we have:
+		2 x = 4 and
+		2 x = 5
+	as the input constraints. The first constraint does NOT imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied10(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.Multiply(2).Eq(4.0)
+
+	// Create a second constraint
+	sc2 := x.Multiply(2).Eq(5.0)
+
+	// Verify that the first constraint does NOT imply the second
+	if sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be false; received true",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_AsSimplifiedConstraint1
+Description:
+
+	This function tests the AsSimplifiedConstraint() method of a scalar constraint.
+	We will create a scalar constraint with a monomial on the left hand side
+	and a polynomial on the right hand side. The expected output is a new
+	constraint with a polynomial on the left hand side and a constant on the
+	right hand side.
+*/
+func TestScalarConstraint_AsSimplifiedConstraint1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     2,
+		Exponents:       []int{1, 1},
+		VariableFactors: []symbolic.Variable{x, y},
+	}
+	p2 := symbolic.Polynomial{
+		Monomials: []symbolic.Monomial{
+			{
+				Coefficient:     1,
+				Exponents:       []int{1},
+				VariableFactors: []symbolic.Variable{x},
+			},
+			{
+				Coefficient:     3,
+				Exponents:       []int{1},
+				VariableFactors: []symbolic.Variable{y},
+			},
+			{
+				Coefficient:     4,
+				Exponents:       []int{},
+				VariableFactors: []symbolic.Variable{},
+			},
+		},
+	}
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: p2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Get simplified constraint
+	simplifiedSc := sc.AsSimplifiedConstraint()
+
+	// Verify that the left hand side is a polynomial
+	if _, ok := simplifiedSc.Left().(symbolic.Polynomial); !ok {
+		t.Errorf(
+			"Expected simplifiedSc.LeftHandSide to be a symbolic.Polynomial; received %T",
+			simplifiedSc.Left(),
+		)
+	}
+
+	// Verify that the right hand side is a constant
+	k, ok := simplifiedSc.Right().(symbolic.K)
+	if !ok {
+		t.Errorf(
+			"Expected simplifiedSc.RightHandSide to be a symbolic.K; received %T",
+			simplifiedSc.Right(),
+		)
+	}
+
+	if float64(k) != 4 {
+		t.Errorf(
+			"Expected simplifiedSc.RightHandSide to be 4; received %v",
+			k,
+		)
+	}
+
+	// Verify that the sense is the same
+	if simplifiedSc.ConstrSense() != sc.ConstrSense() {
+		t.Errorf(
+			"Expected simplifiedSc.Sense to be %v; received %v",
+			sc.ConstrSense(),
+			simplifiedSc.ConstrSense(),
+		)
+	}
+}

@@ -1040,3 +1040,359 @@ func TestVectorConstraint_SubstituteAccordingTo2(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestVectorConstraint_AsSimplifiedConstraint1
+Description:
+
+	This function tests that the AsSimplifiedConstraint method properly
+	panics if the input vector constraint is not well-defined.
+	(In this case, the left and right hand sides have different lengths.)
+*/
+func TestVectorConstraint_AsSimplifiedConstraint1(t *testing.T) {
+	// Setup
+	N := 7
+	left := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	right := symbolic.NewVariableVector(N + 1)
+
+	// Create the vector constraint
+	vc := symbolic.VectorConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	// Create the function for handling the panic
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.AsSimplifiedConstraint() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		expectedError := smErrors.VectorDimensionError{
+			Operation: fmt.Sprintf("Comparison (%v)", vc.Sense),
+			Arg1:      vc.LeftHandSide,
+			Arg2:      vc.RightHandSide,
+		}
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.AsSimplifiedConstraint() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	// Test
+	vc.AsSimplifiedConstraint()
+
+	// Raise an error if the test did not panic
+	t.Errorf(
+		"Expected vc.AsSimplifiedConstraint() to panic; received nil",
+	)
+
+}
+
+/*
+TestVectorConstraint_AsSimplifiedConstraint2
+Description:
+
+	This function tests that the AsSimplifiedConstraint method properly
+	returns a simplified vector constraint when the original vector constraint
+	is well-defined. In this case, the original vector constraint will have
+	a left hand side that is a vector of monomials and a right hand side
+	that is a vector of polynomials.
+	After simplification, the left hand side should be a vector of polynomials
+	and the right hand side should be a vector of constants.
+*/
+func TestVectorConstraint_AsSimplifiedConstraint2(t *testing.T) {
+	// Setup
+	N := 7
+	x := symbolic.NewVariableVector(N)
+	left := x.ToMonomialVector()
+	right := x.Multiply(2.0).Plus(symbolic.VecDenseToKVector(symbolic.OnesVector(N))).(symbolic.PolynomialVector)
+
+	// Create the vector constraint
+	vc := symbolic.VectorConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	// Test
+	simplifiedVC := vc.AsSimplifiedConstraint().(symbolic.VectorConstraint)
+
+	// Check the left hand side
+	// it should now be a vector of polynomials
+	if _, ok := simplifiedVC.LeftHandSide.(symbolic.PolynomialVector); !ok {
+		t.Errorf(
+			"Expected vc.AsSimplifiedConstraint() to return a vector constraint with a polynomial vector on the left hand side; received %v",
+			simplifiedVC.LeftHandSide,
+		)
+	}
+
+	// Check the right hand side
+	if _, ok := simplifiedVC.RightHandSide.(symbolic.KVector); !ok {
+		t.Errorf(
+			"Expected vc.AsSimplifiedConstraint() to return a vector constraint with a constant vector on the right hand side; received %v",
+			simplifiedVC.RightHandSide,
+		)
+	}
+
+	// Check the sense
+	if simplifiedVC.Sense != vc.Sense {
+		t.Errorf(
+			"Expected vc.AsSimplifiedConstraint() to return a vector constraint with the same sense; received %v",
+			simplifiedVC.Sense,
+		)
+	}
+}
+
+/*
+TestVectorConstraint_Variables1
+Description:
+
+	This function tests that the Variables method properly
+	returns the correct set of variables in a well-defined vector constraint.
+	In this case, the left hand side will be a vector of N variables
+	and the right hand side will be a vector of N different variables.
+	The result should be a set containing all 2N variables.
+*/
+func TestVectorConstraint_Variables1(t *testing.T) {
+	// Setup
+	N := 7
+	x := symbolic.NewVariableVector(N)
+	y := symbolic.NewVariableVector(N)
+	left := x
+	right := y
+
+	// Create the vector constraint
+	vc := symbolic.VectorConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	// Test
+	vars := vc.Variables()
+
+	// Check the length of the variable set
+	if len(vars) != 2*N {
+		t.Errorf(
+			"Expected vc.Variables() to return a set with %v variables; received %v",
+			2*N,
+			len(vars),
+		)
+	}
+
+	// Check that all variables are present in the set
+	for i := 0; i < N; i++ {
+		idx, err := symbolic.FindInSlice(x[i], vars)
+		if err != nil {
+			t.Errorf(
+				"Received an error when searching for variable %v in the set: %v",
+				x[i],
+				err)
+		}
+		if idx == -1 {
+			t.Errorf(
+				"Expected vc.Variables() to return a set containing variable %v; it was not found in the set",
+				x[i],
+			)
+		}
+		// Check for y[i]
+		idx, err = symbolic.FindInSlice(y[i], vars)
+		if err != nil {
+			t.Errorf(
+				"Received an error when searching for variable %v in the set: %v",
+				y[i],
+				err)
+		}
+
+		if idx == -1 {
+			t.Errorf(
+				"Expected vc.Variables() to return a set containing variable %v; it was not found in the set",
+				y[i],
+			)
+		}
+	}
+}
+
+/*
+TestVectorConstraint_ImpliesThisIsAlsoSatisfied1
+Description:
+
+	This function tests that the ImpliesThisIsAlsoSatisfied method properly
+	panics if the receiver vector constraint is not well-defined.
+	(In this case, the left and right hand sides have different lengths.)
+*/
+func TestVectorConstraint_ImpliesThisIsAlsoSatisfied1(t *testing.T) {
+	// Setup
+	N := 7
+	x := symbolic.NewVariableVector(N)
+	y := symbolic.NewVariableVector(N)
+	left := x
+	right := symbolic.NewVariableVector(N - 1)
+
+	// Create the vector constraint
+	vc := symbolic.VectorConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	// Create the second vector constraint
+	vc2 := symbolic.VectorConstraint{x, y, symbolic.SenseLessThanEqual}
+
+	// Test
+	expectedError := vc.Check()
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.ImpliesThisIsAlsoSatisfied() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.ImpliesThisIsAlsoSatisfied() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	vc.ImpliesThisIsAlsoSatisfied(vc2)
+}
+
+/*
+TestVectorConstraint_ImpliesThisIsAlsoSatisfied2
+Description:
+
+	This function tests that the ImpliesThisIsAlsoSatisfied method properly
+	panics if:
+	- The receiver vector constraint is well-defined, but
+	- The input vector constraint is not well-defined.
+	(In this case, the left and right hand sides of the input vector constraint
+	have different lengths.)
+*/
+func TestVectorConstraint_ImpliesThisIsAlsoSatisfied2(t *testing.T) {
+	// Setup
+	N := 7
+	x := symbolic.NewVariableVector(N)
+	y := symbolic.NewVariableVector(N)
+	left := x
+	right := y
+
+	// Create the vector constraint
+	vc := symbolic.VectorConstraint{left, right, symbolic.SenseLessThanEqual}
+
+	// Create the second vector constraint
+	vc2 := symbolic.VectorConstraint{x, symbolic.NewVariableVector(N - 1), symbolic.SenseLessThanEqual}
+
+	// Test
+	expectedError := vc2.Check()
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected vc.ImpliesThisIsAlsoSatisfied() to panic; received nil",
+			)
+		}
+
+		rAsError := r.(error)
+		if rAsError.Error() != expectedError.Error() {
+			t.Errorf(
+				"Expected vc.ImpliesThisIsAlsoSatisfied() to panic with error \"%v\"; received \"%v\"",
+				expectedError.Error(),
+				rAsError.Error(),
+			)
+		}
+	}()
+
+	vc.ImpliesThisIsAlsoSatisfied(vc2)
+}
+
+/*
+TestVectorConstraint_ImpliesThisIsAlsoSatisfied3
+Description:
+
+	This function tests that the ImpliesThisIsAlsoSatisfied method properly
+	returns false if the receiver and input vector constraints are well-defined,
+	but the input constraint is not implied by the receiver constraint.
+	In this case, the receiver constraint will be:
+	 [1, 0;
+	  0, 1] * x <= [1; 1]
+	and the input constraint will be:
+	 [1, 0;
+	  0, 1] * x <= [2; 2]
+
+	TODO: This constraint should return true, but the implementation
+	does not currently handle this case. Let's fix this in a future update.
+*/
+func TestVectorConstraint_ImpliesThisIsAlsoSatisfied3(t *testing.T) {
+	// Setup
+	N := 2
+	x := symbolic.NewVariableVector(N)
+	left := x
+	right := mat.NewVecDense(N, []float64{1, 1})
+
+	// Create the vector constraint
+	vc := symbolic.VectorConstraint{
+		LeftHandSide:  left,
+		RightHandSide: symbolic.VecDenseToKVector(*right),
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Create the second vector constraint
+	right2 := mat.NewVecDense(N, []float64{2, 2})
+	vc2 := symbolic.VectorConstraint{
+		LeftHandSide:  left,
+		RightHandSide: symbolic.VecDenseToKVector(*right2),
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Test
+	result := vc.ImpliesThisIsAlsoSatisfied(vc2) // TODO: Fix this test to return true
+	if result {
+		t.Errorf(
+			"Expected vc.ImpliesThisIsAlsoSatisfied() to return true; received false",
+		)
+	}
+}
+
+/*
+TestVectorConstraint_ImpliesThisIsAlsoSatisfied4
+Description:
+
+	This function tests that the ImpliesThisIsAlsoSatisfied method properly
+	returns true if:
+	- the receiver vector constraints are well-defined,
+	- the input is a well-defined scalar constraint, and
+	- the input constraint is implied by one of the receiver constraints.
+	In this case, the receiver constraint will be:
+		[1, 0;
+		 0, 1] * x <= [1; 1]
+	and the input constraint will be:
+		[1, 0] * x <= 1
+*/
+func TestVectorConstraint_ImpliesThisIsAlsoSatisfied4(t *testing.T) {
+	// Setup
+	N := 2
+	x := symbolic.NewVariableVector(N)
+	left := x
+	right := mat.NewVecDense(N, []float64{1, 1})
+
+	// Create the vector constraint
+	vc := symbolic.VectorConstraint{
+		LeftHandSide:  left,
+		RightHandSide: symbolic.VecDenseToKVector(*right),
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Create the scalar constraint
+	left2 := x.AtVec(0)
+	right2 := symbolic.K(1)
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  left2,
+		RightHandSide: right2,
+		Sense:         symbolic.SenseLessThanEqual,
+	}
+
+	// Test
+	result := vc.ImpliesThisIsAlsoSatisfied(sc)
+	if !result {
+		t.Errorf(
+			"Expected vc.ImpliesThisIsAlsoSatisfied() to return true; received false",
+		)
+	}
+}

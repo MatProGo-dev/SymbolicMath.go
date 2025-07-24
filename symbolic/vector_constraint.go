@@ -1,6 +1,8 @@
 package symbolic
 
 import (
+	"fmt"
+
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
 )
@@ -315,4 +317,88 @@ func (vc VectorConstraint) Len() int {
 
 	// Return the length of the vector constraint.
 	return vc.LeftHandSide.Len()
+}
+
+/*
+AsSimplifiedConstraint
+Description:
+
+	Simplifies the constraint by moving all variables to the left hand side and the constants to the right.
+*/
+func (vc VectorConstraint) AsSimplifiedConstraint() Constraint {
+	// Input Checking
+	err := vc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Create Left Hand side of all of the expressions
+	var newLHS Expression = vc.LeftHandSide.Minus(vc.LeftHandSide.Constant())
+	newLHS = newLHS.Minus(
+		vc.RightHandSide.Minus(vc.RightHandSide.Constant()),
+	)
+
+	// Create Right Hand Side of only constants
+	var newRHS Expression = VecDenseToKVector(vc.RightHandSide.Constant()).Minus(
+		vc.LeftHandSide.Constant(),
+	)
+
+	// Return new constraint
+	return VectorConstraint{
+		LeftHandSide:  newLHS.(VectorExpression),
+		RightHandSide: newRHS.(VectorExpression),
+		Sense:         vc.Sense,
+	}
+}
+
+/*
+Variables
+Description:
+
+	Returns a slice of all the variables in the constraint.
+*/
+func (vc VectorConstraint) Variables() []Variable {
+	return VariablesInThisConstraint(vc)
+}
+
+/*
+ImpliesThisIsAlsoSatisfied
+Description:
+
+	Returns true if this constraint implies that the other constraint is also satisfied.
+*/
+func (vc VectorConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
+	// Input Processing
+	err := vc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check the other constraint
+	err = other.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	switch otherC := other.(type) {
+	case ScalarConstraint:
+		// Continue
+		// Naive implication check:
+		// 1. One of the scalar constraints produces the correct implications.
+		for i := 0; i < vc.Len(); i++ {
+			if vc.AtVec(i).ImpliesThisIsAlsoSatisfied(otherC) {
+				return true
+			}
+		}
+	case VectorConstraint, MatrixConstraint:
+		// TODO: Implement more advanced implication checks.
+		return false
+	default:
+		// Other types of constraints are not currently supported.
+		panic(
+			fmt.Errorf("implication checking between VectorConstraint and %T is not currently supported", other),
+		)
+	}
+
+	return false
 }

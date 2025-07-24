@@ -191,3 +191,84 @@ func (mc MatrixConstraint) SubstituteAccordingTo(subMap map[Variable]Expression)
 
 	return MatrixConstraint{newLHS, newRHS, mc.Sense}
 }
+
+/*
+AsSimplifiedConstraint
+Description:
+
+	Simplifies the constraint by moving all variables to the left hand side and the constants to the right.
+*/
+func (mc MatrixConstraint) AsSimplifiedConstraint() Constraint {
+	// Create Left Hand side of all of the expressions
+	var newLHS Expression = mc.LeftHandSide.Minus(mc.LeftHandSide.Constant())
+	newLHS = newLHS.Minus(
+		mc.RightHandSide.Minus(mc.RightHandSide.Constant()),
+	)
+
+	// Create Right Hand Side of only constants
+	var newRHS Expression = DenseToKMatrix(mc.RightHandSide.Constant()).Minus(
+		mc.LeftHandSide.Constant(),
+	)
+
+	// Return new constraint
+	return MatrixConstraint{
+		LeftHandSide:  newLHS.(MatrixExpression),
+		RightHandSide: newRHS.(MatrixExpression),
+		Sense:         mc.Sense,
+	}
+}
+
+/*
+Variables
+Description:
+
+	Returns a slice of all the variables in the constraint.
+*/
+func (mc MatrixConstraint) Variables() []Variable {
+	return VariablesInThisConstraint(mc)
+}
+
+/*
+ImpliesThisIsAlsoSatisfied
+Description:
+
+	Returns true if this constraint implies that the other constraint is also satisfied.
+*/
+func (mc MatrixConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
+	// Input Processing
+	err := mc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = other.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Implication Avenues
+	switch otherC := other.(type) {
+	case ScalarConstraint:
+		// If the other constraint is a scalar constraint,
+		// then it can only be implied if:
+		// - one of the elements of the matrix constraint implies the scalar constraint.
+		for i := 0; i < mc.Dims()[0]; i++ {
+			for j := 0; j < mc.Dims()[1]; j++ {
+				if mc.At(i, j).ImpliesThisIsAlsoSatisfied(otherC) {
+					return true
+				}
+			}
+		}
+	case VectorConstraint, MatrixConstraint:
+		// TODO: Implement more advanced implication checks.
+		return false
+	default:
+		// Other types of constraints are not currently supported.
+		panic(
+			fmt.Errorf("implication checking between MatrixConstraint and %T is not currently supported", other),
+		)
+	}
+
+	// If no avenues for implication were found, return false.
+	return false
+}
