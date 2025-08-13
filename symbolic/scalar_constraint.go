@@ -285,7 +285,7 @@ func (sc ScalarConstraint) String() string {
 }
 
 /*
-Simplify
+AsSimplifiedConstraint
 Description:
 
 	Simplifies the constraint by moving all variables to the left hand side and the constants to the right.
@@ -444,4 +444,61 @@ func (sc ScalarConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
 	}
 
 	return false
+}
+
+/*
+IsNonnegativityConstraint
+Description:
+
+	Checks to see if the constraint is of the form:
+	- x >= 0, or
+	- 0 <= x
+*/
+func (sc ScalarConstraint) IsNonnegativityConstraint() bool {
+	// Setup
+	err := sc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	simplified := sc.AsSimplifiedConstraint().(ScalarConstraint)
+
+	// Check to see if constraint contains more than 1 variable
+	if len(simplified.Variables()) != 1 {
+		return false
+	}
+
+	// If the SIMPLIFIED constraint is an equality OR LessThanEqual constraint,
+	// Then it can not be a non-negativity constraint.
+	if simplified.Sense != SenseGreaterThanEqual {
+		return false
+	}
+
+	// Otherwise, the sense is SenseGreaterThanEqual, and this is a non-negativity
+	// constraint if:
+	// - LHS is Variable-Like
+	// - RHS is Zero
+
+	lhsIsVariableLike := false
+
+	// LHS Is Variable Like if:
+	// - It is a variable
+	// - It is a monomial with a positive coefficient
+	_, tf := simplified.LeftHandSide.(Variable)
+	lhsIsVariableLike = lhsIsVariableLike || tf
+
+	if !lhsIsVariableLike {
+		if monom, tf := simplified.LeftHandSide.(Monomial); tf {
+			lhsIsVariableLike = lhsIsVariableLike || (monom.Coefficient > 0)
+		}
+	}
+
+	// Check to see if rhs is zero
+	rhsAsK := simplified.RightHandSide.(K)
+	rhsIsZero := float64(rhsAsK) == 0
+
+	// Return true, if:
+	// - LHS is variable-like, AND
+	// - RHS is zero.
+	return lhsIsVariableLike && rhsIsZero
 }
