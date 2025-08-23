@@ -216,3 +216,32 @@ func TestConstraint_VariablesInThisConstraint1(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestConstraint_CompileConstraintsIntoScalarConstraints1
+Description:
+
+	This test verifies that a single vector constraint
+	of length 3 is transformed into 3 constraints.
+*/
+func TestConstraint_CompileConstraintsIntoScalarConstraints1(t *testing.T) {
+	// Setup
+	N := 3
+	x := symbolic.NewVariableVector(N)
+
+	// Create Vector Inequality Constraint
+	vectorConstraint := x.LessEq(symbolic.OnesVector(N))
+
+	// Decompose
+	constraints := symbolic.CompileConstraintsIntoScalarConstraints(
+		[]symbolic.Constraint{vectorConstraint},
+	)
+	if len(constraints) != N {
+		t.Errorf(
+			"Expected to find %v ScalarConstraints; discovered %v",
+			N,
+			len(constraints),
+		)
+	}
+
+}

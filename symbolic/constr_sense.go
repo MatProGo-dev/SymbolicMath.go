@@ -10,8 +10,8 @@ type ConstrSense byte
 // Different constraint senses conforming to Gurobi's encoding.
 const (
 	SenseEqual            ConstrSense = '='
-	SenseLessThanEqual                = '<'
-	SenseGreaterThanEqual             = '>'
+	SenseLessThanEqual    ConstrSense = '<'
+	SenseGreaterThanEqual ConstrSense = '>'
 )
 
 func (cs ConstrSense) String() string {
