@@ -466,6 +466,8 @@ func (p Polynomial) Comparison(rightIn interface{}, sense ConstrSense) Constrain
 	switch right := rightIn.(type) {
 	case float64:
 		return p.Comparison(K(right), sense)
+	case int:
+		return p.Comparison(float64(right), sense)
 	case K:
 		return ScalarConstraint{p, right, sense}
 	case Variable:

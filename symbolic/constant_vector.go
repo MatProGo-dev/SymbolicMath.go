@@ -307,6 +307,15 @@ func (kv KVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint 
 	}
 
 	switch rhsConverted := rightIn.(type) {
+	case float64:
+		var rhsAsVector mat.VecDense
+		onesVector := OnesVector(kv.Len())
+		rhsAsVector.ScaleVec(rhsConverted, &onesVector)
+		return kv.Comparison(rhsAsVector, sense)
+	case int:
+		return kv.Comparison(float64(rhsConverted), sense)
+	case K:
+		return kv.Comparison(float64(rhsConverted), sense)
 	case mat.VecDense:
 		// Use KVector's Comparison method
 		return kv.Comparison(VecDenseToKVector(rhsConverted), sense)
@@ -611,6 +620,11 @@ Description:
 func (kv KVector) ToPolynomialVector() PolynomialVector {
 	return kv.ToMonomialVector().ToPolynomialVector()
 }
+
+/*
+ToKMatrix
+Description:
+*/
 
 /*
 Degree

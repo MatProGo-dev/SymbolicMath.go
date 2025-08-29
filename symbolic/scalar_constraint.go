@@ -285,7 +285,7 @@ func (sc ScalarConstraint) String() string {
 }
 
 /*
-Simplify
+AsSimplifiedConstraint
 Description:
 
 	Simplifies the constraint by moving all variables to the left hand side and the constants to the right.
@@ -444,4 +444,64 @@ func (sc ScalarConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
 	}
 
 	return false
+}
+
+/*
+IsNonnegativityConstraint
+Description:
+
+	Checks to see if the constraint is of the form:
+	- x >= 0, or
+	- 0 <= x
+*/
+func (sc ScalarConstraint) IsNonnegativityConstraint() bool {
+	// Setup
+	err := sc.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	simplified := sc.AsSimplifiedConstraint().(ScalarConstraint)
+
+	// Check to see if constraint contains more than 1 variable
+	if len(simplified.Variables()) != 1 {
+		return false
+	}
+
+	// Otherwise, the sense is SenseGreaterThanEqual, and this is a non-negativity
+	// constraint if:
+	// - LHS is Variable-Like
+	// - RHS is Zero
+
+	lhsIsVariableLike := false
+
+	// LHS Is Variable Like if:
+	// - It is a variable
+	// - It is a monomial with a positive coefficient
+	simplifiedAsPL, tf := simplified.LeftHandSide.(PolynomialLikeScalar)
+	if !tf {
+		return false // If lhs is not polynomial like, then return false.
+	}
+
+	lhsIsVariableLike = simplifiedAsPL.Degree() == 1
+
+	if !lhsIsVariableLike {
+		return false // If lhs is still not variable like, then return false.
+	}
+
+	// Check to see if rhs is zero
+	rhsAsK := simplified.RightHandSide.(K)
+	rhsIsZero := float64(rhsAsK) == 0
+
+	if !rhsIsZero {
+		return false
+	}
+
+	// Finally, the constraint is non-negativie if:
+	// - LHS has positive coefficient AND sense is GreaterThanEqual
+	// - LHS has negative coefficient AND sense is LessThanEqual
+	coeffs := simplified.LeftHandSide.LinearCoeff()
+
+	return (coeffs.AtVec(0) > 0 && simplified.Sense == SenseGreaterThanEqual) ||
+		(coeffs.AtVec(0) < 0 && simplified.Sense == SenseLessThanEqual)
 }
