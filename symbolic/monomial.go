@@ -201,6 +201,8 @@ func (m Monomial) Multiply(e interface{}) Expression {
 	switch right := e.(type) {
 	case float64:
 		return m.Multiply(K(right))
+	case int:
+		return m.Multiply(K(float64(right)))
 	case K:
 		rightAsFloat64 := float64(right)
 		monomialOut := m
@@ -339,6 +341,8 @@ func (m Monomial) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	switch right := rhsIn.(type) {
 	case float64:
 		return m.Comparison(K(right), sense)
+	case int:
+		return m.Comparison(K(float64(right)), sense)
 	case K:
 		return ScalarConstraint{m, right, sense}
 	case Variable:

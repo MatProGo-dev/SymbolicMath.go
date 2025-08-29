@@ -232,6 +232,9 @@ func (v Variable) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	case float64:
 		// Use version of comparison for K
 		return v.Comparison(K(rhs), sense)
+	case int:
+		// Use version of comparison for K
+		return v.Comparison(K(float64(rhs)), sense)
 	case K:
 		// Create a new constraint
 		return ScalarConstraint{v, rhs, sense}

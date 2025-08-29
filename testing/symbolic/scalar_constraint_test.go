@@ -2000,3 +2000,235 @@ func TestScalarConstraint_AsSimplifiedConstraint1(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestScalarConstraint_IsNonnegativityConstraint1
+Description:
+
+	Tests the IsNonnegativityConstraint() method of a scalar constraint.
+	This test verifies that the method correctly identifies a non-negativity
+	constraint of the form: x >= 0.
+*/
+func TestScalarConstraint_IsNonnegativityConstraint1(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	constr := x.GreaterEq(0)
+	sc, ok := constr.(symbolic.ScalarConstraint)
+	if !ok {
+		t.Errorf(
+			"Expected constr to be a symbolic.ScalarConstraint; received %T",
+			constr,
+		)
+	}
+
+	// Verify that the constraint is identified as a non-negativity constraint
+	if !sc.IsNonnegativityConstraint() {
+		t.Errorf(
+			"Expected sc.IsNonnegativityConstraint() to be true; received false",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_IsNonnegativityConstraint2
+Description:
+
+	This test verifies that the new method panics if the
+	input ScalarConstraint is not well-defined.
+*/
+func TestScalarConstraint_IsNonnegativityConstraint2(t *testing.T) {
+	// Setup
+	x := symbolic.NewVariable()
+
+	// Create a malformed monomial
+	m1 := symbolic.Monomial{
+		Coefficient:     2,
+		Exponents:       []int{1, 1},
+		VariableFactors: []symbolic.Variable{x},
+	}
+
+	// Create constraint
+	sc := symbolic.ScalarConstraint{
+		LeftHandSide:  m1,
+		RightHandSide: symbolic.K(0),
+		Sense:         symbolic.SenseGreaterThanEqual,
+	}
+
+	// Verify that the IsNonnegativityConstraint() method
+	// panics
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected IsNonnegativityConstraint() to panic; received no panic",
+			)
+		}
+
+		err, ok := r.(error)
+		if !ok {
+			t.Errorf(
+				"Expected IsNonnegativityConstraint() to panic with an error; received %v",
+				r,
+			)
+		}
+
+		if err.Error() != m1.Check().Error() {
+			t.Errorf(
+				"Expected IsNonnegativityConstraint() to panic with error %v; received %v",
+				m1.Check().Error(),
+				err.Error(),
+			)
+		}
+	}()
+
+	sc.IsNonnegativityConstraint()
+	t.Errorf("Expected IsNonnegativityConstraint() to panic; received no panic")
+}
+
+/*
+TestScalarConstraint_IsNonnegativityConstraint3
+Description:
+
+	This test verifies that the IsNonnegativityConstraint() method correctly
+	returns false when the scalar constraint contains more than one variable.
+*/
+func TestScalarConstraint_IsNonnegativityConstraint3(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+	y := symbolic.NewVariable()
+
+	// Create constraint
+	constr := x.Plus(y).GreaterEq(0)
+	sc, ok := constr.(symbolic.ScalarConstraint)
+	if !ok {
+		t.Errorf(
+			"Expected constr to be a symbolic.ScalarConstraint; received %T",
+			constr,
+		)
+	}
+
+	// Verify that the constraint is identified as NOT a non-negativity constraint
+	if sc.IsNonnegativityConstraint() {
+		t.Errorf(
+			"Expected sc.IsNonnegativityConstraint() to be false; received true",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_IsNonnegativityConstraint4
+Description:
+
+	This test verifies that the IsNonnegativityConstraint() method correctly identifies
+	that a non-positivity constraint (i.e., x <= 0) is NOT a non-negativity constraint.
+*/
+func TestScalarConstraint_IsNonnegativityConstraint4(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	constr := x.LessEq(0)
+	sc, ok := constr.(symbolic.ScalarConstraint)
+	if !ok {
+		t.Errorf(
+			"Expected constr to be a symbolic.ScalarConstraint; received %T",
+			constr,
+		)
+	}
+
+	// Verify that the constraint is identified as NOT a non-negativity constraint
+	if sc.IsNonnegativityConstraint() {
+		t.Errorf(
+			"Expected sc.IsNonnegativityConstraint() to be false; received true",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_IsNonnegativityConstraint5
+Description:
+
+	This test verifies that the IsNonnegativityConstraint() method correctly identifies
+	a constraint of the form 2 * x >= 0 IS ALSO A non-negativity constraint.
+*/
+func TestScalarConstraint_IsNonnegativityConstraint5(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	constr := symbolic.K(2).Multiply(x).GreaterEq(0)
+	sc, ok := constr.(symbolic.ScalarConstraint)
+	if !ok {
+		t.Errorf(
+			"Expected constr to be a symbolic.ScalarConstraint; received %T",
+			constr,
+		)
+	}
+
+	// Verify that the constraint is identified as a non-negativity constraint
+	if !sc.IsNonnegativityConstraint() {
+		t.Errorf(
+			"Expected sc.IsNonnegativityConstraint() to be true; received false",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_IsNonnegativityConstraint6
+Description:
+
+	This test verifies that the IsNonnegativityConstraint() method correctly
+	identifies that a constraint of the form x >= 3 is NOT a non-negativity constraint.
+*/
+func TestScalarConstraint_IsNonnegativityConstraint6(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	constr := x.GreaterEq(3)
+	sc, ok := constr.(symbolic.ScalarConstraint)
+	if !ok {
+		t.Errorf(
+			"Expected constr to be a symbolic.ScalarConstraint; received %T",
+			constr,
+		)
+	}
+
+	// Verify that the constraint is identified as NOT a non-negativity constraint
+	if sc.IsNonnegativityConstraint() {
+		t.Errorf(
+			"Expected sc.IsNonnegativityConstraint() to be false; received true",
+		)
+	}
+}
+
+/*
+TestScalarConstraint_IsNonnegativityConstraint7
+Description:
+
+	This test verifies that the IsNonnegativityConstraint() method correctly identifies
+	that a constraint of the form - x <= 0 IS a non-negativity constraint.
+*/
+func TestScalarConstraint_IsNonnegativityConstraint7(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	constr := symbolic.K(-1).Multiply(x).LessEq(0)
+	sc, ok := constr.(symbolic.ScalarConstraint)
+	if !ok {
+		t.Errorf(
+			"Expected constr to be a symbolic.ScalarConstraint; received %T",
+			constr,
+		)
+	}
+
+	// Verify that the constraint is identified as a non-negativity constraint
+	if !sc.IsNonnegativityConstraint() {
+		t.Errorf(
+			"Expected sc.IsNonnegativityConstraint() to be true; received false",
+		)
+	}
+}

@@ -468,12 +468,6 @@ func (sc ScalarConstraint) IsNonnegativityConstraint() bool {
 		return false
 	}
 
-	// If the SIMPLIFIED constraint is an equality OR LessThanEqual constraint,
-	// Then it can not be a non-negativity constraint.
-	if simplified.Sense != SenseGreaterThanEqual {
-		return false
-	}
-
 	// Otherwise, the sense is SenseGreaterThanEqual, and this is a non-negativity
 	// constraint if:
 	// - LHS is Variable-Like
@@ -484,21 +478,30 @@ func (sc ScalarConstraint) IsNonnegativityConstraint() bool {
 	// LHS Is Variable Like if:
 	// - It is a variable
 	// - It is a monomial with a positive coefficient
-	_, tf := simplified.LeftHandSide.(Variable)
-	lhsIsVariableLike = lhsIsVariableLike || tf
+	simplifiedAsPL, tf := simplified.LeftHandSide.(PolynomialLikeScalar)
+	if !tf {
+		return false // If lhs is not polynomial like, then return false.
+	}
+
+	lhsIsVariableLike = simplifiedAsPL.Degree() == 1
 
 	if !lhsIsVariableLike {
-		if monom, tf := simplified.LeftHandSide.(Monomial); tf {
-			lhsIsVariableLike = lhsIsVariableLike || (monom.Coefficient > 0)
-		}
+		return false // If lhs is still not variable like, then return false.
 	}
 
 	// Check to see if rhs is zero
 	rhsAsK := simplified.RightHandSide.(K)
 	rhsIsZero := float64(rhsAsK) == 0
 
-	// Return true, if:
-	// - LHS is variable-like, AND
-	// - RHS is zero.
-	return lhsIsVariableLike && rhsIsZero
+	if !rhsIsZero {
+		return false
+	}
+
+	// Finally, the constraint is non-negativie if:
+	// - LHS has positive coefficient AND sense is GreaterThanEqual
+	// - LHS has negative coefficient AND sense is LessThanEqual
+	coeffs := simplified.LeftHandSide.LinearCoeff()
+
+	return (coeffs.AtVec(0) > 0 && simplified.Sense == SenseGreaterThanEqual) ||
+		(coeffs.AtVec(0) < 0 && simplified.Sense == SenseLessThanEqual)
 }
