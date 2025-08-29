@@ -2232,3 +2232,32 @@ func TestScalarConstraint_IsNonnegativityConstraint7(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestScalarConstraint_IsNonnegativityConstraint8
+Description:
+
+	This test verifies that the IsNonnegativityConstraint() method correctly identifies
+	that a constraint of the form x^2 >= 0 IS NOT a non-negativity constraint.
+*/
+func TestScalarConstraint_IsNonnegativityConstraint8(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	constr := x.Power(2).GreaterEq(0)
+	sc, ok := constr.(symbolic.ScalarConstraint)
+	if !ok {
+		t.Errorf(
+			"Expected constr to be a symbolic.ScalarConstraint; received %T",
+			constr,
+		)
+	}
+
+	// Verify that the constraint is identified as NOT a non-negativity constraint
+	if sc.IsNonnegativityConstraint() {
+		t.Errorf(
+			"Expected sc.IsNonnegativityConstraint() to be false; received true",
+		)
+	}
+}
