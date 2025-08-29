@@ -245,3 +245,42 @@ func TestConstraint_CompileConstraintsIntoScalarConstraints1(t *testing.T) {
 	}
 
 }
+
+/*
+TestConstraint_CompileConstraintsIntoScalarConstraints2
+Description:
+
+	This test verifies that compiling a slice of:
+	- one ScalarConstraint
+	- one matrix constraint of size 4x4, and
+	- one vector constraint of length 2
+	gets compiled into 19 = 1 + 16 + 2.
+*/
+func TestConstraint_CompileConstraintsIntoScalarConstraints2(t *testing.T) {
+	// Setup
+	N := 4
+	x := symbolic.NewVariableMatrix(N, N)
+	M := 2
+	y := symbolic.NewVariableVector(M)
+	z := symbolic.NewVariable()
+
+	// Create Matrix Inequality Constraint
+	matrixConstraint := x.LessEq(symbolic.OnesMatrix(N, N))
+
+	// Create Vector Inequality Constraint
+	vectorConstraint := y.LessEq(symbolic.OnesVector(M))
+
+	// Decompose
+	inputConstraints := []symbolic.Constraint{matrixConstraint, vectorConstraint, z.LessEq(-3.0)}
+	constraints := symbolic.CompileConstraintsIntoScalarConstraints(
+		inputConstraints,
+	)
+	if len(constraints) != N*N+M+1 {
+		t.Errorf(
+			"Expected to find %v ScalarConstraints; discovered %v",
+			N*N+M+1,
+			len(constraints),
+		)
+	}
+
+}

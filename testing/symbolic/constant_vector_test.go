@@ -721,6 +721,154 @@ func TestConstantVector_Comparison1(t *testing.T) {
 }
 
 /*
+TestConstantVector_Comparison2
+Description:
+
+	Verifies that the Comparison method produces a proper
+	constraint when the left-hand side is a KVector and
+	the right-hand side is a float64.
+	The resulting compmarison should have a right hand
+	side which is a KVector.
+*/
+func TestConstantVector_Comparison2(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+	var input float64 = 3.14
+
+	// Test
+	constraint := kv1.Comparison(input, symbolic.SenseEqual)
+
+	// Verify that the left hand side is of type KVector
+	if _, tf := constraint.Left().(symbolic.KVector); !tf {
+		t.Errorf(
+			"Expected constraint.LeftHandSide to be of type KVector; received %v",
+			constraint.Left(),
+		)
+	}
+
+	// Verify that the right hand side is of type KVector
+	if _, tf := constraint.Right().(symbolic.KVector); !tf {
+		t.Errorf(
+			"Expected constraint.RightHandSide to be of type KVector; received %v",
+			constraint.Right(),
+		)
+	}
+
+	// Verify that the sense of the constraint is Equal
+	if constraint.ConstrSense() != symbolic.SenseEqual {
+		t.Errorf(
+			"Expected constraint.Sense to be Equal; received %v",
+			constraint.ConstrSense(),
+		)
+	}
+}
+
+/*
+TestConstantVector_Comparison3
+Description:
+
+	Verifies that the Comparison method produces a proper
+	constraint when the left-hand side is a KVector and
+	the right-hand side is a int.
+	The resulting compmarison should have a right hand
+	side which is a KVector.
+*/
+func TestConstantVector_Comparison3(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	var input int = 3
+
+	// Test
+	constraint := kv1.Comparison(input, symbolic.SenseEqual)
+
+	// Verify that the left hand side is of type KVector
+	if _, tf := constraint.Left().(symbolic.KVector); !tf {
+		t.Errorf(
+			"Expected constraint.LeftHandSide to be of type KVector; received %v",
+			constraint.Left(),
+		)
+	}
+
+	// Verify that the right hand side is of type KVector
+	kv, tf := constraint.Right().(symbolic.KVector)
+	if !tf {
+		t.Errorf(
+			"Expected constraint.RightHandSide to be of type KVector; received %v",
+			constraint.Right(),
+		)
+	}
+
+	// Verify that the length of the right hand side is N
+	if kv.Len() != N {
+		t.Errorf(
+			"Expected constraint.RightHandSide to have length %d; received %d",
+			N, kv.Len(),
+		)
+	}
+
+	// Verify that the sense of the constraint is Equal
+	if constraint.ConstrSense() != symbolic.SenseEqual {
+		t.Errorf(
+			"Expected constraint.Sense to be Equal; received %v",
+			constraint.ConstrSense(),
+		)
+	}
+}
+
+/*
+TestConstantVector_Comparison4
+Description:
+
+	Verifies that the Comparison method produces a proper
+	constraint when the left-hand side is a KVector and
+	the right-hand side is a symbolic.K.
+	The resulting compmarison should have a right hand
+	side which is a KVector.
+*/
+func TestConstantVector_Comparison4(t *testing.T) {
+	// Constants
+	N := 3
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	var input symbolic.K = symbolic.K(3.0)
+
+	// Test
+	constraint := kv1.Comparison(input, symbolic.SenseEqual)
+
+	// Verify that the left hand side is of type KVector
+	if _, tf := constraint.Left().(symbolic.KVector); !tf {
+		t.Errorf(
+			"Expected constraint.LeftHandSide to be of type KVector; received %v",
+			constraint.Left(),
+		)
+	}
+
+	// Verify that the right hand side is of type KVector and has length N
+	kv, tf := constraint.Right().(symbolic.KVector)
+	if !tf {
+		t.Errorf(
+			"Expected constraint.RightHandSide to be of type KVector; received %v",
+			constraint.Right(),
+		)
+	}
+
+	if kv.Len() != N {
+		t.Errorf(
+			"Expected constraint.RightHandSide to have length %d; received %d",
+			N, kv.Len(),
+		)
+	}
+
+	// Verify that the sense of the constraint is Equal
+	if constraint.ConstrSense() != symbolic.SenseEqual {
+		t.Errorf(
+			"Expected constraint.Sense to be Equal; received %v",
+			constraint.ConstrSense(),
+		)
+	}
+}
+
+/*
 TestConstantVector_Multiply1
 Description:
 

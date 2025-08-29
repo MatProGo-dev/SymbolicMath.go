@@ -308,7 +308,7 @@ func (kv KVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint 
 
 	switch rhsConverted := rightIn.(type) {
 	case float64:
-		var rhsAsVector *mat.VecDense
+		var rhsAsVector mat.VecDense
 		onesVector := OnesVector(kv.Len())
 		rhsAsVector.ScaleVec(rhsConverted, &onesVector)
 		return kv.Comparison(rhsAsVector, sense)
