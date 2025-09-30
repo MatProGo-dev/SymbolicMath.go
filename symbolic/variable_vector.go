@@ -686,3 +686,13 @@ Description:
 func (vv VariableVector) Power(exponent int) Expression {
 	return VectorPowerTemplate(vv, exponent)
 }
+
+/*
+AsSimplifiedExpression
+Description:
+
+	Simplifies the expression and returns the simplified version.
+*/
+func (vv VariableVector) AsSimplifiedExpression() Expression {
+	return vv
+}

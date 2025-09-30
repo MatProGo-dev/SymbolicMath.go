@@ -665,3 +665,13 @@ Description:
 func (kv KVector) Power(exponent int) Expression {
 	return VectorPowerTemplate(kv, exponent)
 }
+
+/*
+AsSimplifiedExpression
+Description:
+
+	Returns the simplest form of the expression.
+*/
+func (kv KVector) AsSimplifiedExpression() Expression {
+	return kv
+}

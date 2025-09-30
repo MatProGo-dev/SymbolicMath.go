@@ -747,3 +747,14 @@ Description:
 func (km KMatrix) Power(exponent int) Expression {
 	return MatrixPowerTemplate(km, exponent)
 }
+
+/*
+AsSimplifiedExpression
+Description:
+
+	Simplifies the constant matrix. Since the constant matrix is always in simplest form,
+	this function simply returns the original constant matrix.
+*/
+func (km KMatrix) AsSimplifiedExpression() Expression {
+	return km
+}

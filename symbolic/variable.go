@@ -665,3 +665,13 @@ func UnionOfVariables(varSlices ...[]Variable) []Variable {
 	}
 	return UniqueVars(allVars)
 }
+
+/*
+AsSimplifiedExpression
+Description:
+
+	Simplifies the expression and returns the simplified version.
+*/
+func (v Variable) AsSimplifiedExpression() Expression {
+	return v
+}

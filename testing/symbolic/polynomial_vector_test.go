@@ -1953,10 +1953,19 @@ func TestPolynomialVector_Simplify1(t *testing.T) {
 	}
 
 	// Try to simplify
-	pvOut := pv.Simplify()
+	simplified := pv.Simplify()
+
+	// Concretize simplified to polynomial vector
+	pvOut, ok := simplified.(symbolic.PolynomialVector)
+	if !ok {
+		t.Errorf(
+			"Expected pv.Simplify() to return a PolynomialVector; received %T",
+			simplified,
+		)
+	}
 
 	// Check each element of pvOut and verify that it has two monomials.
-	for _, polynomial := range pvOut {
+	for _, polynomial := range []symbolic.Polynomial(pvOut) {
 		if len(polynomial.Monomials) != 2 {
 			t.Errorf(
 				"Expected polynomial.Monomials to have length 2; received %v",
@@ -1983,10 +1992,19 @@ func TestPolynomialVector_Simplify2(t *testing.T) {
 	}
 
 	// Try to simplify
-	pvOut := pv.Simplify()
+	simplified := pv.Simplify()
+
+	// Concretize simplified to polynomial vector
+	pvOut, ok := simplified.(symbolic.PolynomialVector)
+	if !ok {
+		t.Errorf(
+			"Expected pv.Simplify() to return a PolynomialVector; received %T",
+			simplified,
+		)
+	}
 
 	// Check each element of pvOut and verify that it has two monomials.
-	for _, polynomial := range pvOut {
+	for _, polynomial := range []symbolic.Polynomial(pvOut) {
 		if len(polynomial.Monomials) != 2 {
 			t.Errorf(
 				"Expected polynomial.Monomials to have length 2; received %v",

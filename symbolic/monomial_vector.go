@@ -731,3 +731,31 @@ Description:
 func (mv MonomialVector) LinearCoeff(wrt ...[]Variable) mat.Dense {
 	return PolynomialLikeVector_SharedLinearCoeffCalc(mv, wrt...)
 }
+
+/*
+AsSimplifiedExpression
+Description:
+
+	Returns the simplest form of the expression.
+*/
+func (mv MonomialVector) AsSimplifiedExpression() Expression {
+	// Input Processing
+	err := mv.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Simplify each monomial in the vector
+	var out []ScalarExpression
+	for ii, monomial := range mv {
+		simplified := monomial.AsSimplifiedExpression()
+		simplifiedAsSE, tf := simplified.(ScalarExpression)
+		if !tf {
+			panic(fmt.Errorf("error simplifying monomial vector entry %v", ii))
+		}
+		// Add the simplified version of the monomial to the output
+		out = append(out, simplifiedAsSE)
+	}
+
+	return ConcretizeVectorExpression(out)
+}

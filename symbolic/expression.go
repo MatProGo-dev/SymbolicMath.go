@@ -70,6 +70,9 @@ type Expression interface {
 
 	// At returns the value at the given row and column index
 	At(ii, jj int) ScalarExpression
+
+	// Simplify simplifies the expression and returns the simplified version
+	AsSimplifiedExpression() Expression
 }
 
 /*
@@ -294,6 +297,8 @@ func ConcretizeExpression(e interface{}) Expression {
 		concrete Expression
 	)
 	switch concreteVal := e.(type) {
+	case ScalarExpression:
+		concrete = concreteVal.AsSimplifiedExpression()
 	case []ScalarExpression:
 		concreteVectorE := ConcretizeVectorExpression(concreteVal)
 		// If vector expression is a scalar (i.e., has 1 row), return the scalar expression

@@ -765,3 +765,13 @@ Description:
 func (vm VariableMatrix) Power(exponent int) Expression {
 	return MatrixPowerTemplate(vm, exponent)
 }
+
+/*
+AsSimplifiedExpression
+Description:
+
+	Simplifies the expression and returns the simplified version.
+*/
+func (vm VariableMatrix) AsSimplifiedExpression() Expression {
+	return vm
+}

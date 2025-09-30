@@ -535,7 +535,7 @@ Description:
 
 	This method simplifies the polynomial vector.
 */
-func (pv PolynomialVector) Simplify() PolynomialVector {
+func (pv PolynomialVector) Simplify() VectorExpression {
 	// Input Processing
 	err := pv.Check()
 	if err != nil {
@@ -545,14 +545,27 @@ func (pv PolynomialVector) Simplify() PolynomialVector {
 	// Constants
 
 	// Algorithm
-	var simplified PolynomialVector = make([]Polynomial, pv.Len())
-	copy(simplified, pv)
+	var simplified []ScalarExpression
 
-	for ii, polynomial := range simplified {
-		simplified[ii] = polynomial.Simplify()
+	for ii, polynomial := range pv {
+		simplifiedEntryII := polynomial.AsSimplifiedExpression()
+		entryAsSE, ok := simplifiedEntryII.(ScalarExpression)
+		if !ok {
+			panic(
+				fmt.Errorf(
+					"error converting polynomial vector entry %v to a scalar expression during simplification",
+					ii,
+				),
+			)
+		}
+		simplified = append(simplified, entryAsSE)
 	}
 
-	return simplified
+	return ConcretizeVectorExpression(simplified)
+}
+
+func (pv PolynomialVector) AsSimplifiedExpression() Expression {
+	return pv.Simplify()
 }
 
 /*

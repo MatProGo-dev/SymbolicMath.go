@@ -310,28 +310,38 @@ func (mm MonomialMatrix) Multiply(e interface{}) Expression {
 		return product
 	case VariableVector:
 		if nRows == 1 {
-			// Output will be a polynomial
-			var product Polynomial
+			// Output will be a scalar expression
+			var product Expression = K(0.0)
 			for ii, monomial := range mm[0] {
-				product.Monomials = append(product.Monomials, monomial.Multiply(right[ii]).(Monomial))
+				product = product.Plus(monomial.Multiply(right[ii]))
 			}
-			return product.Simplify()
+			return ConcretizeExpression(product)
 
 		} else {
 			// Output will be a polynomial matrix
-			var product PolynomialVector
+			//TODO: Add thorough tests of this.
+			var product []ScalarExpression
 			for _, row := range mm {
-				product_ii := row[0].ToPolynomial().Multiply(right[0]).(Polynomial)
+				product_ii := row[0].ToPolynomial().Multiply(right[0])
 				for jj := 1; jj < len(row); jj++ {
 					product_ii = product_ii.Plus(
 						row[jj].ToPolynomial().Multiply(right[jj]),
 					).(Polynomial)
 				}
-				product = append(product, product_ii)
-				product = product.Simplify()
+				// Enforce that product_ii is a ScalarExpression
+				product_iiAsSE, tf := product_ii.(ScalarExpression)
+				if !tf {
+					panic(
+						fmt.Errorf(
+							"error converting product row to ScalarExpression; got type %T",
+							product_ii,
+						),
+					)
+				}
+				product = append(product, product_iiAsSE)
 			}
 
-			return product
+			return ConcretizeVectorExpression(product)
 
 		}
 	}
@@ -675,4 +685,39 @@ Description:
 */
 func (mm MonomialMatrix) Power(exponent int) Expression {
 	return MatrixPowerTemplate(mm, exponent)
+}
+
+/*
+AsSimplifiedExpression
+Description:
+
+	Returns the simplest form of the expression.
+*/
+func (mm MonomialMatrix) AsSimplifiedExpression() Expression {
+	// Input Processing
+	err := mm.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Create container for simplified matrix
+	dims := mm.Dims()
+	nRows, nCols := dims[0], dims[1]
+	var simplifiedMM [][]ScalarExpression
+	for ii := 0; ii < nRows; ii++ {
+		simplifiedRow := make([]ScalarExpression, nCols)
+		for jj := 0; jj < nCols; jj++ {
+			simplified := mm[ii][jj].AsSimplifiedExpression()
+			simplifiedAsSE, tf := simplified.(ScalarExpression)
+			if !tf {
+				panic(fmt.Errorf("error simplifying monomial matrix entry %v,%v", ii, jj))
+			}
+			// Save the converted simplified expression
+			simplifiedRow[jj] = simplifiedAsSE
+		}
+		simplifiedMM = append(simplifiedMM, simplifiedRow)
+	}
+
+	// Return the simplified matrix
+	return ConcretizeMatrixExpression(simplifiedMM)
 }

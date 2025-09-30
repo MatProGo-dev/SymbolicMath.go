@@ -80,6 +80,9 @@ type PolynomialLikeMatrix interface {
 
 	// Power returns the expression raised to the power of the input exponent
 	Power(exponent int) Expression
+
+	// Simplify simplifies the expression and returns the simplified version
+	AsSimplifiedExpression() Expression
 }
 
 /*

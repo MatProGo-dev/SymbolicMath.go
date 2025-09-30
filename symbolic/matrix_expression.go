@@ -79,6 +79,9 @@ type MatrixExpression interface {
 	// Power
 	// Raises the scalar expression to the power of the input integer
 	Power(exponent int) Expression
+
+	// Simplify simplifies the expression and returns the simplified version
+	AsSimplifiedExpression() Expression
 }
 
 /*
