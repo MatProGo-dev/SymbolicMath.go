@@ -384,6 +384,12 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 			}
 			return result
 		}
+	case VariableMatrix:
+		return MatrixMultiplyTemplate(vm, right)
+	case MonomialMatrix:
+		return MatrixMultiplyTemplate(vm, right)
+	case PolynomialMatrix:
+		return MatrixMultiplyTemplate(vm, right)
 	}
 
 	// panic if the type is not recognized

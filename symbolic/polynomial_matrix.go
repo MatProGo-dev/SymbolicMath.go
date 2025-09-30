@@ -326,6 +326,14 @@ func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 			}
 			return product
 		}
+	case KMatrix:
+		return MatrixMultiplyTemplate(pm, right)
+	case VariableMatrix:
+		return MatrixMultiplyTemplate(pm, right)
+	case MonomialMatrix:
+		return MatrixMultiplyTemplate(pm, right)
+	case PolynomialMatrix:
+		return MatrixMultiplyTemplate(pm, right)
 	}
 
 	// If type isn't recognized, then panic
