@@ -373,6 +373,12 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 		return km.Multiply(&right) // Reuse *mat.Dense case
 	case KMatrix:
 		return km.Multiply(right.ToDense()) // Reuse *mat.Dense case
+	case VariableMatrix:
+		return MatrixMultiplyTemplate(km, right)
+	case MonomialMatrix:
+		return MatrixMultiplyTemplate(km, right)
+	case PolynomialMatrix:
+		return MatrixMultiplyTemplate(km, right)
 	}
 
 	// If we reach this point, the input is not recognized

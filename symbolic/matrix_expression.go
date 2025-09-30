@@ -194,6 +194,66 @@ func MatrixPowerTemplate(me MatrixExpression, exponent int) MatrixExpression {
 }
 
 /*
+MatrixMultiplyTemplate
+Description:
+
+	Template for the matrix multiply function.
+*/
+func MatrixMultiplyTemplate(left MatrixExpression, right MatrixExpression) MatrixExpression {
+	// Input Processing
+	err := left.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = right.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check dimensions
+	leftDims := left.Dims()
+	rightDims := right.Dims()
+
+	if leftDims[1] != rightDims[0] {
+		panic(
+			smErrors.MatrixDimensionError{
+				Arg1:      left,
+				Arg2:      right,
+				Operation: "MatrixMultiplyTemplate",
+			},
+		)
+	}
+
+	// Algorithm
+	var out [][]ScalarExpression
+	for ii := 0; ii < leftDims[0]; ii++ {
+		var tempRow []ScalarExpression
+		for jj := 0; jj < rightDims[1]; jj++ {
+			// Compute the (ii,jj) element of the product
+			var sum Expression = K(0.0)
+			for kk := 0; kk < leftDims[1]; kk++ {
+				sum = sum.Plus(left.At(ii, kk).Multiply(right.At(kk, jj)))
+			}
+			sumAsSE, tf := sum.(ScalarExpression)
+			if !tf {
+				panic(
+					fmt.Errorf(
+						"unexpected expression type in MatrixMultiplyTemplate at entry [%v,%v]: %T",
+						ii, jj,
+						sum,
+					),
+				)
+			}
+			tempRow = append(tempRow, sumAsSE)
+		}
+		out = append(out, tempRow)
+	}
+
+	return ConcretizeMatrixExpression(out)
+}
+
+/*
 MatrixSubstituteTemplate
 Description:
 

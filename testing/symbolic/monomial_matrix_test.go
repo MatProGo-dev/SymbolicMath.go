@@ -2268,3 +2268,97 @@ func TestMonomialMatrix_SubstituteAccordingTo3(t *testing.T) {
 	mm.SubstituteAccordingTo(testMap)
 	t.Errorf("expected SubstituteAccordingTo() to panic; it did not")
 }
+
+/*
+TestMonomialMatrix_AsSimplifiedExpression1
+Description:
+
+	Tests that the AsSimplifiedExpression() method properly converts a monomial matrix
+	of constant monomials to a symbolic.KMatrix.
+*/
+func TestMonomialMatrix_AsSimplifiedExpression1(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{symbolic.K(1.0).ToMonomial(), symbolic.K(2.0).ToMonomial()},
+		{symbolic.K(3.0).ToMonomial(), symbolic.K(4.0).ToMonomial()},
+	}
+
+	// Test
+	simplified := mm.AsSimplifiedExpression()
+
+	// Check that simplified is a KMatrix
+	sAsCM, ok := simplified.(symbolic.KMatrix)
+	if !ok {
+		t.Errorf(
+			"expected AsSimplifiedExpression() to return a KMatrix; received %v",
+			simplified,
+		)
+	}
+
+	// Check that the values in the KMatrix are correct
+	expectedValues := [][]float64{{1.0, 2.0}, {3.0, 4.0}}
+	for ii := 0; ii < 2; ii++ {
+		for jj := 0; jj < 2; jj++ {
+			if float64(sAsCM.At(ii, jj).(symbolic.K)) != expectedValues[ii][jj] {
+				t.Errorf(
+					"expected AsSimplifiedExpression() to return a KMatrix with value %v at (%v,%v); received %v",
+					expectedValues[ii][jj],
+					ii, jj,
+					sAsCM.At(ii, jj),
+				)
+			}
+		}
+	}
+}
+
+/*
+TestMonomialMatrix_Power1
+Description:
+
+	Tests that the Power() method properly computes the power of a square
+	monomial matrix that represents all constants.
+
+	In the case the matrix is:
+		[1 2]
+		[3 4]
+
+	and the exponent is 2, the result should be:
+
+		[7 10]
+		[15 22]
+*/
+func TestMonomialMatrix_Power1(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{symbolic.K(1.0).ToMonomial(), symbolic.K(2.0).ToMonomial()},
+		{symbolic.K(3.0).ToMonomial(), symbolic.K(4.0).ToMonomial()},
+	}
+	exponent := 2
+
+	// Test
+	powered := mm.Power(exponent)
+
+	// Check that powered is a KMatrix
+	pAsCM, ok := powered.(symbolic.KMatrix)
+	if !ok {
+		t.Errorf(
+			"expected Power() to return a KMatrix; received %v",
+			powered,
+		)
+	}
+
+	// Check that the values in the KMatrix are correct
+	expectedValues := [][]float64{{7.0, 10.0}, {15.0, 22.0}}
+	for ii := 0; ii < 2; ii++ {
+		for jj := 0; jj < 2; jj++ {
+			if float64(pAsCM.At(ii, jj).(symbolic.K)) != expectedValues[ii][jj] {
+				t.Errorf(
+					"expected Power() to return a KMatrix with value %v at (%v,%v); received %v",
+					expectedValues[ii][jj],
+					ii, jj,
+					pAsCM.At(ii, jj),
+				)
+			}
+		}
+	}
+}
