@@ -8,10 +8,11 @@ Description:
 
 import (
 	"fmt"
-	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
-	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
 	"testing"
+
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 )
 
 /*
@@ -1667,4 +1668,185 @@ func TestMonomial_String2(t *testing.T) {
 	}()
 
 	_ = m1.String()
+}
+
+/*
+TestMonomial_AsSimplifiedExpression1
+Description:
+
+	Verifies that the Monomial.AsSimplifiedExpression function properly
+	panics when the monomial is not well-defined.
+*/
+func TestMonomial_AsSimplifiedExpression1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1, 2},
+	}
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected AsSimplifiedExpression to panic; received nil",
+			)
+		}
+	}()
+
+	m1.AsSimplifiedExpression()
+	t.Errorf("expected panic; received nil")
+}
+
+/*
+TestMonomial_AsSimplifiedExpression2
+Description:
+
+	Verifies that the Monomial.AsSimplifiedExpression function properly
+	returns a monomial expression when the monomial is well-defined
+	and the variable has a non-zero exponent.
+*/
+func TestMonomial_AsSimplifiedExpression2(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{2},
+	}
+
+	// Compute AsSimplifiedExpression
+	simplified := m1.AsSimplifiedExpression()
+
+	// Verify that the simplified is a monomial
+	simplifiedAsM, tf := simplified.(symbolic.Monomial)
+	if !tf {
+		t.Errorf(
+			"expected simplified to be a monomial; received %T",
+			simplified,
+		)
+	}
+
+	// Verify that the coefficient is the same
+	if simplifiedAsM.Coefficient != m1.Coefficient {
+		t.Errorf(
+			"expected simplified coefficient to be %v; received %v",
+			m1.Coefficient,
+			simplifiedAsM.Coefficient,
+		)
+	}
+
+	// Verify that the variable factors are the same
+	if len(simplifiedAsM.VariableFactors) != len(m1.VariableFactors) {
+		t.Errorf(
+			"expected simplified variable factors to be %v; received %v",
+			m1.VariableFactors,
+			simplifiedAsM.VariableFactors,
+		)
+	} else {
+		for i, v := range simplifiedAsM.VariableFactors {
+			if v != m1.VariableFactors[i] {
+				t.Errorf(
+					"expected simplified variable factors to be %v; received %v",
+					m1.VariableFactors,
+					simplifiedAsM.VariableFactors,
+				)
+			}
+		}
+	}
+
+	// Verify that the exponents are the same
+	if len(simplifiedAsM.Exponents) != len(m1.Exponents) {
+		t.Errorf(
+			"expected simplified exponents to be %v; received %v",
+			m1.Exponents,
+			simplifiedAsM.Exponents,
+		)
+	} else {
+		for i, e := range simplifiedAsM.Exponents {
+			if e != m1.Exponents[i] {
+				t.Errorf(
+					"expected simplified exponents to be %v; received %v",
+					m1.Exponents,
+					simplifiedAsM.Exponents,
+				)
+			}
+		}
+	}
+}
+
+/*
+TestMonomial_AsSimplifiedExpression3
+Description:
+
+	Verifies that the Monomial.AsSimplifiedExpression function properly
+	returns a constant expression (K) when the monomial is well-defined
+	and the variable has a zero exponent.
+*/
+func TestMonomial_AsSimplifiedExpression3(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{0},
+	}
+
+	// Compute AsSimplifiedExpression
+	simplified := m1.AsSimplifiedExpression()
+
+	// Verify that the simplified is a constant (K)
+	simplifiedAsK, tf := simplified.(symbolic.K)
+	if !tf {
+		t.Errorf(
+			"expected simplified to be a constant; received %T",
+			simplified,
+		)
+	}
+
+	// Verify that the simplified is a constant
+	if float64(simplifiedAsK) != 3.14 {
+		t.Errorf(
+			"expected simplified to be a constant; received %v",
+			simplifiedAsK,
+		)
+	}
+}
+
+/*
+TestMonomial_AsSimplifiedExpression4
+Description:
+
+	Verifies that the Monomial.AsSimplifiedExpression function properly
+	returns a constant expression (K) when the monomial is well-defined
+	and has no variable factors.
+*/
+func TestMonomial_AsSimplifiedExpression4(t *testing.T) {
+	// Constants
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{},
+		Exponents:       []int{},
+	}
+
+	// Compute AsSimplifiedExpression
+	simplified := m1.AsSimplifiedExpression()
+
+	// Verify that the simplified is a constant (K)
+	simplifiedAsK, tf := simplified.(symbolic.K)
+	if !tf {
+		t.Errorf(
+			"expected simplified to be a constant; received %T",
+			simplified,
+		)
+	}
+
+	// Verify that the simplified is a constant
+	if float64(simplifiedAsK) != 3.14 {
+		t.Errorf(
+			"expected simplified to be a constant; received %v",
+			simplifiedAsK,
+		)
+	}
 }
