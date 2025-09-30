@@ -2,10 +2,11 @@ package symbolic_test
 
 import (
 	"fmt"
-	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
-	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"strings"
 	"testing"
+
+	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
+	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 )
 
 /*
@@ -412,4 +413,85 @@ func TestMatrixExpression_MatrixSubstituteTemplate3(t *testing.T) {
 		}
 	}()
 	symbolic.MatrixSubstituteTemplate(x, v1, m1)
+}
+
+/*
+TestMatrixExpression_MatrixMultiplyTemplate1
+Description:
+
+	Tests that the matrix multiply template properly panics when called with a MatrixExpression that is not
+	well-defined (in this case, a MonomialMatrix).
+*/
+func TestMatrixExpression_MatrixMultiplyTemplate1(t *testing.T) {
+	// Setup
+	m := symbolic.Monomial{
+		Coefficient:     1.2,
+		VariableFactors: []symbolic.Variable{symbolic.NewVariable(), symbolic.NewVariable()},
+		Exponents:       []int{1},
+	}
+	x := symbolic.MonomialMatrix{
+		{m, m},
+		{m, m},
+	}
+	y := symbolic.MonomialMatrix{
+		{m, m},
+		{m, m},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Expected a panic when calling MatrixMultiplyTemplate on a MonomialMatrix; received nil")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("Expected the panic to be an error; received %T", r)
+		}
+
+		if !strings.Contains(rAsE.Error(), m.Check().Error()) {
+			t.Errorf("Expected the panic to contain the error message %v; received %v", m.Check().Error(), rAsE.Error())
+		}
+	}()
+	symbolic.MatrixMultiplyTemplate(x, y)
+}
+
+/*
+TestMatrixExpression_MatrixMultiplyTemplate2
+Description:
+
+	Tests that the matrix multiply template properly panics when called with a MatrixExpression that is well-defined
+	but with incompatible dimensions.
+	In this case, we use two KMatrix objects with incompatible dimensions.
+	The first KMatrix is 2x3 and the second KMatrix is 2x2.
+*/
+func TestMatrixExpression_MatrixMultiplyTemplate2(t *testing.T) {
+	// Setup
+	x := symbolic.KMatrix{
+		{symbolic.K(1), symbolic.K(2), symbolic.K(3)},
+		{symbolic.K(4), symbolic.K(5), symbolic.K(6)},
+	}
+	y := symbolic.KMatrix{
+		{symbolic.K(7), symbolic.K(8)},
+		{symbolic.K(9), symbolic.K(10)},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Expected a panic when calling MatrixMultiplyTemplate with incompatible dimensions; received nil")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("Expected the panic to be an error; received %T", r)
+		}
+
+		if !strings.Contains(rAsE.Error(), "dimension error") {
+			t.Errorf("Expected the panic to contain the error message %v; received %v", "incompatible dimensions", rAsE.Error())
+		}
+	}()
+	symbolic.MatrixMultiplyTemplate(x, y)
 }

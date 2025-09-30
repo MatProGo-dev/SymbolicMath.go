@@ -1088,6 +1088,46 @@ func TestVariableMatrix_Multiply15(t *testing.T) {
 }
 
 /*
+TestVariableMatrix_Multiply16
+Description:
+
+	Tests that the Multiply method for a VariableMatrix object that is well-defined
+	with dimension (2,3) properly multiplies a MonomialMatrix with dimension (3,2).
+	The resulting object should be a PolynomialMatrix with dimension (2,2)
+	and each polynomial should contain three monomials.
+*/
+func TestVariableMatrix_Multiply16(t *testing.T) {
+	// Constants
+	vm := symbolic.VariableMatrix{
+		{symbolic.NewVariable(), symbolic.NewVariable(), symbolic.NewVariable()},
+		{symbolic.NewVariable(), symbolic.NewVariable(), symbolic.NewVariable()},
+	}
+	mm := symbolic.MonomialMatrix{
+		{symbolic.NewVariable().ToMonomial(), symbolic.NewVariable().ToMonomial()},
+		{symbolic.NewVariable().ToMonomial(), symbolic.NewVariable().ToMonomial()},
+		{symbolic.NewVariable().ToMonomial(), symbolic.NewVariable().ToMonomial()},
+	}
+
+	// Compute Product
+	result := vm.Multiply(mm)
+
+	// Check that object is a PolynomialMatrix
+	if _, ok := result.(symbolic.PolynomialMatrix); !ok {
+		t.Errorf("Expected Multiply to return a PolynomialMatrix; received %T", result)
+	}
+
+	// Check that each polynomial in the result contains three monomials.
+	pv := result.(symbolic.PolynomialMatrix)
+	for i := 0; i < pv.Dims()[0]; i++ {
+		for j := 0; j < pv.Dims()[1]; j++ {
+			if len(pv[i][j].Monomials) != 3 {
+				t.Errorf("Expected each polynomial to contain 3 monomials; received %v", len(pv[i][j].Monomials))
+			}
+		}
+	}
+}
+
+/*
 TestVariableMatrix_Transpose1
 Description:
 
