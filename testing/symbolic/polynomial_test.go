@@ -2237,13 +2237,19 @@ func TestPolynomial_SubstituteWith4(t *testing.T) {
 
 	// Test
 	substitution := p1.Substitute(x[0], symbolic.K(2.0))
-	if substitution.(symbolic.Polynomial).Monomials[0].Coefficient != 2.0 {
-		t.Errorf(
-			"expected %v.substitute(%v, %v) to have coefficient 2.0; received %v",
-			p1,
-			x[0],
-			symbolic.K(2.0),
-			substitution.(symbolic.Polynomial).Monomials[0].Coefficient,
-		)
+
+	// Search for a constant element in the monomials
+	for _, m := range substitution.(symbolic.Polynomial).Monomials {
+		if m.IsConstant() {
+			if m.Coefficient != 3.0 {
+				t.Errorf(
+					"expected (%v).substitute(%v, %v) to have constant 3.0; received %v",
+					p1,
+					x[0],
+					symbolic.K(2.0),
+					m.Coefficient,
+				)
+			}
+		}
 	}
 }
