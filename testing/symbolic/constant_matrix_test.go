@@ -1343,3 +1343,26 @@ func TestKMatrix_Power2(t *testing.T) {
 		}
 	}
 }
+
+/*
+TestKMatrix_AsSimplifiedExpression1
+Description:
+
+	Tests that the AsSimplifiedExpression() method properly returns the KMatrix itself,
+	as it is already in simplified form.
+*/
+func TestKMatrix_AsSimplifiedExpression1(t *testing.T) {
+	// Setup
+	A := getKMatrix.From([][]float64{
+		{1, 2, 3},
+		{4, 5, 6},
+	})
+
+	// Simplify
+	simp := A.AsSimplifiedExpression()
+
+	// Verify that the result is the same as the original
+	if !reflect.DeepEqual(A, simp) {
+		t.Errorf("Expected simplification to not change anything; got %v", simp)
+	}
+}

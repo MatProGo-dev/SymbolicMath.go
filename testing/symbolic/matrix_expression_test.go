@@ -495,3 +495,42 @@ func TestMatrixExpression_MatrixMultiplyTemplate2(t *testing.T) {
 	}()
 	symbolic.MatrixMultiplyTemplate(x, y)
 }
+
+/*
+TestMatrixExpression_MatrixMultiplyTemplate3
+Description:
+
+	Tests the multiplication of a KMatrix and a VariableMatrix using
+	the MatrixMultiplyTemplate function. This test should trigger a panic
+	when the second matrix (the VariableMatrix) is not well-defined.
+*/
+func TestMatrixExpression_MatrixMultiplyTemplate3(t *testing.T) {
+	// Setup
+	x := symbolic.KMatrix{
+		{symbolic.K(1), symbolic.K(2)},
+		{symbolic.K(3), symbolic.K(4)},
+	}
+	v := symbolic.Variable{}
+	y := symbolic.VariableMatrix{
+		{v, v},
+		{v, v},
+	}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf("Expected a panic when calling MatrixMultiplyTemplate with an invalid VariableMatrix; received nil")
+		}
+
+		rAsE, tf := r.(error)
+		if !tf {
+			t.Errorf("Expected the panic to be an error; received %T", r)
+		}
+
+		if !strings.Contains(rAsE.Error(), v.Check().Error()) {
+			t.Errorf("Expected the panic to contain the error message %v; received %v", v.Check().Error(), rAsE.Error())
+		}
+	}()
+	symbolic.MatrixMultiplyTemplate(x, y)
+}
