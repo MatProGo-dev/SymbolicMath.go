@@ -224,6 +224,8 @@ func (km KMatrix) Minus(e interface{}) Expression {
 		return km.Minus(DenseToKMatrix(right)) // Reuse KMatrix case
 	case *mat.Dense:
 		return km.Minus(*right) // Reuse mat.Dense case
+	case Expression:
+		return km.Plus(right.Multiply(-1.0))
 	}
 
 	// If we reach this point, the input is not recognized

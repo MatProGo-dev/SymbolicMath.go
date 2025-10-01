@@ -1366,3 +1366,37 @@ func TestKMatrix_AsSimplifiedExpression1(t *testing.T) {
 		t.Errorf("Expected simplification to not change anything; got %v", simp)
 	}
 }
+
+/*
+TestKMatrix_Minus1
+Description:
+
+	Tests that the Minus() method properly subtracts zero from a KMatrix.
+	The result should be the same as the original matrix.
+*/
+func TestKMatrix_Minus1(t *testing.T) {
+	// Setup
+	A := getKMatrix.From([][]float64{
+		{1, -2, 3},
+		{-4, 5, -6},
+	})
+
+	Z1 := symbolic.ZerosMatrix(2, 3)
+
+	// Algorithm
+	diff := A.Minus(Z1)
+
+	diffAsKMatrix, tf := diff.(symbolic.KMatrix)
+	if !tf {
+		t.Errorf(
+			"Expected diff to be KMatrix; received type %T",
+			diff,
+		)
+	}
+
+	// Check the elements of the two matrices
+	if !reflect.DeepEqual(A, diffAsKMatrix) {
+		t.Errorf("The two matrices A and diff are not equal!")
+	}
+
+}
