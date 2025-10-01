@@ -1306,6 +1306,46 @@ func TestMonomialMatrix_Multiply7(t *testing.T) {
 }
 
 /*
+TestMonomialMatrix_Multiply8
+Description:
+
+	Tests that the Multiply() method properly multiplies a matrix
+	of Monomials with a KMatrix. The result should be a matrix of
+	monomials where each monomial has the scaled coefficients
+	of the original monomial.
+*/
+func TestMonomialMatrix_Multiply8(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := v1.ToMonomial()
+	var mm symbolic.MonomialMatrix = [][]symbolic.Monomial{
+		{m1, m1},
+		{m1, m1},
+	}
+	km2 := symbolic.DenseToKMatrix(symbolic.OnesMatrix(2, 2))
+
+	// Test
+	product := mm.Multiply(km2)
+
+	// Check that the product is of the MonomialMatrix type
+	productMat, ok := product.(symbolic.PolynomialMatrix)
+	if !ok {
+		t.Errorf(
+			"expected Multiply() to return a PolynomialMatrix; received %v",
+			product,
+		)
+	}
+
+	// Check that the dimensions of the product are (2,2)
+	if dims := productMat.Dims(); dims[0] != 2 || dims[1] != 2 {
+		t.Errorf(
+			"expected Multiply() to return a PolynomialMatrix with dimensions (2,2); received %v",
+			dims,
+		)
+	}
+}
+
+/*
 TestMonomialMatrix_Transpose1
 Description:
 
@@ -2309,6 +2349,29 @@ func TestMonomialMatrix_AsSimplifiedExpression1(t *testing.T) {
 			}
 		}
 	}
+}
+
+/*
+TestMonomialMatrix_AsSimplifiedExpression2
+Description:
+
+	Tests that the AsSimplifiedExpression() method properly panics when called
+	with a monomial matrix that is not well-defined.
+*/
+func TestMonomialMatrix_AsSimplifiedExpression2(t *testing.T) {
+	// Constants
+	var mm symbolic.MonomialMatrix
+
+	// Test
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf(
+				"expected AsSimplifiedExpression() to panic; it did not",
+			)
+		}
+	}()
+
+	mm.AsSimplifiedExpression()
 }
 
 /*
