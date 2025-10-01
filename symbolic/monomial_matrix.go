@@ -344,6 +344,8 @@ func (mm MonomialMatrix) Multiply(e interface{}) Expression {
 			return ConcretizeVectorExpression(product)
 
 		}
+	case MatrixExpression:
+		return MatrixMultiplyTemplate(mm, right)
 	}
 
 	// Unrecognized response is a panic

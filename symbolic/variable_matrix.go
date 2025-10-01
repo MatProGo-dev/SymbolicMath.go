@@ -331,64 +331,7 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 	case mat.Dense:
 		// Use the KMatrix case
 		return vm.Multiply(DenseToKMatrix(right))
-	case KMatrix:
-		// Collect dimensions
-		nResultRows, nResultCols := vm.Dims()[0], right.Dims()[1]
-
-		// Switch on the dimensions of the result
-		switch {
-		case (nResultRows == 1) && (nResultCols == 1):
-			// Scalar result
-			var result Polynomial = K(0).ToMonomial().ToPolynomial()
-
-			for ii, vmRow := range vm {
-				for jj, vIJ := range vmRow {
-					result = result.Plus(vIJ.Multiply(right[jj][ii])).(Polynomial)
-				}
-			}
-			return result
-		case nResultCols == 1:
-			// Vector result
-			var result PolynomialVector = VecDenseToKVector(ZerosVector(nResultRows)).ToPolynomialVector()
-
-			for ii, vmRow := range vm {
-				for jj, vIJ := range vmRow {
-					result[ii] = result[ii].Plus(vIJ.Multiply(right[jj][0])).(Polynomial)
-				}
-			}
-
-			return result
-
-		default:
-			// Create result
-			var result PolynomialMatrix
-
-			for ii := 0; ii < nResultRows; ii++ {
-				var resultRow []Polynomial
-				for jj := 0; jj < nResultCols; jj++ {
-					resultRow = append(resultRow, K(0).ToMonomial().ToPolynomial())
-				}
-				result = append(result, resultRow)
-			}
-
-			// Fill in the elements of the new matrix
-			for ii := 0; ii < nResultRows; ii++ {
-				for jj := 0; jj < nResultCols; jj++ {
-					// Compute Sum
-					for kk := 0; kk < vm.Dims()[1]; kk++ {
-						result[ii][jj] = result[ii][jj].Plus(
-							vm[ii][kk].Multiply(right[kk][jj]),
-						).(Polynomial)
-					}
-				}
-			}
-			return result
-		}
-	case VariableMatrix:
-		return MatrixMultiplyTemplate(vm, right)
-	case MonomialMatrix:
-		return MatrixMultiplyTemplate(vm, right)
-	case PolynomialMatrix:
+	case MatrixExpression:
 		return MatrixMultiplyTemplate(vm, right)
 	}
 

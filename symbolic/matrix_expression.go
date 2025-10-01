@@ -199,7 +199,7 @@ Description:
 
 	Template for the matrix multiply function.
 */
-func MatrixMultiplyTemplate(left MatrixExpression, right MatrixExpression) MatrixExpression {
+func MatrixMultiplyTemplate(left MatrixExpression, right MatrixExpression) Expression {
 	// Input Processing
 	err := left.Check()
 	if err != nil {
@@ -250,7 +250,9 @@ func MatrixMultiplyTemplate(left MatrixExpression, right MatrixExpression) Matri
 		out = append(out, tempRow)
 	}
 
-	return ConcretizeMatrixExpression(out)
+	// Use the general concretization function (not the matrix-specific one)
+	// because it will also convert matrices to scalars or vectors if needed.
+	return ConcretizeExpression(out)
 }
 
 /*
@@ -297,6 +299,7 @@ Description:
 */
 func ConcretizeMatrixExpression(sliceIn [][]ScalarExpression) MatrixExpression {
 	// Input Processing
+	// - Check that the input slice is not empty
 	if len(sliceIn) == 0 {
 		panic(
 			fmt.Errorf(
@@ -305,7 +308,7 @@ func ConcretizeMatrixExpression(sliceIn [][]ScalarExpression) MatrixExpression {
 		)
 	}
 
-	// Check the number of columns in each row
+	// - Check the number of columns in each row is the same
 	numCols := len(sliceIn[0])
 	for ii, row := range sliceIn {
 		if len(row) != numCols {
