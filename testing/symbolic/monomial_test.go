@@ -1850,3 +1850,80 @@ func TestMonomial_AsSimplifiedExpression4(t *testing.T) {
 		)
 	}
 }
+
+/*
+TestMonomial_AsSimplifiedExpression5
+Description:
+
+	Verifies that the Monomial.AsSimplifiedExpression function properly
+	returns a constant expression of zero (K(0)) when the monomial is well-defined
+	and has a coefficient of zero.
+*/
+func TestMonomial_AsSimplifiedExpression5(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     0,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{2},
+	}
+
+	// Compute AsSimplifiedExpression
+	simplified := m1.AsSimplifiedExpression()
+
+	// Verify that the simplified is a constant (K)
+	simplifiedAsK, tf := simplified.(symbolic.K)
+	if !tf {
+		t.Errorf(
+			"expected simplified to be a constant; received %T",
+			simplified,
+		)
+	}
+
+	// Verify that the simplified is a constant
+	if float64(simplifiedAsK) != 0 {
+		t.Errorf(
+			"expected simplified to be a constant; received %v",
+			simplifiedAsK,
+		)
+	}
+}
+
+/*
+TestMonomial_AsSimplifiedExpression6
+Description:
+
+	Verifies that the Monomial.AsSimplifiedExpression function properly
+	returns a single variable expression when the monomial is well-defined
+	and has a coefficient of one and a single variable factor with exponent one.
+*/
+func TestMonomial_AsSimplifiedExpression6(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     1,
+		VariableFactors: []symbolic.Variable{v1},
+		Exponents:       []int{1},
+	}
+
+	// Compute AsSimplifiedExpression
+	simplified := m1.AsSimplifiedExpression()
+
+	// Verify that the simplified is a variable
+	simplifiedAsV, tf := simplified.(symbolic.Variable)
+	if !tf {
+		t.Errorf(
+			"expected simplified to be a variable; received %T",
+			simplified,
+		)
+	}
+
+	// Verify that the simplified is the same variable
+	if simplifiedAsV != v1 {
+		t.Errorf(
+			"expected simplified to be %v; received %v",
+			v1,
+			simplifiedAsV,
+		)
+	}
+}
