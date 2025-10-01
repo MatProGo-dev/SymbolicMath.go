@@ -1671,6 +1671,42 @@ func TestMonomial_String2(t *testing.T) {
 }
 
 /*
+TestMonomial_At1
+Description:
+
+	Verifies that the Monomial.At function returns the proper value
+	when the monomial is well-defined and the inputs are 0,0.
+*/
+func TestMonomial_At1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	v2 := symbolic.NewVariable()
+	m1 := symbolic.Monomial{
+		Coefficient:     3.14,
+		VariableFactors: []symbolic.Variable{v1, v2},
+		Exponents:       []int{1, 2},
+	}
+
+	// Test
+	val := m1.At(0, 0)
+	valAsMonomial, tf := val.(symbolic.Monomial)
+	if !tf {
+		t.Errorf(
+			"expected val to be a monomial; received %T",
+			val,
+		)
+	}
+
+	if valAsMonomial.Coefficient != 3.14 {
+		t.Errorf(
+			"expected val coefficient to be %v; received %v",
+			3.14,
+			valAsMonomial.Coefficient,
+		)
+	}
+}
+
+/*
 TestMonomial_AsSimplifiedExpression1
 Description:
 
