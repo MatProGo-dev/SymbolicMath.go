@@ -77,6 +77,10 @@ type ScalarExpression interface {
 
 	// At returns the value at the given row and column index
 	At(ii, jj int) ScalarExpression
+
+	// AsSimplifiedExpression
+	// Simplifies the expression and returns the simplified version
+	AsSimplifiedExpression() Expression
 }
 
 // NewExpr returns a new expression with a single additive constant value, c,

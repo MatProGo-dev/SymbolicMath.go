@@ -1882,3 +1882,71 @@ func TestMonomialVector_LinearCoeff1(t *testing.T) {
 		t.Errorf("The two matrices are not equal!")
 	}
 }
+
+/*
+TestMonomialVector_AsSimplifiedExpression1
+Description:
+
+	Verifies that the AsSimplifiedExpression() method properly panics
+	when called on an improperly initialized MonomialVector.
+*/
+func TestMonomialVector_AsSimplifiedExpression1(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{}
+
+	// Test
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Errorf(
+				"Expected mv.AsSimplifiedExpression() to panic; received %v",
+				mv.AsSimplifiedExpression(),
+			)
+		}
+	}()
+
+	mv.AsSimplifiedExpression()
+	t.Errorf("Test should panic before this is reached!")
+}
+
+/*
+TestMonomialVector_AsSimplifiedExpression2
+Description:
+
+	Verifies that the AsSimplifiedExpression() method properly returns
+	a constant vector when called on a MonomialVector containing
+	only constant monomials.
+*/
+func TestMonomialVector_AsSimplifiedExpression2(t *testing.T) {
+	// Constants
+	mv := symbolic.MonomialVector{
+		symbolic.Monomial{Coefficient: 3.14},
+		symbolic.Monomial{Coefficient: 2.71},
+		symbolic.Monomial{Coefficient: 1.41},
+	}
+
+	// Test
+	se := mv.AsSimplifiedExpression()
+
+	// Verify that the result is a KVector
+	kv, tf := se.(symbolic.KVector)
+	if !tf {
+		t.Errorf(
+			"expected se to be a KVector; received %T",
+			se,
+		)
+	}
+
+	// Verify that the elements of the KVector are correct
+	expectedValues := []float64{3.14, 2.71, 1.41}
+	for ii, val := range kv {
+		if float64(val) != expectedValues[ii] {
+			t.Errorf(
+				"expected kv[%v] to be %v; received %v",
+				ii,
+				expectedValues[ii],
+				float64(val),
+			)
+		}
+	}
+}

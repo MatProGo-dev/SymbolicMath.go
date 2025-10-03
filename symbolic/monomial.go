@@ -775,3 +775,56 @@ func (m Monomial) At(ii, jj int) ScalarExpression {
 	// Algorithm
 	return m
 }
+
+/*
+AsSimplifiedExpression
+Description:
+
+	Returns the simplest form of the expression.
+	- If the monomial contains no variables,
+	then it is simply the constant coefficient. (return K(m.Coefficient))
+	- If the monomial coefficient is zero,
+	then it is simply the constant zero. (return K(0))
+	- If the monomial contains variables BUT all exponents are zero,
+	then it is simply the constant zero. (return K(0))
+	- If the monomial's coefficient is 1.0 and it contains one variable with degree 1,
+	then it is simply that variable. (return that variable)
+	- Otherwise, return the monomial itself.
+*/
+func (m Monomial) AsSimplifiedExpression() Expression {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	// - If the monomial is a constant, return the constant
+	if m.IsConstant() {
+		return K(m.Coefficient)
+	}
+	// - If the monomial's coefficient is zero, return zero
+	if m.Coefficient == 0.0 {
+		return K(0.0)
+	}
+	// - If the monomial's coefficient is 1.0 and it contains one variable with degree 1,
+	//   then return that variable
+	if (m.Coefficient == 1.0) && (len(m.VariableFactors) == 1) && (m.Exponents[0] == 1) {
+		return m.VariableFactors[0]
+	}
+
+	// - If the monomial contains variables BUT all exponents are zero,
+	//   then return zero
+	allExponentsZero := true
+	for _, exp := range m.Exponents {
+		if exp != 0 {
+			allExponentsZero = false
+			break
+		}
+	}
+	if allExponentsZero {
+		return K(m.Coefficient)
+	}
+
+	return m
+}

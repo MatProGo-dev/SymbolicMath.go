@@ -600,6 +600,10 @@ func (p Polynomial) Simplify() Polynomial {
 
 }
 
+func (p Polynomial) AsSimplifiedExpression() Expression {
+	return p.Simplify()
+}
+
 /*
 DerivativeWrt
 Description:
@@ -794,10 +798,10 @@ func (p Polynomial) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	var out Expression = K(0.0)
 	for _, monomial := range p.Monomials {
 		newMonomial := monomial.Substitute(vIn, eIn)
-		out = out.Plus(newMonomial).(Polynomial).Simplify()
+		out = out.Plus(newMonomial)
 	}
 
-	return out
+	return out.AsSimplifiedExpression()
 }
 
 /*

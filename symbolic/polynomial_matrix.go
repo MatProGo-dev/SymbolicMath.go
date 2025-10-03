@@ -326,6 +326,8 @@ func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 			}
 			return product
 		}
+	case MatrixExpression:
+		return MatrixMultiplyTemplate(pm, right)
 	}
 
 	// If type isn't recognized, then panic
@@ -557,22 +559,32 @@ Description:
 
 	Simplifies the polynomial matrix, if possible.
 */
-func (pm PolynomialMatrix) Simplify() PolynomialMatrix {
+func (pm PolynomialMatrix) Simplify() MatrixExpression {
 	// Constants
 	nRows, nCols := pm.Dims()[0], pm.Dims()[1]
 
 	// Fill container with simplified polynomials
-	var simplified PolynomialMatrix
+	var simplified [][]ScalarExpression
 	for rowIndex := 0; rowIndex < nRows; rowIndex++ {
-		tempRow := make([]Polynomial, nCols)
+		tempRow := make([]ScalarExpression, nCols)
 		for colIndex := 0; colIndex < nCols; colIndex++ {
-			tempRow[colIndex] = pm[rowIndex][colIndex].Simplify()
+			// Simplify the polynomial entry
+			entry := pm[rowIndex][colIndex]
+			simplifiedAsSE, tf := entry.AsSimplifiedExpression().(ScalarExpression)
+			if !tf {
+				panic(fmt.Errorf("error simplifying polynomial matrix entry %v,%v", rowIndex, colIndex))
+			}
+			tempRow[colIndex] = simplifiedAsSE
 		}
 		simplified = append(simplified, tempRow)
 	}
 
 	// Return simplified polynomial
-	return simplified
+	return ConcretizeMatrixExpression(simplified)
+}
+
+func (pm PolynomialMatrix) AsSimplifiedExpression() Expression {
+	return pm.Simplify()
 }
 
 /*

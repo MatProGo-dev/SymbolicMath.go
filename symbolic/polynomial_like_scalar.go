@@ -78,6 +78,9 @@ type PolynomialLikeScalar interface {
 
 	// At returns the value at the given row and column index
 	At(ii, jj int) ScalarExpression
+
+	// Simplify simplifies the expression and returns the simplified version
+	AsSimplifiedExpression() Expression
 }
 
 /*

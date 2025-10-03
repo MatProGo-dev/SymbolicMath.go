@@ -437,3 +437,13 @@ func (c K) At(ii, jj int) ScalarExpression {
 
 	return c
 }
+
+/*
+AsSimplifiedExpression
+Description:
+
+	Returns the simplest form of the expression.
+*/
+func (c K) AsSimplifiedExpression() Expression {
+	return c
+}

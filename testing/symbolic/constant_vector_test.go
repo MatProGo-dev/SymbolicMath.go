@@ -8,6 +8,7 @@ Description:
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -1281,6 +1282,37 @@ func TestConstantVector_Multiply13(t *testing.T) {
 		t.Errorf(
 			"Expected product to be of type PolynomialVector; received %v",
 			product,
+		)
+	}
+}
+
+/*
+TestKVector_AsSimplifiedExpression1
+Description:
+
+	Verifies that the AsSimplifiedExpression method correctly
+	returns the same KVector when called on a KVector.
+*/
+func TestKVector_AsSimplifiedExpression1(t *testing.T) {
+	// Constants
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(3))
+
+	// Test
+	simplified := kv1.AsSimplifiedExpression()
+
+	// Check that the simplified expression is a KVector
+	if _, tf := simplified.(symbolic.KVector); !tf {
+		t.Errorf(
+			"Expected simplified to be of type KVector; received %v",
+			simplified,
+		)
+	}
+
+	// Check that the simplified expression is equal to the original
+	if !reflect.DeepEqual(simplified, kv1) {
+		t.Errorf(
+			"Expected simplified to be equal to kv1; received %v",
+			simplified,
 		)
 	}
 }

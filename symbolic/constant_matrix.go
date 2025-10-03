@@ -224,6 +224,8 @@ func (km KMatrix) Minus(e interface{}) Expression {
 		return km.Minus(DenseToKMatrix(right)) // Reuse KMatrix case
 	case *mat.Dense:
 		return km.Minus(*right) // Reuse mat.Dense case
+	case Expression:
+		return km.Plus(right.Multiply(-1.0))
 	}
 
 	// If we reach this point, the input is not recognized
@@ -371,8 +373,8 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 	case mat.Dense:
 		// Use *mat.Dense method
 		return km.Multiply(&right) // Reuse *mat.Dense case
-	case KMatrix:
-		return km.Multiply(right.ToDense()) // Reuse *mat.Dense case
+	case MatrixExpression:
+		return MatrixMultiplyTemplate(km, right)
 	}
 
 	// If we reach this point, the input is not recognized
@@ -746,4 +748,15 @@ Description:
 */
 func (km KMatrix) Power(exponent int) Expression {
 	return MatrixPowerTemplate(km, exponent)
+}
+
+/*
+AsSimplifiedExpression
+Description:
+
+	Simplifies the constant matrix. Since the constant matrix is always in simplest form,
+	this function simply returns the original constant matrix.
+*/
+func (km KMatrix) AsSimplifiedExpression() Expression {
+	return km
 }

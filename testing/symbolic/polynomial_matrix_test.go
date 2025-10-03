@@ -1208,6 +1208,54 @@ func TestPolynomialMatrix_Multiply8(t *testing.T) {
 }
 
 /*
+TestPolynomialMatrix_Multiply9
+Description:
+
+	Tests that the Multiply() method properly computes the product of a
+	polynomial matrix (2 x 3) with a constant matrix (3 x 2).
+	The output should be a polynomial matrix (2 x 2).
+*/
+func TestPolynomialMatrix_Multiply9(t *testing.T) {
+	// Constants
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+		{
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+			symbolic.NewVariable().ToPolynomial(),
+		},
+	}
+
+	km1 := getKMatrix.From([][]float64{
+		{1.0, 2.0},
+		{3.0, 4.0},
+		{5.0, 6.0},
+	})
+
+	// Test
+	pm2 := pm1.Multiply(km1)
+
+	pm2AsPM, tf := pm2.(symbolic.PolynomialMatrix)
+	if !tf {
+		t.Errorf(
+			"expected pm2 to be a PolynomialMatrix; received %v",
+			pm2,
+		)
+	}
+
+	if pm2AsPM.Dims()[0] != 2 || pm2AsPM.Dims()[1] != 2 {
+		t.Errorf(
+			"expected pm2.Dims() to be [2,2]; received %v",
+			pm2AsPM.Dims(),
+		)
+	}
+}
+
+/*
 TestPolynomialMatrix_Transpose1
 Description:
 
@@ -1794,4 +1842,57 @@ func TestPolynomialMatrix_String1(t *testing.T) {
 		}
 
 	}
+}
+
+/*
+TestPolynomialMatrix_AsSimplifiedExpression1
+Description:
+
+	Tests that the AsSimplifiedExpression() method properly returns
+	a PolynomialMatrix when a well-defined polynomial matrix
+	calls it. The result should be a polynomial matrix with
+	the same dimensions and number of monomials in each polynomial.
+*/
+func TestPolynomialMatrix_AsSimplifiedExpression1(t *testing.T) {
+	// Constants
+	v1 := symbolic.NewVariable()
+	p1 := v1.ToPolynomial()
+	var pm1 symbolic.PolynomialMatrix = [][]symbolic.Polynomial{
+		{p1.Minus(3.14).(symbolic.Polynomial), p1.Minus(3.14).(symbolic.Polynomial)},
+		{p1.Minus(3.14).(symbolic.Polynomial), p1.Minus(3.14).(symbolic.Polynomial)},
+		{p1.Minus(3.14).(symbolic.Polynomial), p1.Minus(3.14).(symbolic.Polynomial)},
+	}
+
+	// Test
+	pm2 := pm1.AsSimplifiedExpression()
+
+	pm2AsPM, tf := pm2.(symbolic.PolynomialMatrix)
+	if !tf {
+		t.Errorf(
+			"expected pm2 to be a PolynomialMatrix; received %v",
+			pm2,
+		)
+	}
+
+	// Check that the dimensions are the same
+	if pm1.Dims()[0] != pm2AsPM.Dims()[0] || pm1.Dims()[1] != pm2AsPM.Dims()[1] {
+		t.Errorf(
+			"expected pm2.Dims() to be %v; received %v",
+			pm1.Dims(),
+			pm2AsPM.Dims(),
+		)
+	}
+
+	// Check that each polynomial in pm2 contains two monomials
+	for _, pm2Row := range pm2AsPM {
+		for _, p := range pm2Row {
+			if len(p.Monomials) != 2 {
+				t.Errorf(
+					"expected len(p.Monomials) to be 2; received %v",
+					len(p.Monomials),
+				)
+			}
+		}
+	}
+
 }

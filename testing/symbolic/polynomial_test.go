@@ -7,13 +7,14 @@ Description:
 */
 
 import (
+	"reflect"
+	"strings"
+	"testing"
+
 	getKMatrix "github.com/MatProGo-dev/SymbolicMath.go/get/KMatrix"
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
-	"reflect"
-	"strings"
-	"testing"
 )
 
 /*
@@ -2202,4 +2203,53 @@ func TestPolynomial_Substitute3(t *testing.T) {
 
 	// Call the Substitute method
 	p1.Substitute(v1, symbolic.NewVariable())
+}
+
+/*
+TestPolynomial_SubstituteWith4
+Description:
+
+	Verifies that the Polynomial.Substitute method correctly computes the substitution
+	when the polynomial is well-defined and the expression used for substitution is well-defined.
+	We make the polynomial very long and complex to replicate a bug that occurred in one
+	of the downstream projects.
+
+	p1 = 1 + x1 + x2 + x3 + ... + x20
+	substitute x1 with 2.
+*/
+func TestPolynomial_SubstituteWith4(t *testing.T) {
+	// Constants
+	N := 20
+	x := symbolic.NewVariableVector(N)
+
+	// Create a polynomial that is the sum of 1 and all variables in x
+	sum1 := symbolic.K(1).Plus(
+		x.Transpose().Multiply(symbolic.OnesVector(N)),
+	)
+	p1, tf := sum1.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected %v to be a polynomial; received %T",
+			sum1,
+			sum1,
+		)
+	}
+
+	// Test
+	substitution := p1.Substitute(x[0], symbolic.K(2.0))
+
+	// Search for a constant element in the monomials
+	for _, m := range substitution.(symbolic.Polynomial).Monomials {
+		if m.IsConstant() {
+			if m.Coefficient != 3.0 {
+				t.Errorf(
+					"expected (%v).substitute(%v, %v) to have constant 3.0; received %v",
+					p1,
+					x[0],
+					symbolic.K(2.0),
+					m.Coefficient,
+				)
+			}
+		}
+	}
 }
