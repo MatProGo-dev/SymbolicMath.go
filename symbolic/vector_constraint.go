@@ -264,9 +264,9 @@ func (vc VectorConstraint) LinearEqualityConstraintRepresentation(wrt ...[]Varia
 Substitute
 Description:
 
-	Substitutes the variable vIn with the scalar expression seIn in the vector constraint.
+	Substitutes the variable vIn with the scalar expression eIn in the vector constraint.
 */
-func (vc VectorConstraint) Substitute(vIn Variable, seIn ScalarExpression) Constraint {
+func (vc VectorConstraint) Substitute(vIn Variable, eIn ScalarExpression) Constraint {
 	// Check that the constraint is well formed.
 	err := vc.Check()
 	if err != nil {
@@ -274,8 +274,8 @@ func (vc VectorConstraint) Substitute(vIn Variable, seIn ScalarExpression) Const
 	}
 
 	// Substitute the variable in the left and right hand sides.
-	newLHS := vc.LeftHandSide.Substitute(vIn, seIn).(VectorExpression)
-	newRHS := vc.RightHandSide.Substitute(vIn, seIn).(VectorExpression)
+	newLHS := vc.LeftHandSide.Substitute(vIn, eIn).(VectorExpression)
+	newRHS := vc.RightHandSide.Substitute(vIn, eIn).(VectorExpression)
 
 	// Return the new constraint
 	return VectorConstraint{newLHS, newRHS, vc.Sense}

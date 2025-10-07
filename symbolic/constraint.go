@@ -15,7 +15,7 @@ type Constraint interface {
 	ConstrSense() ConstrSense
 	Check() error
 	IsLinear() bool
-	Substitute(vIn Variable, seIn ScalarExpression) Constraint
+	Substitute(vIn Variable, eIn ScalarExpression) Constraint
 	SubstituteAccordingTo(subMap map[Variable]Expression) Constraint
 
 	// Variables

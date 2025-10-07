@@ -215,10 +215,10 @@ func (sc ScalarConstraint) LinearEqualityConstraintRepresentation(wrt ...[]Varia
 Substitute
 Description:
 
-	Substitutes the variable vIn with the scalar expression seIn in the
+	Substitutes the variable vIn with the scalar expression eIn in the
 	given scalar constraint.
 */
-func (sc ScalarConstraint) Substitute(vIn Variable, seIn ScalarExpression) Constraint {
+func (sc ScalarConstraint) Substitute(vIn Variable, eIn ScalarExpression) Constraint {
 	// Check that the constraint is well formed.
 	err := sc.Check()
 	if err != nil {
@@ -226,10 +226,10 @@ func (sc ScalarConstraint) Substitute(vIn Variable, seIn ScalarExpression) Const
 	}
 
 	// Substitute the variable in the left hand side
-	newLHS := sc.LeftHandSide.Substitute(vIn, seIn).(ScalarExpression)
+	newLHS := sc.LeftHandSide.Substitute(vIn, eIn).(ScalarExpression)
 
 	// Substitute the variable in the right hand side
-	newRHS := sc.RightHandSide.Substitute(vIn, seIn).(ScalarExpression)
+	newRHS := sc.RightHandSide.Substitute(vIn, eIn).(ScalarExpression)
 
 	// Return the new constraint
 	return ScalarConstraint{

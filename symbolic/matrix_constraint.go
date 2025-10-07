@@ -151,9 +151,9 @@ func (mc MatrixConstraint) IsLinear() bool {
 Substitute
 Description:
 
-	Substitutes the variable vIn with the scalar expression seIn
+	Substitutes the variable vIn with the scalar expression eIn
 */
-func (mc MatrixConstraint) Substitute(vIn Variable, seIn ScalarExpression) Constraint {
+func (mc MatrixConstraint) Substitute(vIn Variable, eIn ScalarExpression) Constraint {
 	// Check that the constraint is well formed.
 	err := mc.Check()
 	if err != nil {
@@ -161,10 +161,10 @@ func (mc MatrixConstraint) Substitute(vIn Variable, seIn ScalarExpression) Const
 	}
 
 	// Substitute the variable in the left hand side
-	newLHS := mc.LeftHandSide.Substitute(vIn, seIn).(MatrixExpression)
+	newLHS := mc.LeftHandSide.Substitute(vIn, eIn).(MatrixExpression)
 
 	// Substitute the variable in the right hand side
-	newRHS := mc.RightHandSide.Substitute(vIn, seIn).(MatrixExpression)
+	newRHS := mc.RightHandSide.Substitute(vIn, eIn).(MatrixExpression)
 
 	return MatrixConstraint{newLHS, newRHS, mc.Sense}
 }
