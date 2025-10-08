@@ -367,15 +367,11 @@ func (sc ScalarConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
 			otherCCoeffVector := otherC.LeftHandSide.LinearCoeff(otherC.Variables())
 			otherCCoeff := otherCCoeffVector.AtVec(0)
 
-			// If the coefficient of scCoeff is < 0,
-			// then flip the signs of both sides of the constraint
-			if scCoeff < 0 {
-				sc = sc.ScaleBy(-1).(ScalarConstraint)
-			}
-
-			if otherCCoeff < 0 {
-				otherC = otherC.ScaleBy(-1).(ScalarConstraint)
-			}
+			// Scale both constraints
+			// Note: If the coefficient is negative, then the sense of the constraint will be flipped.
+			// This is handled in the ScaleBy method.
+			sc = sc.ScaleBy(1.0 / scCoeff).(ScalarConstraint)
+			otherC = otherC.ScaleBy(1.0 / otherCCoeff).(ScalarConstraint)
 
 			// The implication holds if all of the following are true:
 			// 1. The sense of sc and otherC are either the same (or one is equality)
