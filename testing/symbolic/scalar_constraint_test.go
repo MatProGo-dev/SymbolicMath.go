@@ -1953,6 +1953,40 @@ func TestScalarConstraint_ImpliesThisIsAlsoSatisfied11(t *testing.T) {
 }
 
 /*
+TestScalarConstraint_ImpliesThisIsAlsoSatisfied12
+Description:
+
+	Tests the ImpliesThisIsAlsoSatisfied() method of a scalar constraint.
+	This test attempts to catch a bug where the method would note that some
+	constraints imply others that they should not actually imply.
+	In this case, it seems like we have constraints where, if you compare
+	the constants on the right hand side, then they might seem to imply one
+	another: (-2 >= -4), but when you consider the left hand side's
+	coefficients, you see that they do NOT actually imply one another.
+	In this case, we have:
+		-2 x <= 2 and
+		-10 x <= 4
+	as the input constraints. The first constraint does NOT imply the second.
+*/
+func TestScalarConstraint_ImpliesThisIsAlsoSatisfied12(t *testing.T) {
+	// Constants
+	x := symbolic.NewVariable()
+
+	// Create constraint
+	sc := x.Multiply(-2).LessEq(2.0)
+
+	// Create a second constraint
+	sc2 := x.Multiply(-10).LessEq(4.0)
+
+	// Verify that the first constraint does NOT imply the second
+	if sc.ImpliesThisIsAlsoSatisfied(sc2) {
+		t.Errorf(
+			"Expected sc.ImpliesThisIsAlsoSatisfied(sc2) to be false; received true",
+		)
+	}
+}
+
+/*
 TestScalarConstraint_AsSimplifiedConstraint1
 Description:
 
