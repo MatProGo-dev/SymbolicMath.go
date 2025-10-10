@@ -880,8 +880,8 @@ func TestPolynomialVector_Plus4(t *testing.T) {
 TestPolynomialVector_Plus5
 Description:
 
-	Tests that a polynomial vector added to a polynomial vector
-	produces a polynomial vector.
+	Tests that a polynomial vector (really a vector of variables) added to
+	a polynomial vector (really a vector of variables) produces a monomial vector.
 */
 func TestPolynomialVector_Plus5(t *testing.T) {
 	// Constants
@@ -891,12 +891,22 @@ func TestPolynomialVector_Plus5(t *testing.T) {
 	}
 
 	// Test
-	pv2 := pv1.Plus(pv1).(symbolic.PolynomialVector)
-	for _, polynomial := range pv2 {
-		if len(polynomial.Monomials) != 1 {
+	sum := pv1.Plus(pv1)
+
+	sumAsMV, ok := sum.(symbolic.MonomialVector)
+	if !ok {
+		t.Errorf(
+			"Expected Plus to return a MonomialVector; received %T",
+			sum,
+		)
+	}
+
+	// Check that each monomial contains a coefficient of 2.0
+	for _, monomial := range sumAsMV {
+		if monomial.Coefficient != 2.0 {
 			t.Errorf(
-				"Expected polynomial.Monomials to have length 2; received %v",
-				len(polynomial.Monomials),
+				"Expected each monomial.Coefficient to be 2.0; received %v",
+				monomial.Coefficient,
 			)
 		}
 	}

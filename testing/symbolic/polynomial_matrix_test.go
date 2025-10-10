@@ -396,9 +396,9 @@ func TestPolynomialMatrix_Plus3(t *testing.T) {
 TestPolynomialMatrix_Plus4
 Description:
 
-	Tests that the Plus() method properly adds a polynomial matrix
-	with THE SAME polynomial matrix. The result should be a polynomial
-	matrix with each polynomial containing one monomial.
+	Tests that the Plus() method properly adds a polynomial matrix (really a variable matrix)
+	with THE SAME polynomial matrix. The result should be a monomial
+	matrix.
 */
 func TestPolynomialMatrix_Plus4(t *testing.T) {
 	// Constants
@@ -413,23 +413,12 @@ func TestPolynomialMatrix_Plus4(t *testing.T) {
 	// Test
 	pm2 := pm1.Plus(pm1)
 
-	pm2AsPM, tf := pm2.(symbolic.PolynomialMatrix)
+	_, tf := pm2.(symbolic.MonomialMatrix)
 	if !tf {
 		t.Errorf(
-			"expected pm2 to be a PolynomialMatrix; received %v",
+			"expected pm2 to be a MonomialMatrix; received %v",
 			pm2,
 		)
-	}
-
-	for _, pmRow := range pm2AsPM {
-		for _, p := range pmRow {
-			if len(p.Monomials) != 1 {
-				t.Errorf(
-					"expected len(p.Monomials) to be 1; received %v",
-					len(p.Monomials),
-				)
-			}
-		}
 	}
 }
 

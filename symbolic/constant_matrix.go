@@ -324,27 +324,21 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 		nR := km.Dims()[0]
 		if nR == 1 {
 			// If the output is a scalar, return a scalar
-			var out Polynomial = K(0).ToPolynomial()
+			var out Expression = K(0)
 			for cIndex := 0; cIndex < len(right); cIndex++ {
-				out = out.Plus(
-					right[cIndex].Multiply(km[0][cIndex]),
-				).(Polynomial)
+				out = out.Plus(right[cIndex].Multiply(km[0][cIndex]))
 			}
-			return out
+			return out.AsSimplifiedExpression()
 		} else {
 			nC := km.Dims()[1]
 			// If the output is a vector, return a vector
-			var outputVec PolynomialVector = VecDenseToKVector(
-				ZerosVector(nR),
-			).ToPolynomialVector()
+			var outputVec Expression = VecDenseToKVector(ZerosVector(nR))
 			for colIndex := 0; colIndex < nC; colIndex++ {
 				kmAsDense := km.ToDense()
 				tempCol := (&kmAsDense).ColView(colIndex)
-				outputVec = outputVec.Plus(
-					right[colIndex].Multiply(tempCol),
-				).(PolynomialVector)
+				outputVec = outputVec.Plus(right[colIndex].Multiply(tempCol))
 			}
-			return outputVec
+			return outputVec.AsSimplifiedExpression()
 		}
 	case *mat.Dense:
 		// Check output dimensions

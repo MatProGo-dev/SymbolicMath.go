@@ -2159,13 +2159,25 @@ func TestPolynomial_Substitute2(t *testing.T) {
 
 	// Test
 	sub := p1.Substitute(v1, v2.Multiply(3.0).(symbolic.ScalarExpression))
-	if sub.(symbolic.Polynomial).Monomials[0].Coefficient != 3.0 {
+
+	// Verify that the output is a monomial with coefficient 3.0
+	subAsMonomial, tf := sub.(symbolic.Monomial)
+	if !tf {
+		t.Errorf(
+			"expected %v.substitute(%v, %v) to be a monomial; received %T",
+			p1,
+			v1,
+			v2.Multiply(3.0),
+			sub,
+		)
+	}
+	if subAsMonomial.Coefficient != 3.0 {
 		t.Errorf(
 			"expected %v.substitute(%v, %v) to have coefficient 3.0; received %v",
 			p1,
 			v1,
 			v2.Multiply(3.0),
-			sub.(symbolic.Polynomial).Monomials[0].Coefficient,
+			subAsMonomial.Coefficient,
 		)
 	}
 }

@@ -135,71 +135,74 @@ func (pm PolynomialMatrix) Plus(e interface{}) Expression {
 	}
 
 	// Perform the addition
+	var out Expression
 	switch right := e.(type) {
 	case float64:
-		return pm.Plus(K(right))
+		out = pm.Plus(K(right))
 	case K:
 		// Create containers
-		var sum PolynomialMatrix
+		var sum [][]ScalarExpression
 
 		for _, row := range pm {
-			var sumRow []Polynomial
+			var sumRow []ScalarExpression
 			for _, polynomial := range row {
-				sumRow = append(sumRow, polynomial.Plus(right).(Polynomial))
+				sumRow = append(sumRow, polynomial.Plus(right).(ScalarExpression))
 			}
 			sum = append(sum, sumRow)
 		}
-		return sum
+		out = ConcretizeMatrixExpression(sum)
 	case Monomial:
-		return pm.Plus(right.ToPolynomial())
+		out = pm.Plus(right.ToPolynomial())
 	case Polynomial:
 		// Create containers
-		var sum PolynomialMatrix
+		var sum [][]ScalarExpression
 
 		for _, row := range pm {
-			var sumRow []Polynomial
+			var sumRow []ScalarExpression
 			for _, polynomial := range row {
-				sumRow = append(sumRow, polynomial.Plus(right).(Polynomial))
+				sumRow = append(sumRow, polynomial.Plus(right).(ScalarExpression))
 			}
 			sum = append(sum, sumRow)
 		}
-		return sum
+		out = ConcretizeMatrixExpression(sum)
 	case KMatrix:
 		// Create containers
-		var sum PolynomialMatrix
+		var sum [][]ScalarExpression
 
 		for ii, row := range pm {
-			var sumRow []Polynomial
+			var sumRow []ScalarExpression
 			for jj, polynomial := range row {
-				sumRow = append(sumRow, polynomial.Plus(right.At(ii, jj).(K)).(Polynomial))
+				sumRow = append(sumRow, polynomial.Plus(right.At(ii, jj).(K)).(ScalarExpression))
 			}
 			sum = append(sum, sumRow)
 		}
-
-		return sum
+		out = ConcretizeMatrixExpression(sum)
 
 	case PolynomialMatrix:
 		// Create containers
-		var sum PolynomialMatrix
+		var sum [][]ScalarExpression
 
 		for ii, row := range pm {
-			var sumRow []Polynomial
+			var sumRow []ScalarExpression
 			for jj, polynomial := range row {
-				sumRow = append(sumRow, polynomial.Plus(right[ii][jj]).(Polynomial))
+				sumRow = append(sumRow, polynomial.Plus(right[ii][jj]).(ScalarExpression))
 			}
 			sum = append(sum, sumRow)
 		}
 
-		return sum.Simplify()
+		out = ConcretizeMatrixExpression(sum)
+	default:
+		// If the right hand side is not supported, then panic
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "PolynomialMatrix.Plus",
+				Input:        e,
+			},
+		)
 	}
 
-	// If type isn't recognized, then panic
-	panic(
-		smErrors.UnsupportedInputError{
-			FunctionName: "PolynomialMatrix.Plus",
-			Input:        e,
-		},
-	)
+	// Return
+	return out.AsSimplifiedExpression()
 }
 
 /*

@@ -1328,10 +1328,10 @@ func TestMonomialMatrix_Multiply8(t *testing.T) {
 	product := mm.Multiply(km2)
 
 	// Check that the product is of the MonomialMatrix type
-	productMat, ok := product.(symbolic.PolynomialMatrix)
+	productMat, ok := product.(symbolic.MonomialMatrix)
 	if !ok {
 		t.Errorf(
-			"expected Multiply() to return a PolynomialMatrix; received %v",
+			"expected Multiply() to return a MonomialMatrix; received %v",
 			product,
 		)
 	}

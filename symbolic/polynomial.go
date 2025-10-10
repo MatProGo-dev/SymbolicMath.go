@@ -163,7 +163,7 @@ func (p Polynomial) Plus(e interface{}) Expression {
 		pCopy.Monomials = append(pCopy.Monomials, right.Monomials...)
 
 		// Simplify?
-		return pCopy.Simplify()
+		return pCopy.AsSimplifiedExpression()
 	case KVector, VariableVector, MonomialVector, PolynomialVector:
 		ve, _ := ToVectorExpression(right)
 		if ve.Len() == 1 {
@@ -553,46 +553,52 @@ func (p Polynomial) Simplify() Polynomial {
 		panic(err)
 	}
 
-	// Find first element that has nonzero coefficient
-	firstNonZeroIndex := -1
-	for ii, monomial := range p.Monomials {
-		if monomial.Coefficient != 0.0 {
-			firstNonZeroIndex = ii
-			break
-		}
+	// Create containers for constant monomials and non-constant monomials
+	// and then combine them.
+	constantMonomials := Monomial{
+		Coefficient: 0.0,
 	}
-
-	if len(p.Monomials) == 0 || firstNonZeroIndex == -1 {
-		// If there is only a single, zero monomial, then return the zero polynomial
-		return p
-	}
-
-	// Copy the first element of the polynomial into the new polynomial
-	pCopy := Polynomial{
-		Monomials: []Monomial{p.Monomials[firstNonZeroIndex]},
-	}
-
-	// Loop through the rest of the monomials
-	for ii := firstNonZeroIndex + 1; ii < len(p.Monomials); ii++ {
-		// Check to see if the monomials coefficient is zero
-		if p.Monomials[ii].Coefficient == 0.0 {
-			// Don't add it.
-			continue
-		}
-
-		// Check to see if the monomial is already in the polynomial
-		monomialIndex := pCopy.MonomialIndex(p.Monomials[ii])
-		if monomialIndex == -1 {
-			// Polynomial does not contain the monomial,
-			// so add a new monomial.
-			pCopy.Monomials = append(pCopy.Monomials, p.Monomials[ii])
+	nonConstantMonomials := []Monomial{}
+	for _, monomial := range p.Monomials {
+		if monomial.IsConstant() {
+			constantMonomials.Coefficient += monomial.Coefficient
 		} else {
-			// Monomial does contain the variable, so
-			// modify the monomial which represents that variable.
-			newMonomial := pCopy.Monomials[monomialIndex]
-			newMonomial.Coefficient += p.Monomials[ii].Coefficient
-			pCopy.Monomials[monomialIndex] = newMonomial
+			// Check to see if the monomial is already in the slice of non-constant monomials
+			monomialIndex := -1
+			for ii, existingMonomial := range nonConstantMonomials {
+				if existingMonomial.MatchesFormOf(monomial) {
+					monomialIndex = ii
+					break
+				}
+			}
+			// If the monomial is already in the slice, then add to its coefficient
+			if monomialIndex != -1 {
+				existingMonomial := nonConstantMonomials[monomialIndex]
+				existingMonomial.Coefficient += monomial.Coefficient
+				nonConstantMonomials[monomialIndex] = existingMonomial
+				continue
+			}
+			// Otherwise, add the monomial to the slice of non-constant monomials
+			nonConstantMonomials = append(nonConstantMonomials, monomial)
 		}
+	}
+	// If the constant monomial is not zero and there are no other monomials,
+	// then return just the constant monomial as a constant
+
+	// Create the output polynomial
+	var pCopy Polynomial
+	if constantMonomials.Coefficient != 0.0 {
+		pCopy.Monomials = append(pCopy.Monomials, constantMonomials)
+	}
+	for _, monomial := range nonConstantMonomials {
+		if monomial.Coefficient != 0.0 {
+			pCopy.Monomials = append(pCopy.Monomials, monomial)
+		}
+	}
+
+	// If the polynomial is empty, then return a zero polynomial
+	if len(pCopy.Monomials) == 0 {
+		pCopy.Monomials = append(pCopy.Monomials, K(0.0).ToMonomial())
 	}
 
 	// Return the simplified polynomial
@@ -601,7 +607,20 @@ func (p Polynomial) Simplify() Polynomial {
 }
 
 func (p Polynomial) AsSimplifiedExpression() Expression {
-	return p.Simplify()
+	// Simplify the polynomial
+	pReduced := p.Simplify()
+
+	// If the polynomial is a constant, then return the constant
+	switch {
+	case pReduced.IsConstant():
+		return K(pReduced.Constant())
+	case len(pReduced.Monomials) == 1 && pReduced.Monomials[0].IsVariable(pReduced.Variables()[0]):
+		return pReduced.Monomials[0].ToVariable()
+	case len(pReduced.Monomials) == 1:
+		return pReduced.Monomials[0]
+	}
+
+	return pReduced
 }
 
 /*

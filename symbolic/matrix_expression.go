@@ -234,8 +234,9 @@ func MatrixMultiplyTemplate(left MatrixExpression, right MatrixExpression) Expre
 			var sum Expression = K(0.0)
 			for kk := 0; kk < leftDims[1]; kk++ {
 				sum = sum.Plus(left.At(ii, kk).Multiply(right.At(kk, jj)))
+				fmt.Printf("sum after adding entry %v: %v\n", kk, sum)
 			}
-			sumAsSE, tf := sum.(ScalarExpression)
+			sumAsSE, tf := sum.AsSimplifiedExpression().(ScalarExpression)
 			if !tf {
 				panic(
 					fmt.Errorf(

@@ -218,30 +218,15 @@ func TestConstantMatrix_Plus5(t *testing.T) {
 	pm2 := getKMatrix.From(ones2).ToPolynomialMatrix()
 
 	// Test
-	pm3 := km1.Plus(pm2)
+	sum := km1.Plus(pm2)
 
-	// Verify that the result is a polynomial matrix
-	if _, ok := pm3.(symbolic.PolynomialMatrix); !ok {
+	// Verify that the result is a constant matrix
+	_, tf := sum.(symbolic.KMatrix)
+	if !tf {
 		t.Errorf(
-			"Expected pm3 to be a symbolic.PolynomialMatrix; received %T",
-			pm3,
+			"Expected sum to be a symbolic.KMatrix; received %T",
+			sum,
 		)
-	}
-
-	// Verify that the elements of the result is the correct value
-	nR, nC := eye1.Dims()
-	for rowIndex := 0; rowIndex < nR; rowIndex++ {
-		for colIndex := 0; colIndex < nC; colIndex++ {
-			pm3_ii_jj := pm3.(symbolic.PolynomialMatrix).At(rowIndex, colIndex)
-			elt := pm3_ii_jj.(symbolic.Polynomial)
-			if len(elt.Monomials) != 1 {
-				t.Errorf(
-					"Expected pm3.At(0,0) to be a degree 0 polynomial; received %v",
-					pm3.(symbolic.PolynomialMatrix).At(0, 0),
-				)
-			}
-		}
-
 	}
 }
 
@@ -670,13 +655,14 @@ func TestKMatrix_Multiply9(t *testing.T) {
 	vv2 := symbolic.NewVariableVector(N)
 
 	// Test
-	pv3 := km1.Multiply(vv2)
+	prod := km1.Multiply(vv2)
 
 	// Verify that the result is a polynomial vector
-	if _, ok := pv3.(symbolic.PolynomialVector); !ok {
+	pv3, ok := prod.(symbolic.PolynomialVector)
+	if !ok {
 		t.Errorf(
 			"Expected pv3 to be a symbolic.PolynomialVector; received %T",
-			pv3,
+			prod,
 		)
 	}
 
@@ -685,14 +671,25 @@ func TestKMatrix_Multiply9(t *testing.T) {
 	//	 contain 2 monomials
 	nR, _ := ones1.Dims()
 	for rowIndex := 0; rowIndex < nR; rowIndex++ {
-		pv3_ii := pv3.(symbolic.PolynomialVector).AtVec(rowIndex)
-		elt := pv3_ii.(symbolic.Polynomial)
+		pv3_ii := pv3.AtVec(rowIndex)
+		elt, ok := pv3_ii.(symbolic.Polynomial)
+		if !ok {
+			t.Errorf(
+				"Expected pv3.At(%v) to be a symbolic.Polynomial; received %T",
+				rowIndex,
+				pv3.AtVec(rowIndex),
+			)
+		}
+		// Each element of the result should be a polynomial with N monomials
+		// (where N is the number of elements in the variable vector)
+		// - Each monomial should have coefficient 1
+		// - Each monomial should have degree 1
 		if len(elt.Monomials) != N {
 			t.Errorf(
 				"Expected pv3.At(%v) to be a degree %v polynomial; received %v",
 				rowIndex,
 				N,
-				pv3.(symbolic.PolynomialVector).AtVec(rowIndex),
+				pv3.AtVec(rowIndex),
 			)
 		}
 	}
