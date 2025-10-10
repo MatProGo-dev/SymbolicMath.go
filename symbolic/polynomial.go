@@ -111,9 +111,10 @@ func (p Polynomial) Plus(e interface{}) Expression {
 	}
 
 	// Constants
+	var out Expression
 	switch right := e.(type) {
 	case float64:
-		return p.Plus(K(right))
+		out = p.Plus(K(right))
 	case K:
 		pCopy := p.Copy()
 
@@ -131,7 +132,7 @@ func (p Polynomial) Plus(e interface{}) Expression {
 			newMonomial.Coefficient += float64(right)
 			pCopy.Monomials[constantIndex] = newMonomial
 		}
-		return pCopy
+		out = pCopy
 
 	case Variable:
 		pCopy := p.Copy()
@@ -151,10 +152,10 @@ func (p Polynomial) Plus(e interface{}) Expression {
 			pCopy.Monomials[variableIndex] = newMonomial
 		}
 
-		return pCopy
+		out = pCopy
 
 	case Monomial:
-		return p.Plus(right.ToPolynomial())
+		out = p.Plus(right.ToPolynomial())
 
 	case Polynomial:
 		pCopy := p.Copy()
@@ -162,19 +163,18 @@ func (p Polynomial) Plus(e interface{}) Expression {
 		// Combine the list of monomials.
 		pCopy.Monomials = append(pCopy.Monomials, right.Monomials...)
 
-		// Simplify?
-		return pCopy.AsSimplifiedExpression()
+		out = pCopy.AsSimplifiedExpression()
 	case KVector, VariableVector, MonomialVector, PolynomialVector:
 		ve, _ := ToVectorExpression(right)
 		if ve.Len() == 1 {
-			return p.Plus(ve.AtVec(0)) // Reuse scalar case
+			out = p.Plus(ve.AtVec(0)) // Reuse scalar case
 		} else {
 			// Return a polynomial vector
-			var polVecOut PolynomialVector
+			var vecExpression []ScalarExpression
 			for ii := 0; ii < ve.Len(); ii++ {
-				polVecOut = append(polVecOut, p.Plus(ve.AtVec(ii)).(Polynomial))
+				vecExpression = append(vecExpression, p.Plus(ve.AtVec(ii)).(ScalarExpression))
 			}
-			return polVecOut
+			out = ConcretizeExpression(vecExpression)
 		}
 
 	case KMatrix, VariableMatrix, MonomialMatrix, PolynomialMatrix:
@@ -186,28 +186,31 @@ func (p Polynomial) Plus(e interface{}) Expression {
 
 		switch {
 		case nResultRows == 1 && nResultCols == 1:
-			return p.Plus(rightAsME.At(0, 0)) // Reuse scalar case
+			out = p.Plus(rightAsME.At(0, 0)) // Reuse scalar case
 		default:
-			// Return a polynomial matrix
-			var polMatOut PolynomialMatrix
+			// Return a matrix expression using a template
+			var polMatOut [][]ScalarExpression
 			for ii := 0; ii < nResultRows; ii++ {
-				var polRowOut []Polynomial
+				var polRowOut []ScalarExpression
 				for jj := 0; jj < nResultCols; jj++ {
-					polRowOut = append(polRowOut, p.Plus(rightAsME.At(ii, jj)).(Polynomial))
+					polRowOut = append(polRowOut, p.Plus(rightAsME.At(ii, jj)).(ScalarExpression))
 				}
 				polMatOut = append(polMatOut, polRowOut)
 			}
-			return polMatOut
+			out = ConcretizeExpression(polMatOut)
 		}
+	default:
+		// Unrecognized response is a panic
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "Polynomial.Plus",
+				Input:        e,
+			},
+		)
 	}
 
-	// Unrecognized response is a panic
-	panic(
-		smErrors.UnsupportedInputError{
-			FunctionName: "Polynomial.Plus",
-			Input:        e,
-		},
-	)
+	// Return
+	return out.AsSimplifiedExpression()
 }
 
 /*
@@ -361,33 +364,34 @@ func (p Polynomial) Multiply(e interface{}) Expression {
 	}
 
 	// Algorithm
+	var out Expression
 	switch right := e.(type) {
 	case float64:
-		return p.Multiply(K(right))
+		out = p.Multiply(K(right))
 	case K:
 		pCopy := p.Copy()
 		for ii, _ := range pCopy.Monomials {
 			product_ii := pCopy.Monomials[ii].Multiply(right)
 			pCopy.Monomials[ii] = product_ii.(Monomial) // Convert to Monomial
 		}
-		return pCopy
+		out = pCopy
 	case Variable:
 		pCopy := p.Copy()
 		for ii, _ := range pCopy.Monomials {
 			product_ii := pCopy.Monomials[ii].Multiply(right)
 			pCopy.Monomials[ii] = product_ii.(Monomial) // Convert to Monomial
 		}
-		return pCopy
+		out = pCopy
 	case Monomial:
 		pCopy := p.Copy()
-		var out Polynomial
+		var prod Polynomial
 		for _, m := range pCopy.Monomials {
-			out.Monomials = append(
-				out.Monomials,
+			prod.Monomials = append(
+				prod.Monomials,
 				m.Multiply(right).(Monomial),
 			)
 		}
-		return out
+		out = prod
 	case Polynomial:
 		pCopy := p.Copy()
 
@@ -400,21 +404,27 @@ func (p Polynomial) Multiply(e interface{}) Expression {
 			)
 		}
 
-		return productOut.(Polynomial).Simplify()
+		out = productOut
 	case KVector, VariableVector, MonomialVector, PolynomialVector:
 		// Right must be a vector of length 1
 		ve, _ := ToVectorExpression(right)
-		return ve.Multiply(p) // Reuse scalar case
+		out = ve.Multiply(p) // Reuse scalar case
 	case KMatrix, VariableMatrix, MonomialMatrix, PolynomialMatrix:
 		// Right must be a matrix of size [1,1]
 		me, _ := ToMatrixExpression(right)
-		return me.Multiply(p) // Reuse scalar case
+		out = me.Multiply(p) // Reuse scalar case
+	default:
+		// Unrecognized response is a panic
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "Polynomial.Multiply",
+				Input:        e,
+			},
+		)
 	}
 
-	// Unrecognized response is a panic
-	panic(
-		fmt.Errorf("Unexpected type of right in the Multiply() method: %T (%v)", e, e),
-	)
+	// Return
+	return out.AsSimplifiedExpression()
 }
 
 /*

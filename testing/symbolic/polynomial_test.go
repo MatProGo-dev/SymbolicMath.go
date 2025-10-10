@@ -424,32 +424,25 @@ func TestPolynomial_Plus1(t *testing.T) {
 
 	// Test
 	sum := p1.Plus(k1)
-	if len(sum.(symbolic.Polynomial).Monomials) != 1 {
-		t.Errorf(
-			"expected %v + %v to have 1 monomial; received %v",
-			p1,
-			k1,
-			len(sum.(symbolic.Polynomial).Monomials),
-		)
-	}
 
-	// Verify that the sum is a polynomial
-	if _, tf := sum.(symbolic.Polynomial); !tf {
+	// Verify that the sum is a constant
+	k3, tf := sum.(symbolic.K)
+	if !tf {
 		t.Errorf(
-			"expected %v + %v to be a polynomial; received %T",
+			"expected %v + %v to be a constant; received %T",
 			p1,
 			k1,
 			sum,
 		)
 	}
 
-	//Verify that the sum's value matches what we expect
-	if sum.(symbolic.Polynomial).Monomials[0].Coefficient != 5.85 {
+	// Verify that the value of the sum is correct
+	if !reflect.DeepEqual(float64(k3), 5.85) {
 		t.Errorf(
-			"expected %v + %v to have coefficient 5.85; received %v",
+			"expected %v + %v to have value 5.85; received %v",
 			p1,
 			k1,
-			sum.(symbolic.Polynomial).Monomials[0].Coefficient,
+			float64(k3),
 		)
 	}
 }
@@ -503,23 +496,25 @@ func TestPolynomial_Plus3(t *testing.T) {
 
 	// Test
 	sum := p1.Plus(v1)
-	if len(sum.(symbolic.Polynomial).Monomials) != 1 {
+
+	// Verify that the sum is a monomial
+	m3, tf := sum.(symbolic.Monomial)
+	if tf {
 		t.Errorf(
-			"expected %v + %v to have 1 monomial; received %v",
+			"expected %v + %v to be a polynomial; received %T",
 			p1,
 			v1,
-			len(sum.(symbolic.Polynomial).Monomials),
+			sum,
 		)
 	}
 
-	// Verify that the coefficient of the sum's monomial
-	// is 1.0 more than the original
-	if sum.(symbolic.Polynomial).Monomials[0].Coefficient != 3.0 {
+	// Verify that the coefficient of the monomial is 3.0
+	if m3.Coefficient != 3.0 {
 		t.Errorf(
 			"expected %v + %v to have coefficient 3.0; received %v",
 			p1,
 			v1,
-			sum.(symbolic.Polynomial).Monomials[0].Coefficient,
+			m3.Coefficient,
 		)
 	}
 }

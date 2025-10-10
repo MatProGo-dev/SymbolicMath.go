@@ -379,85 +379,76 @@ func (kv KVector) Multiply(rightIn interface{}) Expression {
 	nResultRows := kv.Len()
 
 	// Compute Multiplication
+	var out Expression
 	switch right := rightIn.(type) {
 	case float64:
-		// Is output a vector or a scalar?
-		if nResultRows == 1 {
-			return K(float64(kv[0]) * right)
-		}
-
-		// Use mat.Vector's multiplication method
-		var result mat.VecDense
-		kvAsVec := kv.ToVecDense()
-		result.ScaleVec(right, &kvAsVec)
-
-		return VecDenseToKVector(result)
+		// If the input is a float64, then use the K method
+		out = kv.Multiply(K(right))
 	case K:
-		// Convert to float64
-		eAsFloat := float64(right)
+		// Iterate through each element
+		var prod []ScalarExpression
+		for i := 0; i < nResultRows; i++ {
+			prod = append(prod, kv[i].Multiply(right).(ScalarExpression))
+		}
 
-		return kv.Multiply(eAsFloat)
+		out = ConcretizeExpression(prod)
 	case Variable:
-		// Is the output a vector or a scalar?
-		if nResultRows == 1 {
-			return right.Multiply(kv[0])
+		// Iterate through each element
+		var prod []ScalarExpression
+		for i := 0; i < nResultRows; i++ {
+			fmt.Println("i is the following:", i)
+			fmt.Println("kv[i] is the following:", kv[i])
+			fmt.Println("right is the following:", right)
+			prod = append(prod, kv[i].Multiply(right).(ScalarExpression))
 		}
 
-		// Create a new monomial vector
-		var mvOut MonomialVector
-		for _, element := range kv {
-			mvOut = append(mvOut, element.Multiply(right).(Monomial))
-		}
-		return mvOut
+		println("out is the following:", out)
+
+		out = ConcretizeExpression(prod)
 	case Monomial:
-		// Is the output a vector or a scalar?
-		if nResultRows == 1 {
-			return right.Multiply(kv[0])
+		// Iterate through each element
+		var prod []ScalarExpression
+		for i := 0; i < nResultRows; i++ {
+			prod = append(prod, kv[i].Multiply(right).(ScalarExpression))
 		}
 
-		// Create a new monomial vector
-		var mvOut MonomialVector
-		for _, element := range kv {
-			mvOut = append(mvOut, element.Multiply(right).(Monomial))
-		}
-		return mvOut
+		out = ConcretizeExpression(prod)
 	case Polynomial:
-		// Is the output a vector or a scalar?
-		if nResultRows == 1 {
-			return right.Multiply(kv[0])
+		// Iterate through each element
+		var prod []ScalarExpression
+		for i := 0; i < nResultRows; i++ {
+			prod = append(prod, kv[i].Multiply(right).(ScalarExpression))
 		}
-
-		// Create a new monomial vector
-		var pvOut PolynomialVector
-		for _, element := range kv {
-			pvOut = append(pvOut, element.Multiply(right).(Polynomial))
-		}
-		return pvOut
+		out = ConcretizeExpression(prod)
 	case *mat.VecDense:
-		return kv.Multiply(*right)
+		out = kv.Multiply(*right)
 	case mat.VecDense:
 		// If the input is a vector, then use KVector method
-		return kv.Multiply(VecDenseToKVector(right))
+		out = kv.Multiply(VecDenseToKVector(right))
 
 	case KVector:
 		// If the input is a KVector and the dimensions match
 		// then right is a (1x1) vector and can use the scalar method.
-		return kv.Multiply(right[0])
+		out = kv.Multiply(right[0])
 
 	case VariableVector:
 		// If the input is a KVector and the dimensions match
 		// then right is a (1x1) vector and can use the scalar method.
-		return kv.Multiply(right[0])
+		out = kv.Multiply(right[0])
+
+	default:
+		// Panic if the input type is not recognized
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "KVector.Multiply",
+				Input:        rightIn,
+			},
+		)
 
 	}
 
-	// If none of the above input types match, then panic
-	panic(
-		smErrors.UnsupportedInputError{
-			FunctionName: "KVector.Multiply",
-			Input:        rightIn,
-		},
-	)
+	// return
+	return out.AsSimplifiedExpression()
 }
 
 /*

@@ -1069,41 +1069,51 @@ Description:
 
 	Verifies that the Multiply method correctly computes the product
 	of a KVector and a VariableVector by checking all elements.
+	The result should be a monomial vector.
 	Each element should be a monomial containing a variable
 	from the variable vector and a coefficient from the KVector.
 */
 func TestConstantVector_Multiply7(t *testing.T) {
 	// Constants
 	N := 3
-	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N))
+	kv1 := symbolic.VecDenseToKVector(symbolic.OnesVector(N)).Multiply(3.14).(symbolic.KVector)
 	vv2 := symbolic.NewVariableVector(1)
 
 	// Test
-	kv3 := kv1.Multiply(vv2)
+	prod := kv1.Multiply(vv2)
+	mv3, tf := prod.(symbolic.MonomialVector)
+	if !tf {
+		t.Errorf(
+			"Expected kv3 to be of type MonomialVector; received %v",
+			prod,
+		)
+	}
+
+	// Check the elements of the monomial vector
 	for ii := 0; ii < N; ii++ {
-		if kv3.(symbolic.MonomialVector)[ii].Coefficient != float64(kv1.AtVec(ii).(symbolic.K)) {
+		if mv3[ii].Coefficient != float64(kv1.AtVec(ii).(symbolic.K)) {
 			t.Errorf(
 				"Expected kv3[%v].Coefficient to be %v; received %v",
 				ii,
 				float64(kv1.AtVec(ii).(symbolic.K)),
-				kv3.(symbolic.MonomialVector)[ii].Coefficient,
+				mv3[ii].Coefficient,
 			)
 		}
 
-		if len(kv3.(symbolic.MonomialVector)[ii].VariableFactors) != 1 {
+		if len(mv3[ii].VariableFactors) != 1 {
 			t.Errorf(
 				"Expected len(kv3[%v].VariableFactors) to be 1; received %v",
 				ii,
-				len(kv3.(symbolic.MonomialVector)[ii].VariableFactors),
+				len(mv3[ii].VariableFactors),
 			)
 		}
 
-		if kv3.(symbolic.MonomialVector)[ii].VariableFactors[0] != vv2[0] {
+		if mv3[ii].VariableFactors[0] != vv2[0] {
 			t.Errorf(
 				"Expected kv3[%v].VariableFactors[0] to be %v; received %v",
 				ii,
 				vv2[ii],
-				kv3.(symbolic.MonomialVector)[ii].VariableFactors[0],
+				mv3[ii].VariableFactors[0],
 			)
 		}
 	}
@@ -1148,15 +1158,17 @@ func TestConstantVector_Multiply9(t *testing.T) {
 		ID:    1001,
 		Lower: 0.0,
 		Upper: 1.0,
+		Name:  "dummy (ConstantVector_Multiply9)",
 	}
 
 	// Test
 	product := kv1.Multiply(v2)
 
-	// Check that product is a K object
-	if _, tf := product.(symbolic.Monomial); !tf {
+	// Check that product is a Variable object
+	_, tf := product.(symbolic.Variable)
+	if !tf {
 		t.Errorf(
-			"Expected product to be of type Monomial; received %v",
+			"Expected product to be of type Variable; received %T",
 			product,
 		)
 	}
@@ -1196,8 +1208,8 @@ TestConstantVector_Multiply11
 Description:
 
 	Verifies that the Multiply method correctly computes the product
-	of a KVector (length 1) and a Polynomial.
-	The result should be a Polynomial.
+	of a KVector (length 1) and a Polynomial (really a monomial).
+	The result should be a Monomial.
 */
 func TestConstantVector_Multiply11(t *testing.T) {
 	// Constants
@@ -1216,9 +1228,9 @@ func TestConstantVector_Multiply11(t *testing.T) {
 	product := kv1.Multiply(p2)
 
 	// Check that product is a K object
-	if _, tf := product.(symbolic.Polynomial); !tf {
+	if _, tf := product.(symbolic.Monomial); !tf {
 		t.Errorf(
-			"Expected product to be of type Polynomial; received %v",
+			"Expected product to be of type Monomial; received %v",
 			product,
 		)
 	}
