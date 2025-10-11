@@ -245,10 +245,11 @@ func TestConstantMatrix_Plus6(t *testing.T) {
 	x2 := symbolic.NewVariable()
 
 	// Test
-	pm3 := km1.Plus(x2)
+	prod := km1.Plus(x2)
 
 	// Verify that the result is a polynomial matrix
-	if _, ok := pm3.(symbolic.PolynomialMatrix); !ok {
+	pm3, ok := prod.(symbolic.PolynomialMatrix)
+	if !ok {
 		t.Errorf(
 			"Expected pm3 to be a symbolic.PolynomialMatrix; received %T",
 			pm3,
@@ -259,13 +260,22 @@ func TestConstantMatrix_Plus6(t *testing.T) {
 	nR, nC := eye1.Dims()
 	for rowIndex := 0; rowIndex < nR; rowIndex++ {
 		for colIndex := 0; colIndex < nC; colIndex++ {
-			pm3_ii_jj := pm3.(symbolic.PolynomialMatrix).At(rowIndex, colIndex)
+			pm3_ii_jj := pm3.At(rowIndex, colIndex)
 			elt := pm3_ii_jj.(symbolic.Polynomial)
-			if len(elt.Monomials) != 2 {
-				t.Errorf(
-					"Expected pm3.At(0,0) to be a polynomial with 2 monomials; received %v",
-					pm3.(symbolic.PolynomialMatrix).At(0, 0),
-				)
+			if rowIndex == colIndex {
+				if len(elt.Monomials) != 2 {
+					t.Errorf(
+						"Expected pm3.At(%v,%v) to be a polynomial with 2 monomials; received %v",
+						rowIndex, colIndex, pm3_ii_jj,
+					)
+				}
+			} else {
+				if len(elt.Monomials) != 1 {
+					t.Errorf(
+						"Expected pm3.At(%v,%v) to be a polynomial with 1 monomials; received %v",
+						rowIndex, colIndex, pm3_ii_jj,
+					)
+				}
 			}
 		}
 

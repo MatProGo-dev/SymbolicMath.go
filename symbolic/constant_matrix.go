@@ -111,6 +111,8 @@ func (km KMatrix) Plus(e interface{}) Expression {
 	dims := km.Dims()
 	nR, nC := dims[0], dims[1]
 
+	// Algorithm
+	var out Expression
 	switch right := e.(type) {
 	case float64:
 		// Create a matrix of all elements with value right
@@ -125,14 +127,13 @@ func (km KMatrix) Plus(e interface{}) Expression {
 		var sumAsDense mat.Dense
 		sumAsDense.Add(&rightAsDense, &kmAsDense)
 
-		return DenseToKMatrix(sumAsDense)
+		out = DenseToKMatrix(sumAsDense)
 
 	case K:
-		return km.Plus(float64(right)) // Reuse float64 case
+		out = km.Plus(float64(right)) // Reuse float64 case
 
 	case Variable:
-		// Create a matrix of variables where each element has
-		// the value of the variable
+		// Create a matrix of scalar polynomials
 		var rightAsVM VariableMatrix = make([][]Variable, nR)
 		for rIndex := 0; rIndex < nR; rIndex++ {
 			rightAsVM[rIndex] = make([]Variable, nC)
@@ -141,47 +142,28 @@ func (km KMatrix) Plus(e interface{}) Expression {
 			}
 		}
 
-		return km.Plus(rightAsVM) // Reuse VariableMatrix case
+		out = km.Plus(rightAsVM) // Reuse VariableMatrix case
 
 	case mat.Dense:
-		return km.Plus(DenseToKMatrix(right)) // Reuse KMatrix case
+		out = km.Plus(DenseToKMatrix(right)) // Reuse KMatrix case
 
 	case *mat.Dense:
-		return km.Plus(*right) // Reuse mat.Dense case
+		out = km.Plus(*right) // Reuse mat.Dense case
 
-	case KMatrix:
-		// Create the result matrix
-		var result KMatrix = make([][]K, nR)
-		for rIndex := 0; rIndex < nR; rIndex++ {
-			result[rIndex] = make([]K, nC)
-			for cIndex := 0; cIndex < nC; cIndex++ {
-				result[rIndex][cIndex] = km[rIndex][cIndex] + right[rIndex][cIndex]
-			}
-		}
-		return result
-
-	case VariableMatrix:
-		// Create the result matrix
-		var result PolynomialMatrix = make([][]Polynomial, nR)
-		for rIndex := 0; rIndex < nR; rIndex++ {
-			result[rIndex] = make([]Polynomial, nC)
-			for cIndex := 0; cIndex < nC; cIndex++ {
-				result[rIndex][cIndex] = km[rIndex][cIndex].Plus(right[rIndex][cIndex]).(Polynomial)
-				// Each addition should create a polynomial
-			}
-		}
-		return result
-	case PolynomialMatrix:
-		return right.Plus(km) // Reuse PolynomialMatrix case
+	case MatrixExpression:
+		out = MatrixPlusTemplate(km, right)
+	default:
+		// If we reach this point, the input is not recognized
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "KMatrix.Plus",
+				Input:        e,
+			},
+		)
 	}
 
-	// If we reach this point, the input is not recognized
-	panic(
-		smErrors.UnsupportedInputError{
-			FunctionName: "KMatrix.Plus",
-			Input:        e,
-		},
-	)
+	// Simplify and return
+	return out.AsSimplifiedExpression()
 }
 
 /*

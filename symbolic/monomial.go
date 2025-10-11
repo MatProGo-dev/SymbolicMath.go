@@ -102,7 +102,7 @@ func (m Monomial) Plus(e interface{}) Expression {
 			}
 		}
 	case Variable:
-		if m.IsVariable(right) {
+		if m.IsDegreeOneContainingVariable(right) {
 			mCopy := m.Copy()
 			mCopy.Coefficient += 1.0
 			out = mCopy
@@ -461,13 +461,13 @@ func (m Monomial) IsZero() bool {
 }
 
 /*
-IsVariable
+IsDegreeOneContainingVariable
 Description:
 
 	Returns true if the monomial defines an expression containing only the
 	variable v.
 */
-func (m Monomial) IsVariable(v Variable) bool {
+func (m Monomial) IsDegreeOneContainingVariable(v Variable) bool {
 	// Input Checking
 	err := m.Check()
 	if err != nil {
@@ -489,12 +489,34 @@ func (m Monomial) IsVariable(v Variable) bool {
 	containsOnlyOneFactor := len(m.VariableFactors) == 1
 	firstFactorMatchesV := m.VariableFactors[0].ID == v.ID
 	firstFactorHasDegreeOne := m.Exponents[0] == 1
-	coefficientIsOne := m.Coefficient == 1.0
-	if containsOnlyOneFactor && firstFactorMatchesV && firstFactorHasDegreeOne && coefficientIsOne {
+	if containsOnlyOneFactor && firstFactorMatchesV && firstFactorHasDegreeOne {
 		return true
 	} else {
 		return false
 	}
+}
+
+/*
+IsVariable
+Description:
+
+	Returns true if the monomial defines the variable v.
+*/
+func (m Monomial) IsVariable(v Variable) bool {
+	// Input Checking
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = v.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// True, if the monomial contains only the variable v
+	// and has coefficient 1.0 and degree 1.
+	return m.IsDegreeOneContainingVariable(v) && (m.Coefficient == 1.0)
 }
 
 /*
@@ -649,7 +671,7 @@ func (m Monomial) ToVariable() Variable {
 	}
 
 	// Algorithm
-	if m.IsVariable(m.VariableFactors[0]) {
+	if m.IsDegreeOneContainingVariable(m.VariableFactors[0]) {
 		return m.VariableFactors[0]
 	} else {
 		panic(

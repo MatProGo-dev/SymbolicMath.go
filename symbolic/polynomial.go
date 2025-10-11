@@ -297,7 +297,7 @@ func (p Polynomial) VariableMonomialIndex(vIn Variable) int {
 
 	// Algorithm
 	for ii, monomial := range p.Monomials {
-		if monomial.IsVariable(vIn) {
+		if monomial.IsDegreeOneContainingVariable(vIn) {
 			return ii
 		}
 	}
@@ -619,13 +619,21 @@ func (p Polynomial) AsSimplifiedExpression() Expression {
 	// Simplify the polynomial
 	pReduced := p.Simplify()
 
-	// If the polynomial is a constant, then return the constant
-	switch {
-	case pReduced.IsConstant():
+	// Create switch based on degree of the polynomial
+	switch pReduced.Degree() {
+	case 0:
+		// If the polynomial is a constant, then return the constant
 		return K(pReduced.Constant())
-	case len(pReduced.Monomials) == 1 && pReduced.Monomials[0].IsVariable(pReduced.Variables()[0]):
-		return pReduced.Monomials[0].ToVariable()
-	case len(pReduced.Monomials) == 1:
+	case 1:
+		// If the polynomial is linear, then check to see if it is just a variable
+		if len(pReduced.Monomials) == 1 && pReduced.Monomials[0].IsVariable(pReduced.Variables()[0]) {
+			return pReduced.Monomials[0].ToVariable()
+		}
+	}
+
+	// Otherwise, check the number of monomials
+	// if there is only one, then return that monomial
+	if len(pReduced.Monomials) == 1 {
 		return pReduced.Monomials[0]
 	}
 

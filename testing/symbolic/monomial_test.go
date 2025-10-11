@@ -1347,10 +1347,10 @@ func TestMonomial_IsVariable1(t *testing.T) {
 	}
 
 	// Test
-	if m1.IsVariable(v1) {
+	if m1.IsDegreeOneContainingVariable(v1) {
 		t.Errorf(
 			"expected m1 to be a variable; received %v",
-			m1.IsVariable(v1),
+			m1.IsDegreeOneContainingVariable(v1),
 		)
 	}
 }
@@ -1381,7 +1381,7 @@ func TestMonomial_IsVariable2(t *testing.T) {
 		}
 	}()
 
-	m1.IsVariable(v1)
+	m1.IsDegreeOneContainingVariable(v1)
 }
 
 /*
@@ -1409,7 +1409,7 @@ func TestMonomial_IsVariable3(t *testing.T) {
 		}
 	}()
 
-	m1.IsVariable(symbolic.Variable{})
+	m1.IsDegreeOneContainingVariable(symbolic.Variable{})
 }
 
 /*

@@ -12,6 +12,7 @@ import (
 
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"gonum.org/v1/gonum/mat"
 )
 
 /*
@@ -615,9 +616,11 @@ Description:
 func TestPolynomialVector_LinearCoeff4(t *testing.T) {
 	// Constants
 	var pv symbolic.PolynomialVector = make([]symbolic.Polynomial, 20)
+	N := 20
+	vv := symbolic.NewVariableVector(N)
 
-	for ii := 0; ii < 20; ii++ {
-		vII := symbolic.NewVariable()
+	for ii := 0; ii < N; ii++ {
+		vII := vv[ii]
 		pv[ii] = symbolic.Monomial{
 			Coefficient:     float64(ii),
 			VariableFactors: []symbolic.Variable{vII},
@@ -627,20 +630,23 @@ func TestPolynomialVector_LinearCoeff4(t *testing.T) {
 
 	// Test
 	linearCoeff := pv.LinearCoeff()
+
+	t.Errorf("linearCoeff = %v", mat.Formatted(&linearCoeff))
 	nr, nc := linearCoeff.Dims()
 	for ii := 0; ii < nr; ii++ {
 		for jj := 0; jj < nc; jj++ {
 			if ii == jj {
 				if linearCoeff.At(ii, jj) != float64(ii) {
 					t.Errorf(
-						"Expected linearCoeff.At(%v, %v) to be 1; received %v",
+						"Expected linearCoeff.At(%v, %v) to be %v; received %v",
 						ii,
 						jj,
+						float64(ii),
 						linearCoeff.At(ii, jj),
 					)
 				}
 			} else {
-				if linearCoeff.At(ii, jj) != 0 {
+				if linearCoeff.At(ii, jj) != 0.0 {
 					t.Errorf(
 						"Expected linearCoeff.At(%v, %v) to be 0; received %v",
 						ii,

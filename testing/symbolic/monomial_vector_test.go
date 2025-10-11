@@ -1004,7 +1004,7 @@ func TestMonomialVector_Minus4(t *testing.T) {
 		}
 
 		for _, monomial := range polynomial.Monomials {
-			if (!monomial.IsConstant()) && (!monomial.IsVariable(v1)) {
+			if (!monomial.IsConstant()) && (!monomial.IsDegreeOneContainingVariable(v1)) {
 				t.Errorf("expected monomial to be a variable or a constant; received %v", monomial)
 			}
 		}

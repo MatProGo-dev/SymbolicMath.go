@@ -192,17 +192,20 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 	}
 
 	// Constants
+	var out Expression
 	switch right := e.(type) {
 	case float64:
 		return pv.Plus(K(right))
 	case K:
 		pvCopy := pv
 
-		for ii, polynomial := range pv {
-			sum := polynomial.Plus(right)
-			pvCopy[ii] = sum.(Polynomial)
+		// Algorithm
+		var sum []ScalarExpression
+		for ii, polynomial := range pvCopy {
+			tempSum := polynomial.Plus(right)
+			sum[ii] = tempSum.(ScalarExpression)
 		}
-		return pvCopy
+		return ConcretizeExpression(sum)
 	case Variable:
 		pvCopy := pv
 		for ii, polynomial := range pv {
@@ -220,7 +223,7 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 			pvCopy[ii] = sum.(Polynomial)
 		}
 		return pvCopy
-	case KVector, VariableVector, MonomialVector, PolynomialVector:
+	case VectorExpression:
 		pvCopy := pv
 
 		// Cast right
@@ -232,15 +235,19 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 			pvCopy[ii] = sum.(Polynomial)
 		}
 		return pvCopy.Simplify()
+	default:
+		// Default response is a panic
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "PolynomialVector.Plus",
+				Input:        e,
+			},
+		)
 	}
 
-	// Default response is a panic
-	panic(
-		smErrors.UnsupportedInputError{
-			FunctionName: "PolynomialVector.Plus",
-			Input:        e,
-		},
-	)
+	// Simplify and return
+	return out.AsSimplifiedExpression()
+
 }
 
 /*
