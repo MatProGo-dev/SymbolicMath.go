@@ -12,7 +12,6 @@ import (
 
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
-	"gonum.org/v1/gonum/mat"
 )
 
 /*
@@ -631,7 +630,6 @@ func TestPolynomialVector_LinearCoeff4(t *testing.T) {
 	// Test
 	linearCoeff := pv.LinearCoeff()
 
-	t.Errorf("linearCoeff = %v", mat.Formatted(&linearCoeff))
 	nr, nc := linearCoeff.Dims()
 	for ii := 0; ii < nr; ii++ {
 		for jj := 0; jj < nc; jj++ {
@@ -1409,15 +1407,22 @@ func TestPolynomialVector_Multiply3(t *testing.T) {
 	k2 := symbolic.K(3.14)
 
 	// Test
-	pv3 := pv.Multiply(k2).(symbolic.PolynomialVector)
-	for _, polynomial := range pv3 {
-		for _, monomial := range polynomial.Monomials {
-			if monomial.Coefficient != 3.14 {
-				t.Errorf(
-					"Expected monomial.Coefficient to be 3.14; received %v",
-					monomial.Coefficient,
-				)
-			}
+	product := pv.Multiply(k2)
+	mv3, ok := product.(symbolic.MonomialVector)
+	if !ok {
+		t.Errorf(
+			"Expected Multiply to return a MonomialVector; received %T",
+			product,
+		)
+	}
+
+	// Check that each monomial contains a coefficient of 3.14
+	for _, monomial := range mv3 {
+		if monomial.Coefficient != 3.14 {
+			t.Errorf(
+				"Expected monomial.Coefficient to be 3.14; received %v",
+				monomial.Coefficient,
+			)
 		}
 	}
 }

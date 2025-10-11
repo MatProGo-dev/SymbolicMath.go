@@ -195,24 +195,24 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 	var out Expression
 	switch right := e.(type) {
 	case float64:
-		return pv.Plus(K(right))
+		out = pv.Plus(K(right))
 	case K:
 		pvCopy := pv
 
 		// Algorithm
 		var sum []ScalarExpression
-		for ii, polynomial := range pvCopy {
+		for _, polynomial := range pvCopy {
 			tempSum := polynomial.Plus(right)
-			sum[ii] = tempSum.(ScalarExpression)
+			sum = append(sum, tempSum.(ScalarExpression))
 		}
-		return ConcretizeExpression(sum)
+		out = ConcretizeExpression(sum)
 	case Variable:
 		pvCopy := pv
 		for ii, polynomial := range pv {
 			sum := polynomial.Plus(right)
 			pvCopy[ii] = sum.(Polynomial)
 		}
-		return pvCopy
+		out = pvCopy
 
 	case Polynomial:
 		pvCopy := pv
@@ -222,7 +222,7 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 			sum := polynomial.Plus(right)
 			pvCopy[ii] = sum.(Polynomial)
 		}
-		return pvCopy
+		out = pvCopy
 	case VectorExpression:
 		pvCopy := pv
 
@@ -230,11 +230,12 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 		rightAsVector, _ := ToVectorExpression(right)
 
 		// Algorithm
-		for ii, polynomial := range pv {
-			sum := polynomial.Plus(rightAsVector.AtVec(ii))
-			pvCopy[ii] = sum.(Polynomial)
+		var sum []ScalarExpression
+		for ii, polynomial := range pvCopy {
+			tempSum := polynomial.Plus(rightAsVector.AtVec(ii))
+			sum = append(sum, tempSum.(ScalarExpression))
 		}
-		return pvCopy.Simplify()
+		out = ConcretizeExpression(sum)
 	default:
 		// Default response is a panic
 		panic(
@@ -319,29 +320,30 @@ func (pv PolynomialVector) Multiply(rightIn interface{}) Expression {
 	}
 
 	// Constants
+	var out Expression
 	switch right := rightIn.(type) {
 	case float64:
-		return pv.Multiply(K(right))
+		out = pv.Multiply(K(right))
 	case K:
 		pvCopy := pv
 
-		for ii, polynomial := range pv {
-			product := polynomial.Multiply(right)
-			pvCopy[ii] = product.(Polynomial)
+		var product []ScalarExpression
+		for _, polynomial := range pvCopy {
+			product = append(product, polynomial.Multiply(right).(ScalarExpression))
 		}
-		return pvCopy
+		out = ConcretizeExpression(product)
 	case Polynomial:
 		pvCopy := pv
 
-		for ii, polynomial := range pv {
-			product := polynomial.Multiply(right)
-			pvCopy[ii] = product.(Polynomial)
+		var product []ScalarExpression
+		for _, polynomial := range pvCopy {
+			product = append(product, polynomial.Multiply(right).(ScalarExpression))
 		}
-		return pvCopy
+		out = ConcretizeExpression(product)
 	case PolynomialVector:
 		// This should only be true if the polynomial vector is actually a polynomial.
 		// Convert it to a polynomial and do the multiplication as if it was with just the scalar.
-		return pv.Multiply(right[0])
+		out = pv.Multiply(right[0])
 
 	default:
 		panic(
@@ -351,6 +353,8 @@ func (pv PolynomialVector) Multiply(rightIn interface{}) Expression {
 			},
 		)
 	}
+
+	return out.AsSimplifiedExpression()
 }
 
 /*
