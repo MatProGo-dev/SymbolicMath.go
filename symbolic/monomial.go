@@ -489,7 +489,8 @@ func (m Monomial) IsVariable(v Variable) bool {
 	containsOnlyOneFactor := len(m.VariableFactors) == 1
 	firstFactorMatchesV := m.VariableFactors[0].ID == v.ID
 	firstFactorHasDegreeOne := m.Exponents[0] == 1
-	if containsOnlyOneFactor && firstFactorMatchesV && firstFactorHasDegreeOne {
+	coefficientIsOne := m.Coefficient == 1.0
+	if containsOnlyOneFactor && firstFactorMatchesV && firstFactorHasDegreeOne && coefficientIsOne {
 		return true
 	} else {
 		return false

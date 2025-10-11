@@ -396,13 +396,8 @@ func (kv KVector) Multiply(rightIn interface{}) Expression {
 		// Iterate through each element
 		var prod []ScalarExpression
 		for i := 0; i < nResultRows; i++ {
-			fmt.Println("i is the following:", i)
-			fmt.Println("kv[i] is the following:", kv[i])
-			fmt.Println("right is the following:", right)
 			prod = append(prod, kv[i].Multiply(right).(ScalarExpression))
 		}
-
-		println("out is the following:", out)
 
 		out = ConcretizeExpression(prod)
 	case Monomial:

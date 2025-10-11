@@ -155,8 +155,7 @@ func (p Polynomial) Plus(e interface{}) Expression {
 		out = pCopy
 
 	case Monomial:
-		out = p.Plus(right.ToPolynomial())
-
+		out = p.Copy().Plus(right.ToPolynomial())
 	case Polynomial:
 		pCopy := p.Copy()
 

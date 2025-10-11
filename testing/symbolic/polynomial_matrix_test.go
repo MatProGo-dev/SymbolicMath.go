@@ -764,7 +764,7 @@ TestPolynomialMatrix_Minus4
 Description:
 
 	Tests that the Minus() method properly subtracts a polynomial matrix (Each with 1 monomial)
-	with a float64. The result should be a polynomial matrix with
+	with a float64. The result should be a polynomial vector with
 	each polynomial containing two monomials.
 */
 func TestPolynomialMatrix_Minus4(t *testing.T) {
@@ -780,22 +780,21 @@ func TestPolynomialMatrix_Minus4(t *testing.T) {
 	// Test
 	pm2 := pm1.Minus(1.0)
 
-	pm2AsPM, tf := pm2.(symbolic.PolynomialMatrix)
+	// Check that the result is a polynomial vector
+	pv3, tf := pm2.(symbolic.PolynomialVector)
 	if !tf {
 		t.Errorf(
-			"expected pm2 to be a PolynomialMatrix; received %v",
-			pm2,
+			"expected pv3 to be a PolynomialVector; received %T",
+			pv3,
 		)
 	}
 
-	for _, pmRow := range pm2AsPM {
-		for _, p := range pmRow {
-			if len(p.Monomials) != 2 {
-				t.Errorf(
-					"expected len(p.Monomials) to be 2; received %v",
-					len(p.Monomials),
-				)
-			}
+	for _, p := range pv3 {
+		if len(p.Monomials) != 2 {
+			t.Errorf(
+				"expected len(p.Monomials) to be 2; received %v",
+				len(p.Monomials),
+			)
 		}
 	}
 }
@@ -969,7 +968,7 @@ TestPolynomialMatrix_Multiply4
 Description:
 
 	Tests that the Multiply() method properly multiplies a polynomial matrix
-	with a single constant. The result should be a polynomial matrix with
+	with a single constant. The result should be a monomial vector with
 	the same number of monomials as the original. But the coefficient
 	of each monomial should be multiplied by the constant.
 */
@@ -984,31 +983,24 @@ func TestPolynomialMatrix_Multiply4(t *testing.T) {
 	}
 
 	// Test
-	pm2 := pm1.Multiply(3.14)
+	prod := pm1.Multiply(3.14)
 
-	pm2AsPM, tf := pm2.(symbolic.PolynomialMatrix)
+	// Verify that this is a monomial Vector
+	mv3, tf := prod.(symbolic.MonomialVector)
 	if !tf {
 		t.Errorf(
-			"expected pm2 to be a PolynomialMatrix; received %v",
-			pm2,
+			"expected mv3 to be a MonomialVector; received %T",
+			mv3,
 		)
 	}
 
-	for _, pmRow := range pm2AsPM {
-		for _, p := range pmRow {
-			if len(p.Monomials) != 1 {
-				t.Errorf(
-					"expected len(p.Monomials) to be 1; received %v",
-					len(p.Monomials),
-				)
-			}
-
-			if p.Monomials[0].Coefficient != 3.14 {
-				t.Errorf(
-					"expected p.Monomials[0].Coefficient to be 3.14; received %v",
-					p.Monomials[0].Coefficient,
-				)
-			}
+	// Check the elements of each monomial
+	for _, monomial := range mv3 {
+		if monomial.Coefficient != 3.14 {
+			t.Errorf(
+				"expected monomial.Coefficient to be 3.14; received %v",
+				monomial.Coefficient,
+			)
 		}
 	}
 }

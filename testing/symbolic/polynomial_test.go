@@ -499,9 +499,9 @@ func TestPolynomial_Plus3(t *testing.T) {
 
 	// Verify that the sum is a monomial
 	m3, tf := sum.(symbolic.Monomial)
-	if tf {
+	if !tf {
 		t.Errorf(
-			"expected %v + %v to be a polynomial; received %T",
+			"expected %v + %v to be a Monomial; received %T",
 			p1,
 			v1,
 			sum,
@@ -1391,12 +1391,19 @@ func TestPolynomial_Multiply5(t *testing.T) {
 
 	// Test
 	prod := p1.Multiply(3.14)
-	if len(prod.(symbolic.Polynomial).Monomials) != 1 {
+	m3, tf := prod.(symbolic.Monomial)
+	if !tf {
 		t.Errorf(
-			"expected %v * %v to have 1 monomial; received %v",
+			"expected product to be a Monomial; received %T",
+			prod,
+		)
+	}
+	if len(m3.Variables()) != 1 {
+		t.Errorf(
+			"expected %v * %v to have 1 variable; received %v",
 			p1,
 			3.14,
-			len(prod.(symbolic.Polynomial).Monomials),
+			len(m3.Variables()),
 		)
 	}
 }
@@ -1491,7 +1498,7 @@ Description:
 
 	Verifies that the Polynomial.Multiply method returns the correct output
 	when called with a well-defined polynomial and a well-defined constant matrix.
-	The resulting polynomial should be a polynomial matrix.
+	The resulting matrix should be a monomial matrix.
 */
 func TestPolynomial_Multiply8(t *testing.T) {
 	// Setup
@@ -1504,11 +1511,11 @@ func TestPolynomial_Multiply8(t *testing.T) {
 	// Test
 	prod := p1.Multiply(km1)
 
-	// Verify that the product is a polynomial matrix
-	prodAsPM, tf := prod.(symbolic.PolynomialMatrix)
+	// Verify that the product is a monomial matrix
+	prodAsMM, tf := prod.(symbolic.MonomialMatrix)
 	if !tf {
 		t.Errorf(
-			"expected %v * %v to return a polynomial matrix; received %T",
+			"expected %v * %v to return a monomial matrix; received %T",
 			p1,
 			km1,
 			prod,
@@ -1516,24 +1523,16 @@ func TestPolynomial_Multiply8(t *testing.T) {
 	}
 
 	// Verify that the coefficients of the product are correct
-	for ii, pRow := range prodAsPM {
-		for jj, p := range pRow {
-			if len(p.Monomials) != 1 {
-				t.Errorf(
-					"expected %v * %v to have 1 monomial; received %v",
-					p1,
-					km1,
-					len(p.Monomials),
-				)
-			}
+	for ii, monomialRow := range prodAsMM {
+		for jj, monomial := range monomialRow {
 
-			if prodAsPM[ii][jj].Monomials[0].Coefficient != float64(km1.At(ii, jj).(symbolic.K)) {
+			if monomial.Coefficient != float64(km1.At(ii, jj).(symbolic.K)) {
 				t.Errorf(
 					"expected %v * %v to have coefficient %v; received %v",
 					p1,
 					km1,
 					km1.At(ii, jj),
-					prodAsPM[ii][jj].Monomials[0].Coefficient,
+					monomial.Coefficient,
 				)
 			}
 
@@ -2245,8 +2244,20 @@ func TestPolynomial_SubstituteWith4(t *testing.T) {
 	// Test
 	substitution := p1.Substitute(x[0], symbolic.K(2.0))
 
+	// Verify that the output is a polynomial
+	p3, tf := substitution.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected %v.substitute(%v, %v) to be a polynomial; received %T",
+			p1,
+			x[0],
+			symbolic.K(2.0),
+			substitution,
+		)
+	}
+
 	// Search for a constant element in the monomials
-	for _, m := range substitution.(symbolic.Polynomial).Monomials {
+	for _, m := range p3.Monomials {
 		if m.IsConstant() {
 			if m.Coefficient != 3.0 {
 				t.Errorf(

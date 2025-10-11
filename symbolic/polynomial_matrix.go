@@ -287,18 +287,18 @@ func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 		out = pm.Multiply(K(right))
 	case K:
 		// Create containers
-		var product PolynomialMatrix
+		var product [][]ScalarExpression
 
 		for _, row := range pm {
-			var productRow []Polynomial
+			var productRow []ScalarExpression
 			for _, polynomial := range row {
 				polynomialCopy := Polynomial{Monomials: make([]Monomial, len(polynomial.Monomials))}
 				copy(polynomialCopy.Monomials, polynomial.Monomials)
-				productRow = append(productRow, polynomialCopy.Multiply(right).(Polynomial))
+				productRow = append(productRow, polynomialCopy.Multiply(right).(ScalarExpression))
 			}
 			product = append(product, productRow)
 		}
-		out = product
+		out = ConcretizeExpression(product)
 	case VariableVector:
 		// Identify output dimensions
 		nResultRows := pm.Dims()[0]
@@ -323,7 +323,7 @@ func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 					product[ii] = product[ii].Plus(polynomial.Multiply(right[jj])).(ScalarExpression)
 				}
 			}
-			return ConcretizeVectorExpression(product)
+			return ConcretizeExpression(product)
 		}
 	case MatrixExpression:
 		return MatrixMultiplyTemplate(pm, right)

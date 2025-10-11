@@ -266,6 +266,8 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 		}
 	}
 
+	// Algorithm
+	var out Expression
 	switch right := e.(type) {
 	case float64:
 		// Use gonum's built-in scale function
@@ -273,35 +275,22 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 		var product mat.Dense
 		product.Scale(right, &kmAsDense)
 
-		return DenseToKMatrix(product)
-
+		out = DenseToKMatrix(product)
 	case K:
-		return km.Multiply(float64(right)) // Reuse float64 case
+		out = km.Multiply(float64(right)) // Reuse float64 case
 	case Polynomial:
 		// Choose the correct output type based on the size of km
 		nR, nC := km.Dims()[0], km.Dims()[1]
-		switch {
-		case (nR == 1) && (nC == 1):
-			// If the output is a scalar, return a scalar
-			return km[0][0].Multiply(right)
-		case nC == 1:
-			// If the output is a vector, return a vector
-			var outputVec PolynomialVector = make([]Polynomial, nR)
-			for rIndex := 0; rIndex < nR; rIndex++ {
-				outputVec[rIndex] = km[rIndex][0].Multiply(right.Copy()).(Polynomial)
+		var product [][]ScalarExpression
+		for ii := 0; ii < nR; ii++ {
+			var productRow []ScalarExpression
+			for jj := 0; jj < nC; jj++ {
+				kmAsPoly := km[ii][jj].ToPolynomial()
+				productRow = append(productRow, kmAsPoly.Multiply(right).(ScalarExpression))
 			}
-			return outputVec
-		default:
-			// If the output is a matrix, return a matrix
-			var outputMat PolynomialMatrix = make([][]Polynomial, nR)
-			for rIndex := 0; rIndex < nR; rIndex++ {
-				outputMat[rIndex] = make([]Polynomial, nC)
-				for cIndex := 0; cIndex < nC; cIndex++ {
-					outputMat[rIndex][cIndex] = km[rIndex][cIndex].Multiply(right.Copy()).(Polynomial)
-				}
-			}
-			return outputMat
+			product = append(product, productRow)
 		}
+		out = ConcretizeExpression(product)
 
 	case *mat.VecDense:
 		// Use gonum's built-in multiplication function
@@ -313,10 +302,10 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 		nOutput := product.Len()
 		if nOutput == 1 {
 			// If the output is a scalar, return a scalar
-			return K(product.AtVec(0))
+			out = K(product.AtVec(0))
 		} else {
 			// Otherwsie return a KVector
-			return VecDenseToKVector(product)
+			out = VecDenseToKVector(product)
 		}
 
 	case VariableVector:
@@ -324,11 +313,11 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 		nR := km.Dims()[0]
 		if nR == 1 {
 			// If the output is a scalar, return a scalar
-			var out Expression = K(0)
+			var prod Expression = K(0)
 			for cIndex := 0; cIndex < len(right); cIndex++ {
-				out = out.Plus(right[cIndex].Multiply(km[0][cIndex]))
+				prod = prod.Plus(right[cIndex].Multiply(km[0][cIndex]))
 			}
-			return out.AsSimplifiedExpression()
+			out = prod
 		} else {
 			nC := km.Dims()[1]
 			// If the output is a vector, return a vector
@@ -338,7 +327,7 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 				tempCol := (&kmAsDense).ColView(colIndex)
 				outputVec = outputVec.Plus(right[colIndex].Multiply(tempCol))
 			}
-			return outputVec.AsSimplifiedExpression()
+			out = outputVec
 		}
 	case *mat.Dense:
 		// Check output dimensions
@@ -346,38 +335,40 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 		_, nOutputCols := right.Dims()
 
 		kmAsDense := km.ToDense()
-		var out mat.Dense
-		out.Mul(&kmAsDense, right)
+		var prod mat.Dense
+		prod.Mul(&kmAsDense, right)
 
 		switch {
 		case nOutputR == 1 && nOutputCols == 1:
 			// If the constant matrix is a scalar, return the scalar
-			return K(out.At(0, 0))
+			out = K(prod.At(0, 0))
 		case nOutputCols == 1:
 			// If the output is a vector, return a vector
 			var outputVec KVector = make([]K, nOutputR)
 			for rIndex := 0; rIndex < nOutputR; rIndex++ {
-				outputVec[rIndex] = K(out.At(rIndex, 0))
+				outputVec[rIndex] = K(prod.At(rIndex, 0))
 			}
-			return outputVec
+			out = outputVec
 		default:
 			// If the output is a matrix, return a matrix
-			return DenseToKMatrix(out)
+			out = DenseToKMatrix(prod)
 		}
 	case mat.Dense:
 		// Use *mat.Dense method
-		return km.Multiply(&right) // Reuse *mat.Dense case
+		out = km.Multiply(&right) // Reuse *mat.Dense case
 	case MatrixExpression:
-		return MatrixMultiplyTemplate(km, right)
+		out = MatrixMultiplyTemplate(km, right)
+	default:
+		// If we reach this point, the input is not recognized
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "KMatrix.Multiply",
+				Input:        e,
+			},
+		)
 	}
 
-	// If we reach this point, the input is not recognized
-	panic(
-		smErrors.UnsupportedInputError{
-			FunctionName: "KMatrix.Multiply",
-			Input:        e,
-		},
-	)
+	return out.AsSimplifiedExpression()
 }
 
 /*

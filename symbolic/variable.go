@@ -86,13 +86,14 @@ func (v Variable) Plus(rightIn interface{}) Expression {
 	}
 
 	// Algorithm
+	var out Expression
 	switch right := rightIn.(type) {
 	case float64:
-		return v.Plus(K(right))
+		out = v.Plus(K(right))
 	case int:
-		return v.Plus(K(float64(right)))
+		out = v.Plus(K(float64(right)))
 	case K:
-		return Polynomial{
+		out = Polynomial{
 			Monomials: []Monomial{
 				v.ToMonomial(),
 				right.ToMonomial(),
@@ -100,17 +101,13 @@ func (v Variable) Plus(rightIn interface{}) Expression {
 		}
 	case Variable:
 		if v.ID == right.ID {
-			return Polynomial{
-				Monomials: []Monomial{
-					Monomial{
-						Coefficient:     2.0,
-						VariableFactors: []Variable{v},
-						Exponents:       []int{1},
-					},
-				},
+			out = Monomial{
+				Coefficient:     2.0,
+				VariableFactors: []Variable{v},
+				Exponents:       []int{1},
 			}
 		} else {
-			return Polynomial{
+			out = Polynomial{
 				Monomials: []Monomial{
 					v.ToMonomial(),
 					right.ToMonomial(),
@@ -118,22 +115,28 @@ func (v Variable) Plus(rightIn interface{}) Expression {
 			}
 		}
 	case Monomial:
-		return right.Plus(v)
+		out = right.Plus(v)
 	case Polynomial:
-		return right.Plus(v)
+		out = right.Plus(v)
 	case *mat.VecDense:
-		return v.Plus(VecDenseToKVector(*right))
+		out = v.Plus(VecDenseToKVector(*right))
 	case mat.VecDense:
 		// Convert to KVector
-		return v.Plus(VecDenseToKVector(right))
-	case KVector, VariableVector, MonomialVector, PolynomialVector:
+		out = v.Plus(VecDenseToKVector(right))
+	case VectorExpression:
 		ve, _ := ToVectorExpression(rightIn)
-		return ve.Plus(v)
+		out = ve.Plus(v)
+	default:
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "Variable.Plus",
+				Input:        rightIn,
+			},
+		)
 	}
 
-	panic(
-		fmt.Errorf("there input %v has unexpected type %T given to Variable.Plus()!", rightIn, rightIn),
-	)
+	// Return
+	return out.AsSimplifiedExpression()
 }
 
 /*
