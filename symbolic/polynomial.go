@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
@@ -797,10 +798,26 @@ func (p Polynomial) String() string {
 
 	// Add monomials
 	for ii, monomial := range p.Monomials {
-		if ii != 0 {
-			polynomialString += " + "
+		if ii == 0 {
+			polynomialString += monomial.String()
+		} else {
+			var nextOperator string
+			if monomial.Coefficient >= 0 {
+				nextOperator = "+"
+			} else {
+				nextOperator = "-"
+			}
+
+			// Add next operator to polynomial string
+			polynomialString += fmt.Sprintf(" %v ", nextOperator)
+
+			// Include the monomial string with the "absolute value coefficient"
+			absValMonom := monomial.Copy()
+			absValMonom.Coefficient = math.Abs(absValMonom.Coefficient)
+
+			polynomialString += absValMonom.String()
 		}
-		polynomialString += monomial.String()
+
 	}
 
 	// Return

@@ -15,6 +15,7 @@ import (
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"gonum.org/v1/gonum/mat"
 )
 
 /*
@@ -2107,6 +2108,58 @@ func TestPolynomial_String1(t *testing.T) {
 
 	// Call the String method
 	p1.String()
+}
+
+func TestPolynomial_String2(t *testing.T) {
+	// Create polynomial with three terms
+	N := 3
+	vv1 := symbolic.NewVariableVector(N)
+	vec2 := mat.NewVecDense(N, []float64{-2.0, -4.0, 5.0})
+
+	prod := vv1.Transpose().Multiply(vec2)
+	poly3, tf := prod.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"Expected product to be a Polynomial; received %T",
+			prod,
+		)
+	}
+
+	// Create string
+	out := poly3.String()
+
+	// Check that the first character in the string is the negative symbol.
+	if string(out[0]) != "-" {
+		t.Errorf(
+			"Expected the first character of the string to be the \"-\" character; received %v",
+			out[0],
+		)
+	}
+
+	// Check that there are two negative signs in string
+	firstMinusIndex := strings.Index(out, "-")
+	secondMinusIndex := strings.Index(out[firstMinusIndex+1:], "-")
+
+	if secondMinusIndex == -1 {
+		t.Errorf(
+			"Expected there to be two minus indices in the string out; found only 1.",
+		)
+	}
+
+	// Check that there are no "+" signs between the first and second "-" signs
+	if strings.Index(out[firstMinusIndex:secondMinusIndex], "+") != -1 {
+		t.Errorf(
+			"the cleaner String() method should not contain \"+\" and \"-\" signs next to each other, but we observed: \"%v\"",
+			out[firstMinusIndex:secondMinusIndex],
+		)
+	}
+
+	// Check that last term is preceded by a "+" sign.
+	if strings.Index(out[secondMinusIndex:], "+") == -1 {
+		t.Errorf(
+			"there should be at least one \"+\" sign after the two minus signs; found none!",
+		)
+	}
 }
 
 /*
