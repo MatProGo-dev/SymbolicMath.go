@@ -1431,8 +1431,9 @@ func TestPolynomialVector_Multiply3(t *testing.T) {
 TestPolynomialVector_Multiply4
 Description:
 
-	This test verifies that the Multiply() method returns a polynomial
-	with the correct coefficients when the second input is a float64.
+	This test verifies that the Multiply() method returns a monomial vector
+	with the correct coefficients when the second input is a float64
+	and the input polynomial is *really* a vector of variables.
 */
 func TestPolynomialVector_Multiply4(t *testing.T) {
 	// Constants
@@ -1443,15 +1444,23 @@ func TestPolynomialVector_Multiply4(t *testing.T) {
 	f2 := 3.14
 
 	// Test
-	pv3 := pv.Multiply(f2).(symbolic.PolynomialVector)
-	for _, polynomial := range pv3 {
-		for _, monomial := range polynomial.Monomials {
-			if monomial.Coefficient != 3.14 {
-				t.Errorf(
-					"Expected monomial.Coefficient to be 3.14; received %v",
-					monomial.Coefficient,
-				)
-			}
+	prod := pv.Multiply(f2)
+
+	// Check that the product is a vector of monomials
+	mv3, ok := prod.(symbolic.MonomialVector)
+	if !ok {
+		t.Errorf(
+			"expected the product to be of type MonomialVector; received %T",
+			prod,
+		)
+	}
+
+	for _, monomial := range mv3 {
+		if monomial.Coefficient != 3.14 {
+			t.Errorf(
+				"Expected monomial.Coefficient to be 3.14; received %v",
+				monomial.Coefficient,
+			)
 		}
 	}
 }
@@ -1465,19 +1474,30 @@ Description:
 */
 func TestPolynomialVector_Multiply5(t *testing.T) {
 	// Constants
-	pv := symbolic.PolynomialVector{}
-	for ii := 0; ii < 20; ii++ {
-		pv = append(pv, symbolic.NewVariable().ToPolynomial())
-	}
+	N := 10
+	vv1 := symbolic.NewVariableVector(N)
+	pv := vv1.ToPolynomialVector()
 	p2 := symbolic.NewVariable().ToPolynomial()
 
 	// Test
-	pv3 := pv.Multiply(p2).(symbolic.PolynomialVector)
-	for _, polynomial := range pv3 {
-		if len(polynomial.Monomials) != 1 {
+	prod := pv.Multiply(p2)
+
+	// Check that the product is actually a monomial vector
+	mv3, ok := prod.(symbolic.MonomialVector)
+	if !ok {
+		t.Errorf(
+			"Expected product to be of type MonomialVector; received %T",
+			prod,
+		)
+	}
+
+	// Check that the product contains monomials all of degree 2
+	for i, monomial := range mv3 {
+		if monomial.Degree() != 2 {
 			t.Errorf(
-				"Expected polynomial.Monomials to have length 2; received %v",
-				len(polynomial.Monomials),
+				"Expected each monomial in product to be of degree 2; monomial #%v has degree %v",
+				i,
+				monomial.Degree(),
 			)
 		}
 	}
@@ -1543,22 +1563,33 @@ Description:
 */
 func TestPolynomialVector_Multiply7(t *testing.T) {
 	// Constants
-	pv1 := symbolic.PolynomialVector{}
-	for ii := 0; ii < 20; ii++ {
-		pv1 = append(pv1, symbolic.NewVariable().ToPolynomial())
-	}
+	N := 20
+	vv1 := symbolic.NewVariableVector(N)
+	pv1 := vv1.ToPolynomialVector()
+
 	pv2 := symbolic.PolynomialVector{}
 	pv2 = append(pv2, symbolic.NewVariable().ToPolynomial())
 
 	// Test
-	pv3 := pv1.Multiply(pv2).(symbolic.PolynomialVector)
-	for _, polynomial := range pv3 {
-		if len(polynomial.Monomials) != 1 {
-			t.Errorf(
-				"Expected polynomial.Monomials to have length 2; received %v",
-				len(polynomial.Monomials),
-			)
-		}
+	prod := pv1.Multiply(pv2)
+
+	// Check that the product is actually a monomial
+	mv3, ok := prod.(symbolic.MonomialVector)
+	if !ok {
+		t.Errorf(
+			"Expected product to be of type MonomialVector; received %T",
+			prod,
+		)
+	}
+
+	// Check that the dimension of the new monomial vector
+	// matches that of the first polynomial vector
+	if (mv3.Dims()[0] != pv1.Dims()[0]) || (mv3.Dims()[1] != pv1.Dims()[1]) {
+		t.Errorf(
+			"dimensions of the product (%v,%v) did not match the dimensions of the input vector (%v,%v)",
+			mv3.Dims()[0], mv3.Dims()[1],
+			pv1.Dims()[0], pv1.Dims()[1],
+		)
 	}
 }
 

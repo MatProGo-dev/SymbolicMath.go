@@ -661,3 +661,17 @@ Description:
 func (kv KVector) AsSimplifiedExpression() Expression {
 	return kv
 }
+
+/*
+ToScalarExpressions
+Description:
+
+	Converts the KVector into a slice of ScalarExpression type objects.
+*/
+func (kv KVector) ToScalarExpressions() []ScalarExpression {
+	var out []ScalarExpression
+	for _, k := range kv {
+		out = append(out, k)
+	}
+	return out
+}

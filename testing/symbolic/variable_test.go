@@ -1,10 +1,11 @@
 package symbolic_test
 
 import (
-	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
-	"gonum.org/v1/gonum/mat"
 	"strings"
 	"testing"
+
+	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"gonum.org/v1/gonum/mat"
 )
 
 /*
@@ -304,6 +305,7 @@ Description:
 
 	Tests that the Plus() method works properly when adding a variable to
 	the same variable.
+	Specifically, we want to make sure that the addition is 2 * x (a Monomial).
 */
 func TestVariable_Plus4(t *testing.T) {
 	// Constants
@@ -320,23 +322,22 @@ func TestVariable_Plus4(t *testing.T) {
 		)
 	}
 
-	// Test that sum is a polynomial with 2 terms
-	sumAsPoly, tf := sum.(symbolic.Polynomial)
+	// Test that sum is a monomial with 2 terms
+	sumAsMonom, tf := sum.(symbolic.Monomial)
 	if !tf {
 		t.Errorf(
-			"expected %v + %v to be a polynomial; received %T",
+			"expected %v + %v to be a monomial; received %T",
 			x,
 			x,
 			sum,
 		)
 	}
 
-	if len(sumAsPoly.Monomials) != 1 {
+	if sumAsMonom.Coefficient != 2.0 {
 		t.Errorf(
-			"expected %v + %v to have 1 term; received %v",
-			x,
-			x,
-			len(sumAsPoly.Monomials),
+			"Expected coefficient of monomial to be %v; received %v",
+			2.0,
+			sumAsMonom.Coefficient,
 		)
 	}
 }

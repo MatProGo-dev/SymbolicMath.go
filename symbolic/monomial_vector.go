@@ -329,22 +329,24 @@ func (mv MonomialVector) Multiply(term1 interface{}) Expression {
 	}
 
 	// Algorithm
+	var out Expression
 	switch right := term1.(type) {
 	case float64:
-		return mv.Multiply(K(right))
-	case K:
-		// Create a polynomial vector
-		var mv MonomialVector
-		for _, monomial := range mv {
-			mv = append(mv, monomial.Multiply(right).(Monomial))
-		}
-		return mv
+		out = mv.Multiply(K(right))
+	case Expression:
+		out = VectorMultiplyTemplate(mv, right)
+	default:
+		// Unrecognized response is a panic
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "MonomialVector.Multiply",
+				Input:        right,
+			},
+		)
 	}
 
-	// Unrecognized response is a panic
-	panic(
-		fmt.Errorf("Unexpected type of term1 in the Multiply() method: %T (%v)", term1, term1),
-	)
+	return out.AsSimplifiedExpression()
+
 }
 
 /*
@@ -762,4 +764,18 @@ func (mv MonomialVector) AsSimplifiedExpression() Expression {
 	}
 
 	return ConcretizeVectorExpression(out)
+}
+
+/*
+ToScalarExpressions
+Description:
+
+	Converts the MonomialVector into a slice of ScalarExpression type objects.
+*/
+func (mv MonomialVector) ToScalarExpressions() []ScalarExpression {
+	var out []ScalarExpression
+	for _, monomial := range mv {
+		out = append(out, monomial)
+	}
+	return out
 }

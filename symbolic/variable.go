@@ -320,12 +320,13 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 		}
 	}
 
-	// Constants
+	// Algorithm
+	var out Expression
 	switch right := rightIn.(type) {
 	case float64:
-		return v.Multiply(K(right))
+		out = v.Multiply(K(right))
 	case int:
-		return v.Multiply(K(float64(right)))
+		out = v.Multiply(K(float64(right)))
 	case K:
 		// Create a new monomial
 		monomialOut := Monomial{
@@ -333,7 +334,7 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 			VariableFactors: []Variable{v},
 			Exponents:       []int{1},
 		}
-		return monomialOut
+		out = monomialOut
 	case Variable:
 		var monomialOut Monomial
 		if right.ID == v.ID {
@@ -349,35 +350,33 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 				Exponents:       []int{1, 1},
 			}
 		}
-		return monomialOut
+		out = monomialOut
 	case Monomial:
 		// Use Monomial method
-		return right.Multiply(v)
+		out = right.Multiply(v)
 	case Polynomial:
 		// Create a new vector of polynomials.
-		return right.Multiply(v)
+		out = right.Multiply(v)
 	case *mat.VecDense:
-		return v.Multiply(*right)
+		out = v.Multiply(*right)
 	case mat.VecDense:
 		// Convert to KVector
-		return v.Multiply(VecDenseToKVector(right))
-	case KVector:
-		// Create a monomial vector and store result in it
-		var monomialsOut MonomialVector = make([]Monomial, right.Len())
-		for i := 0; i < right.Len(); i++ {
-			monomialsOut[i] = Monomial{
-				Coefficient:     float64(right[i]),
-				VariableFactors: []Variable{v},
-				Exponents:       []int{1},
-			}
-		}
-		return monomialsOut
+		out = v.Multiply(VecDenseToKVector(right))
+	case VectorExpression:
+		out = VectorMultiplyTemplate(right, v)
+	default:
+		// Unrecornized response is a panic
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "Variable.Multiply",
+				Input:        right,
+			},
+		)
 	}
 
-	// Unrecornized response is a panic
-	panic(
-		fmt.Errorf("Unexpected input to Variable.Multiply(): %T", rightIn),
-	)
+	// Simplify and Return
+	return out.AsSimplifiedExpression()
+
 }
 
 /*

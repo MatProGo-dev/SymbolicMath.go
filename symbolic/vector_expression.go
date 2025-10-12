@@ -97,36 +97,11 @@ type VectorExpression interface {
 
 	// Simplify simplifies the expression and returns the simplified version
 	AsSimplifiedExpression() Expression
+
+	// ToScalarExpressions
+	// Converts the given VectorExpression into a slice of ScalarExpression interface objects
+	ToScalarExpressions() []ScalarExpression
 }
-
-///*
-//NewVectorExpression
-//Description:
-//
-//	NewExpr returns a new expression with a single additive constant value, c,
-//	and no variables. Creating an expression like sum := NewVectorExpr(0) is useful
-//	for creating new empty expressions that you can perform operatotions on later
-//*/
-//func NewVectorExpression(c mat.VecDense) VectorLinearExpr {
-//	return VectorLinearExpr{C: c}
-//}
-
-//func (e VectorExpression) getVarsPtr() *uint64 {
-//
-//	if e.NumVars() > 0 {
-//		return &e.IDs()[0]
-//	}
-//
-//	return nil
-//}
-//
-//func (e VectorExpression) getCoeffsPtr() *float64 {
-//	if e.NumVars() > 0 {
-//		return &e.Coeffs()[0]
-//	}
-//
-//	return nil
-//}
 
 /*
 IsVectorExpression
@@ -413,4 +388,55 @@ func VectorPowerTemplate(base VectorExpression, exponent int) Expression {
 	}
 
 	return result
+}
+
+func VectorMultiplyTemplate(ve VectorExpression, right Expression) Expression {
+	// Setup
+	veAsSlice := ve.ToScalarExpressions()
+
+	// Algorithms
+	var prod []ScalarExpression
+	switch right.(type) {
+	case ScalarExpression:
+		for _, se := range veAsSlice {
+			prod = append(prod, se.Multiply(right).(ScalarExpression))
+		}
+	default:
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: fmt.Sprintf("%T.Multiply", ve),
+				Input:        right,
+			},
+		)
+	}
+
+	return ConcretizeExpression(prod)
+}
+
+func VectorPlusTemplate(ve VectorExpression, right Expression) Expression {
+	// Setup
+	veAsSlice := ve.ToScalarExpressions()
+
+	// Algorithms
+	var sum []ScalarExpression
+	switch rightExpr := right.(type) {
+	case ScalarExpression:
+		for _, se := range veAsSlice {
+			sum = append(sum, se.Plus(rightExpr).(ScalarExpression))
+		}
+	case VectorExpression:
+		for ii, se := range veAsSlice {
+			rightII := rightExpr.AtVec(ii)
+			sum = append(sum, se.Plus(rightII).(ScalarExpression))
+		}
+	default:
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: fmt.Sprintf("%T.Plus", ve),
+				Input:        right,
+			},
+		)
+	}
+
+	return ConcretizeExpression(sum)
 }

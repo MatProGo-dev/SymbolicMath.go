@@ -678,3 +678,17 @@ Description:
 func (pv PolynomialVector) Power(exponent int) Expression {
 	return VectorPowerTemplate(pv, exponent)
 }
+
+/*
+ToScalarExpressions
+Description:
+
+	Converts the PolynomialVector into a slice of ScalarExpression type objects.
+*/
+func (pv PolynomialVector) ToScalarExpressions() []ScalarExpression {
+	var out []ScalarExpression
+	for _, polynomial := range pv {
+		out = append(out, polynomial)
+	}
+	return out
+}
