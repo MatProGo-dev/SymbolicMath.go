@@ -7,11 +7,15 @@ import (
 )
 
 /*
-quadratic1.go
+derivative1.go
 Description:
 
-	This script is meant to construct a quadratic polynomial
-	using the symbolic package.
+	This script is meant to construct a simple polynomial
+	representing an object in free fall within standard
+	earth gravity, `g`, with an initial upward velocity of `v0`.
+
+	By differentiating the position equation, you should get the
+	velocity equation.
 */
 
 func main() {
