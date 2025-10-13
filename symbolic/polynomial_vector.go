@@ -196,8 +196,46 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 	switch right := e.(type) {
 	case float64:
 		out = pv.Plus(K(right))
-	case Expression:
-		out = VectorPlusTemplate(pv, right)
+	case K:
+		pvCopy := pv
+
+		// Algorithm
+		var sum []ScalarExpression
+		for _, polynomial := range pvCopy {
+			tempSum := polynomial.Plus(right)
+			sum = append(sum, tempSum.(ScalarExpression))
+		}
+		out = ConcretizeExpression(sum)
+	case Variable:
+		pvCopy := pv
+		for ii, polynomial := range pv {
+			sum := polynomial.Plus(right)
+			pvCopy[ii] = sum.(Polynomial)
+		}
+		out = pvCopy
+
+	case Polynomial:
+		pvCopy := pv
+
+		// Algorithm
+		for ii, polynomial := range pv {
+			sum := polynomial.Plus(right)
+			pvCopy[ii] = sum.(Polynomial)
+		}
+		out = pvCopy
+	case VectorExpression:
+		pvCopy := pv
+
+		// Cast right
+		rightAsVector, _ := ToVectorExpression(right)
+
+		// Algorithm
+		var sum []ScalarExpression
+		for ii, polynomial := range pvCopy {
+			tempSum := polynomial.Plus(rightAsVector.AtVec(ii))
+			sum = append(sum, tempSum.(ScalarExpression))
+		}
+		out = ConcretizeExpression(sum)
 	default:
 		// Default response is a panic
 		panic(

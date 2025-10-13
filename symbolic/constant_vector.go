@@ -145,8 +145,7 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 	// Constants
 	kvLen := kv.Len()
 
-	// Algorithm
-	var out Expression
+	// Management
 	switch right := rightIn.(type) {
 	case float64:
 		// Check to see if the output is a vector or a scalar
@@ -160,26 +159,42 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 		eAsVec.ScaleVec(right, &tempOnes)
 
 		// Add the values
-		out = kv.Plus(VecDenseToKVector(eAsVec))
-	case Expression:
-		out = VectorPlusTemplate(kv, right)
+		return kv.Plus(VecDenseToKVector(eAsVec))
+	case K, Variable, Monomial, Polynomial:
+		// Create a new polynomial vector
+		var out []ScalarExpression
+		for _, element := range kv {
+			out = append(out, element.Plus(right).(ScalarExpression))
+		}
+		return ConcretizeVectorExpression(out)
 
 	case *mat.VecDense:
-		out = kv.Plus(VecDenseToKVector(*right)) // Convert to KVector
+		return kv.Plus(VecDenseToKVector(*right)) // Convert to KVector
 	case mat.VecDense:
-		out = kv.Plus(VecDenseToKVector(right)) // Convert to KVector
+		return kv.Plus(VecDenseToKVector(right)) // Convert to KVector
+
+	case KVector:
+		// Compute Addition
+		var result mat.VecDense
+		kvAsVec := kv.ToVecDense()
+		eAsVec := right.ToVecDense()
+		result.AddVec(&kvAsVec, &eAsVec)
+
+		return VecDenseToKVector(result)
+
+	case VariableVector:
+		return right.Plus(kv)
+
+	case MonomialVector:
+		return right.Plus(kv)
+
+	case PolynomialVector:
+		return right.Plus(kv)
 
 	default:
-		panic(
-			smErrors.UnsupportedInputError{
-				FunctionName: "KVector.Plus",
-				Input:        rightIn,
-			},
-		)
+		errString := fmt.Sprintf("Unrecognized expression type %T for addition of KVector kv.Plus(%v)!", right, right)
+		panic(fmt.Errorf(errString))
 	}
-
-	// Simplify and return
-	return out.AsSimplifiedExpression()
 }
 
 /*
