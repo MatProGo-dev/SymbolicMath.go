@@ -196,6 +196,10 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 	switch right := e.(type) {
 	case float64:
 		out = pv.Plus(K(right))
+	// The generic Expression case is sufficient because VectorPlusTemplate
+	// is designed to handle all supported vector types (e.g., PolynomialVector,
+	// VectorLinearExpr, etc.) and correctly implements addition for them.
+	// This ensures that all previously supported types are handled safely.
 	case Expression:
 		out = VectorPlusTemplate(pv, right)
 	default:
