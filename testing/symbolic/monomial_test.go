@@ -1329,14 +1329,14 @@ func TestMonomial_IsConstant2(t *testing.T) {
 }
 
 /*
-TestMonomial_IsVariable1
+TestMonomial_IsDegreeOneContainingVariable1
 Description:
 
-	Verifies that the Monomial.IsVariable function returns
-	false when the monomial is not the same as a separate variable
-	v2.
+	Verifies that the Monomial.IsDegreeOneContainingVariable function returns
+	false when the monomial we are checking
+	does not contain the variable v2.
 */
-func TestMonomial_IsVariable1(t *testing.T) {
+func TestMonomial_IsDegreeOneContainingVariable1(t *testing.T) {
 	// Constants
 	v1 := symbolic.NewVariable()
 	v2 := symbolic.NewVariable()
@@ -1349,20 +1349,20 @@ func TestMonomial_IsVariable1(t *testing.T) {
 	// Test
 	if m1.IsDegreeOneContainingVariable(v1) {
 		t.Errorf(
-			"expected m1 to be a variable; received %v",
+			"expected m1 to be a monomial; received %v",
 			m1.IsDegreeOneContainingVariable(v1),
 		)
 	}
 }
 
 /*
-TestMonomial_IsVariable2
+TestMonomial_IsDegreeOneContainingVariable2
 Description:
 
-	Verifies that the Monomial.IsVariable function
+	Verifies that the Monomial.IsDegreeOneContainingVariable function
 	panics if the monomial is not well-defined.
 */
-func TestMonomial_IsVariable2(t *testing.T) {
+func TestMonomial_IsDegreeOneContainingVariable2(t *testing.T) {
 	// Constants
 	v1 := symbolic.NewVariable()
 	v2 := symbolic.NewVariable()
@@ -1385,13 +1385,13 @@ func TestMonomial_IsVariable2(t *testing.T) {
 }
 
 /*
-TestMonomial_IsVariable3
+TestMonomial_IsDegreeOneContainingVariable3
 Description:
 
-	Verifies that the Monomial.IsVariable function
+	Verifies that the Monomial.IsDegreeOneContainingVariable function
 	panics if the input variable is not well-defined.
 */
-func TestMonomial_IsVariable3(t *testing.T) {
+func TestMonomial_IsDegreeOneContainingVariable3(t *testing.T) {
 	// Constants
 	v2 := symbolic.NewVariable()
 	m1 := symbolic.Monomial{
