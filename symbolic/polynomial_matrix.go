@@ -135,71 +135,74 @@ func (pm PolynomialMatrix) Plus(e interface{}) Expression {
 	}
 
 	// Perform the addition
+	var out Expression
 	switch right := e.(type) {
 	case float64:
-		return pm.Plus(K(right))
+		out = pm.Plus(K(right))
 	case K:
 		// Create containers
-		var sum PolynomialMatrix
+		var sum [][]ScalarExpression
 
 		for _, row := range pm {
-			var sumRow []Polynomial
+			var sumRow []ScalarExpression
 			for _, polynomial := range row {
-				sumRow = append(sumRow, polynomial.Plus(right).(Polynomial))
+				sumRow = append(sumRow, polynomial.Plus(right).(ScalarExpression))
 			}
 			sum = append(sum, sumRow)
 		}
-		return sum
+		out = ConcretizeExpression(sum)
 	case Monomial:
-		return pm.Plus(right.ToPolynomial())
+		out = pm.Plus(right.ToPolynomial())
 	case Polynomial:
 		// Create containers
-		var sum PolynomialMatrix
+		var sum [][]ScalarExpression
 
 		for _, row := range pm {
-			var sumRow []Polynomial
+			var sumRow []ScalarExpression
 			for _, polynomial := range row {
-				sumRow = append(sumRow, polynomial.Plus(right).(Polynomial))
+				sumRow = append(sumRow, polynomial.Plus(right).(ScalarExpression))
 			}
 			sum = append(sum, sumRow)
 		}
-		return sum
+		out = ConcretizeExpression(sum)
 	case KMatrix:
 		// Create containers
-		var sum PolynomialMatrix
+		var sum [][]ScalarExpression
 
 		for ii, row := range pm {
-			var sumRow []Polynomial
+			var sumRow []ScalarExpression
 			for jj, polynomial := range row {
-				sumRow = append(sumRow, polynomial.Plus(right.At(ii, jj).(K)).(Polynomial))
+				sumRow = append(sumRow, polynomial.Plus(right.At(ii, jj).(K)).(ScalarExpression))
 			}
 			sum = append(sum, sumRow)
 		}
-
-		return sum
+		out = ConcretizeExpression(sum)
 
 	case PolynomialMatrix:
 		// Create containers
-		var sum PolynomialMatrix
+		var sum [][]ScalarExpression
 
 		for ii, row := range pm {
-			var sumRow []Polynomial
+			var sumRow []ScalarExpression
 			for jj, polynomial := range row {
-				sumRow = append(sumRow, polynomial.Plus(right[ii][jj]).(Polynomial))
+				sumRow = append(sumRow, polynomial.Plus(right[ii][jj]).(ScalarExpression))
 			}
 			sum = append(sum, sumRow)
 		}
 
-		return sum.Simplify()
+		out = ConcretizeExpression(sum)
+	default:
+		// If the right hand side is not supported, then panic
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "PolynomialMatrix.Plus",
+				Input:        e,
+			},
+		)
 	}
 
-	// If type isn't recognized, then panic
-	panic(
-		smErrors.UnsupportedInputError{
-			FunctionName: "PolynomialMatrix.Plus",
-			Input:        e,
-		},
-	)
+	// Return
+	return out.AsSimplifiedExpression()
 }
 
 /*
@@ -278,23 +281,24 @@ func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 	}
 
 	// Perform the multiplication
+	var out Expression
 	switch right := e.(type) {
 	case float64:
-		return pm.Multiply(K(right))
+		out = pm.Multiply(K(right))
 	case K:
 		// Create containers
-		var product PolynomialMatrix
+		var product [][]ScalarExpression
 
 		for _, row := range pm {
-			var productRow []Polynomial
+			var productRow []ScalarExpression
 			for _, polynomial := range row {
 				polynomialCopy := Polynomial{Monomials: make([]Monomial, len(polynomial.Monomials))}
 				copy(polynomialCopy.Monomials, polynomial.Monomials)
-				productRow = append(productRow, polynomialCopy.Multiply(right).(Polynomial))
+				productRow = append(productRow, polynomialCopy.Multiply(right).(ScalarExpression))
 			}
 			product = append(product, productRow)
 		}
-		return product
+		out = ConcretizeExpression(product)
 	case VariableVector:
 		// Identify output dimensions
 		nResultRows := pm.Dims()[0]
@@ -302,41 +306,39 @@ func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 		// Create product based on the number of Resulting rows
 		if nResultRows == 1 {
 			// Create container
-			var product Polynomial = K(0).ToPolynomial()
+			var product Expression = K(0)
 			for ii, tempPolynomial := range pm[0] {
-				product = product.Plus(
-					tempPolynomial.Multiply(right[ii]).(Polynomial),
-				).(Polynomial)
+				product = product.Plus(tempPolynomial.Multiply(right[ii]))
 			}
-			return product
+			out = product
 		} else {
 			// Create container
-			var product PolynomialVector = VecDenseToKVector(
-				ZerosVector(nResultRows),
-			).ToPolynomialVector()
+			var product []ScalarExpression
 
 			// Fill container
 			for ii := 0; ii < nResultRows; ii++ {
 				// Construct the ii-th element of the product
+				product = append(product, K(0))
 				for jj, polynomial := range pm[ii] {
-					product[ii] = product[ii].Plus(
-						polynomial.Multiply(right[jj]).(Polynomial),
-					).(Polynomial)
+					product[ii] = product[ii].Plus(polynomial.Multiply(right[jj])).(ScalarExpression)
 				}
 			}
-			return product
+			return ConcretizeExpression(product)
 		}
 	case MatrixExpression:
 		return MatrixMultiplyTemplate(pm, right)
+	default:
+		// If the right hand side is not supported, then panic
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "PolynomialMatrix.Multiply",
+				Input:        e,
+			},
+		)
 	}
 
-	// If type isn't recognized, then panic
-	panic(
-		smErrors.UnsupportedInputError{
-			FunctionName: "PolynomialMatrix.Multiply",
-			Input:        e,
-		},
-	)
+	// Return
+	return out.AsSimplifiedExpression()
 }
 
 /*

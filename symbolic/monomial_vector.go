@@ -146,15 +146,16 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 	}
 
 	// Algorithm
+	var out Expression
 	switch right := term1.(type) {
 	case float64:
-		return mv.Plus(K(right))
+		out = mv.Plus(K(right))
 	case K:
 		// Convert the scalar to a scalar vector
 		tempVD := OnesVector(mv.Len())
 		tempVD.ScaleVec(float64(right), &tempVD)
 
-		return mv.Plus(VecDenseToKVector(tempVD))
+		out = mv.Plus(VecDenseToKVector(tempVD))
 	case Monomial:
 		// Check to see if all elements of the monomial vector,
 		// are all monomials like the input monomial.
@@ -172,28 +173,28 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 			for _, monomial := range mv {
 				mvOut = append(mvOut, monomial.Plus(right).(Monomial))
 			}
-			return mvOut
+			out = mvOut
 		} else {
 			// Otherwise, create a polynomial vector
 			var pv PolynomialVector
 			for _, monomial := range mv {
 				pv = append(pv, monomial.Plus(right).(Polynomial))
 			}
-			return pv.Simplify()
+			out = pv.Simplify()
 		}
 	case KVector:
 		if mv.IsConstant() {
 			// If monomial vector is really a constant vector,
 			// then don't convert down but simply update the coefficients.
 			var kvOut KVector = VecDenseToKVector(mv.Constant())
-			return kvOut.Plus(right)
+			out = kvOut.Plus(right)
 		} else {
 			// Create a polynomial vector
-			var pv PolynomialVector
+			var ve []ScalarExpression
 			for ii, monomial := range mv {
-				pv = append(pv, monomial.Plus(right[ii]).(Polynomial))
+				ve = append(ve, monomial.Plus(right[ii]).(ScalarExpression))
 			}
-			return pv.Simplify()
+			out = ConcretizeVectorExpression(ve)
 		}
 	case MonomialVector:
 		// Check to see if all elements of the monomial vector,
@@ -212,7 +213,7 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 			for ii, monomial := range mv {
 				mvOut = append(mvOut, monomial.Plus(right[ii]).(Monomial))
 			}
-			return mvOut
+			out = mvOut
 		} else {
 			// Otherwise, create a polynomial vector
 			var pv PolynomialVector
@@ -233,17 +234,20 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 
 				}
 			}
-			return pv.Simplify()
+			out = pv.Simplify()
 		}
+	default:
+		// If the right hand side is an unsupported type, then panic
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "MonomialVector.Plus",
+				Input:        term1,
+			},
+		)
 	}
 
-	// Unrecognized response is a panic
-	panic(
-		smErrors.UnsupportedInputError{
-			FunctionName: "MonomialVector.Plus",
-			Input:        term1,
-		},
-	)
+	// Return
+	return out.AsSimplifiedExpression()
 }
 
 /*
@@ -325,22 +329,24 @@ func (mv MonomialVector) Multiply(term1 interface{}) Expression {
 	}
 
 	// Algorithm
+	var out Expression
 	switch right := term1.(type) {
 	case float64:
-		return mv.Multiply(K(right))
-	case K:
-		// Create a polynomial vector
-		var mv MonomialVector
-		for _, monomial := range mv {
-			mv = append(mv, monomial.Multiply(right).(Monomial))
-		}
-		return mv
+		out = mv.Multiply(K(right))
+	case Expression:
+		out = VectorMultiplyTemplate(mv, right)
+	default:
+		// Unrecognized response is a panic
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "MonomialVector.Multiply",
+				Input:        right,
+			},
+		)
 	}
 
-	// Unrecognized response is a panic
-	panic(
-		fmt.Errorf("Unexpected type of term1 in the Multiply() method: %T (%v)", term1, term1),
-	)
+	return out.AsSimplifiedExpression()
+
 }
 
 /*
@@ -758,4 +764,18 @@ func (mv MonomialVector) AsSimplifiedExpression() Expression {
 	}
 
 	return ConcretizeVectorExpression(out)
+}
+
+/*
+ToScalarExpressions
+Description:
+
+	Converts the MonomialVector into a slice of ScalarExpression type objects.
+*/
+func (mv MonomialVector) ToScalarExpressions() []ScalarExpression {
+	var out []ScalarExpression
+	for _, monomial := range mv {
+		out = append(out, monomial)
+	}
+	return out
 }

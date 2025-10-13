@@ -533,7 +533,7 @@ func TestScalarConstraint_LinearInequalityConstraintRepresentation3(t *testing.T
 	}
 
 	// Get linear representation
-	A, b := sc.(symbolic.ScalarConstraint).LinearInequalityConstraintRepresentation()
+	A, b := sc.(symbolic.ScalarConstraint).LinearInequalityConstraintRepresentation([]symbolic.Variable(x))
 
 	// Verify that the vector is all ones
 

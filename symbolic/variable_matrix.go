@@ -265,10 +265,11 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 	}
 
 	// Computation
+	var out Expression
 	switch right := e.(type) {
 	case float64:
 		// Use K case
-		return vm.Multiply(K(right))
+		out = vm.Multiply(K(right))
 	case K:
 		// Create a new matrix of polynomials.
 		var mmOut MonomialMatrix
@@ -279,37 +280,28 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 			}
 			mmOut = append(mmOut, mmRow)
 		}
-		return mmOut
-
+		out = mmOut
 	case KVector:
 		// Constants
-		nResultRows := vm.Dims()[0]
+		vmRows, vmCols := vm.Dims()[0], vm.Dims()[1]
 
-		// Switch on the dimensions of the result
-		switch nResultRows {
-		case 1:
-			// Scalar result
-			var result Polynomial = K(0).ToMonomial().ToPolynomial()
-			for ii, k := range right {
-				result = result.Plus(vm[0][ii].Multiply(k)).(Polynomial)
+		// Compute product based on each element
+		var product []ScalarExpression
+		for ii := 0; ii < vmRows; ii++ {
+			var productII ScalarExpression = K(0)
+			for kk := 0; kk < vmCols; kk++ {
+				productII = productII.Plus(vm[ii][kk].Multiply(right[kk])).(ScalarExpression)
 			}
-			return result
-		default:
-			// Create vector result
-			var result PolynomialVector = VecDenseToKVector(ZerosVector(nResultRows)).ToPolynomialVector()
-			for ii, vmRow := range vm {
-				for jj, v := range vmRow {
-					result[ii] = result[ii].Plus(v.Multiply(right[jj])).(Polynomial)
-				}
-			}
-			return result
+			product = append(product, productII)
 		}
+
+		out = ConcretizeExpression(product)
 	case *mat.VecDense:
 		// Use the KVector case
-		return vm.Multiply(VecDenseToKVector(*right))
+		out = vm.Multiply(VecDenseToKVector(*right))
 	case mat.VecDense:
 		// Use the KVector case
-		return vm.Multiply(VecDenseToKVector(right))
+		out = vm.Multiply(VecDenseToKVector(right))
 	case VariableVector:
 		// Output will be another vector
 		nVMCols := vm.Dims()[1]
@@ -324,24 +316,27 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 				vmCol.Multiply(right[ii]),
 			)
 		}
-		return result
+		out = result
 	case *mat.Dense:
 		// Use the mat.Dense case
-		return vm.Multiply(DenseToKMatrix(*right))
+		out = vm.Multiply(DenseToKMatrix(*right))
 	case mat.Dense:
 		// Use the KMatrix case
-		return vm.Multiply(DenseToKMatrix(right))
+		out = vm.Multiply(DenseToKMatrix(right))
 	case MatrixExpression:
-		return MatrixMultiplyTemplate(vm, right)
+		out = MatrixMultiplyTemplate(vm, right)
+	default:
+		// panic if the type is not recognized
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "VariableMatrix.Multiply",
+				Input:        e,
+			},
+		)
 	}
 
-	// panic if the type is not recognized
-	panic(
-		smErrors.UnsupportedInputError{
-			FunctionName: "VariableMatrix.Multiply",
-			Input:        e,
-		},
-	)
+	// Return
+	return out.AsSimplifiedExpression()
 }
 
 /*

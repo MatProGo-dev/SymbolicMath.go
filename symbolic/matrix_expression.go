@@ -235,7 +235,7 @@ func MatrixMultiplyTemplate(left MatrixExpression, right MatrixExpression) Expre
 			for kk := 0; kk < leftDims[1]; kk++ {
 				sum = sum.Plus(left.At(ii, kk).Multiply(right.At(kk, jj)))
 			}
-			sumAsSE, tf := sum.(ScalarExpression)
+			sumAsSE, tf := sum.AsSimplifiedExpression().(ScalarExpression)
 			if !tf {
 				panic(
 					fmt.Errorf(
@@ -253,6 +253,51 @@ func MatrixMultiplyTemplate(left MatrixExpression, right MatrixExpression) Expre
 	// Use the general concretization function (not the matrix-specific one)
 	// because it will also convert matrices to scalars or vectors if needed.
 	return ConcretizeExpression(out)
+}
+
+/*
+MatrixPlusTemplate
+Description:
+
+	Template for the matrix plus function.
+*/
+func MatrixPlusTemplate(left MatrixExpression, right MatrixExpression) MatrixExpression {
+	// Input Processing
+	err := left.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = right.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check dimensions
+	leftDims := left.Dims()
+	rightDims := right.Dims()
+
+	if leftDims[0] != rightDims[0] || leftDims[1] != rightDims[1] {
+		panic(
+			smErrors.MatrixDimensionError{
+				Arg1:      left,
+				Arg2:      right,
+				Operation: "MatrixPlusTemplate",
+			},
+		)
+	}
+
+	// Algorithm
+	var out [][]ScalarExpression
+	for ii := 0; ii < leftDims[0]; ii++ {
+		var tempRow []ScalarExpression
+		for jj := 0; jj < leftDims[1]; jj++ {
+			newElt := left.At(ii, jj).Plus(right.At(ii, jj))
+			tempRow = append(tempRow, newElt.(ScalarExpression))
+		}
+		out = append(out, tempRow)
+	}
+	return ConcretizeMatrixExpression(out)
 }
 
 /*

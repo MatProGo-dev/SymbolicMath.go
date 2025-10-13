@@ -154,44 +154,20 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 	}
 
 	// Algorithm
+	var out Expression
 	switch right := rightIn.(type) {
-	case K, Variable, Monomial, Polynomial:
-		rightAsScalar := right.(ScalarExpression)
-		return rightAsScalar.Plus(vv)
+	case float64:
+		out = vv.Plus(K(right))
+	case int:
+		out = vv.Plus(K(right))
+	case Expression:
+		out = VectorPlusTemplate(vv, right)
 	case *mat.VecDense:
 		// Use KVector's method
-		return vv.Plus(VecDenseToKVector(*right))
+		out = vv.Plus(VecDenseToKVector(*right))
 	case mat.VecDense:
 		// Use KVector's method
-		return vv.Plus(VecDenseToKVector(right))
-	case KVector:
-		// Create a polynomial vector
-		var pv PolynomialVector
-		for ii := 0; ii < vv.Len(); ii++ {
-			var tempPolynomial Polynomial
-			if right.AtVec(ii).(K) != 0 {
-				rightAsK := right.AtVec(ii).(K)
-				tempPolynomial.Monomials = append(tempPolynomial.Monomials, rightAsK.ToMonomial())
-			}
-			tempPolynomial.Monomials = append(
-				tempPolynomial.Monomials,
-				vv[ii].ToMonomial(),
-			)
-			// Create next polynomial.
-			pv = append(pv, tempPolynomial)
-		}
-		return pv
-	case VariableVector, MonomialVector, PolynomialVector:
-		// Setup
-		rightAsVE, _ := right.(VectorExpression)
-
-		// Create a slice of scalarexpressions
-		var out []ScalarExpression
-		for ii := 0; ii < vv.Len(); ii++ {
-			seII, _ := vv[ii].Plus(rightAsVE.AtVec(ii)).(ScalarExpression)
-			out = append(out, seII)
-		}
-		return ConcretizeVectorExpression(out)
+		out = vv.Plus(VecDenseToKVector(right))
 	default:
 		panic(
 			smErrors.UnsupportedInputError{
@@ -200,6 +176,9 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 			},
 		)
 	}
+
+	// Simplify and return
+	return out.AsSimplifiedExpression()
 }
 
 /*
@@ -272,71 +251,31 @@ func (vv VariableVector) Multiply(rightIn interface{}) Expression {
 		}
 	}
 
-	// Constants
-	nResultRows := vv.Dims()[0]
-
 	// Algorithm
+	var out Expression
 	switch right := rightIn.(type) {
 	case float64:
 		// Use K method
 		return vv.Multiply(K(right))
-	case K:
-		// Is output a scalar
-		if nResultRows == 1 {
-			return vv[0].Multiply(right)
-		}
-		// Create a new vector of polynomials.
-		var mvOut MonomialVector
-		for _, v := range vv {
-			mvOut = append(mvOut, v.Multiply(right).(Monomial))
-		}
-		return mvOut
-	case Variable:
-		// Is output a scalar?
-		if nResultRows == 1 {
-			return vv[0].Multiply(right)
-		}
-		// Create a new vector of monomials.
-		var mvOut MonomialVector
-		for _, v := range vv {
-			mvOut = append(mvOut, v.Multiply(right).(Monomial))
-		}
-		return mvOut
-	case Monomial:
-		// Is output a scalar?
-		if nResultRows == 1 {
-			return vv[0].Multiply(right)
-		}
-		// Otherwise, create a new vector of monomials.
-		var mvOut MonomialVector
-		for _, v := range vv {
-			mvOut = append(mvOut, v.Multiply(right).(Monomial))
-		}
-		return mvOut
-	case Polynomial:
-		// Is output a scalar?
-		if nResultRows == 1 {
-			return vv[0].Multiply(right)
-		}
-		// Create a new vector of polynomials.
-		var pvOut PolynomialVector
-		for _, v := range vv {
-			pvOut = append(pvOut, v.Multiply(right).(Polynomial))
-		}
-		return pvOut
-	case KVector, VariableVector, MonomialVector, PolynomialVector:
+	case ScalarExpression:
+		out = VectorMultiplyTemplate(vv, right)
+	case VectorExpression:
 		// Vector of polynomials must be (1x1)
 		rightAsVE, _ := ToVectorExpression(right)
-		return vv.Multiply(rightAsVE.AtVec(0))
+		out = vv.Multiply(rightAsVE.AtVec(0))
+	default:
+		// Otherwise, panic
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "VariableVector.Multiply",
+				Input:        rightIn,
+			},
+		)
 	}
 
-	// Otherwise, panic
-	panic(
-		smErrors.UnsupportedInputError{
-			FunctionName: "VariableVector.Multiply",
-			Input:        rightIn,
-		},
-	)
+	// Simplify and return
+	return out.AsSimplifiedExpression()
+
 }
 
 /*
@@ -695,4 +634,18 @@ Description:
 */
 func (vv VariableVector) AsSimplifiedExpression() Expression {
 	return vv
+}
+
+/*
+ToScalarExpressions
+Description:
+
+	Converts the VariableVector into a slice of ScalarExpression type objects.
+*/
+func (vv VariableVector) ToScalarExpressions() []ScalarExpression {
+	var out []ScalarExpression
+	for _, v := range vv {
+		out = append(out, v)
+	}
+	return out
 }

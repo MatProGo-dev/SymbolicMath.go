@@ -2,6 +2,7 @@ package symbolic
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"gonum.org/v1/gonum/mat"
@@ -111,9 +112,10 @@ func (p Polynomial) Plus(e interface{}) Expression {
 	}
 
 	// Constants
+	var out Expression
 	switch right := e.(type) {
 	case float64:
-		return p.Plus(K(right))
+		out = p.Plus(K(right))
 	case K:
 		pCopy := p.Copy()
 
@@ -131,7 +133,7 @@ func (p Polynomial) Plus(e interface{}) Expression {
 			newMonomial.Coefficient += float64(right)
 			pCopy.Monomials[constantIndex] = newMonomial
 		}
-		return pCopy
+		out = pCopy
 
 	case Variable:
 		pCopy := p.Copy()
@@ -151,30 +153,28 @@ func (p Polynomial) Plus(e interface{}) Expression {
 			pCopy.Monomials[variableIndex] = newMonomial
 		}
 
-		return pCopy
+		out = pCopy
 
 	case Monomial:
-		return p.Plus(right.ToPolynomial())
-
+		out = p.Copy().Plus(right.ToPolynomial())
 	case Polynomial:
 		pCopy := p.Copy()
 
 		// Combine the list of monomials.
 		pCopy.Monomials = append(pCopy.Monomials, right.Monomials...)
 
-		// Simplify?
-		return pCopy.Simplify()
+		out = pCopy.AsSimplifiedExpression()
 	case KVector, VariableVector, MonomialVector, PolynomialVector:
 		ve, _ := ToVectorExpression(right)
 		if ve.Len() == 1 {
-			return p.Plus(ve.AtVec(0)) // Reuse scalar case
+			out = p.Plus(ve.AtVec(0)) // Reuse scalar case
 		} else {
 			// Return a polynomial vector
-			var polVecOut PolynomialVector
+			var vecExpression []ScalarExpression
 			for ii := 0; ii < ve.Len(); ii++ {
-				polVecOut = append(polVecOut, p.Plus(ve.AtVec(ii)).(Polynomial))
+				vecExpression = append(vecExpression, p.Plus(ve.AtVec(ii)).(ScalarExpression))
 			}
-			return polVecOut
+			out = ConcretizeExpression(vecExpression)
 		}
 
 	case KMatrix, VariableMatrix, MonomialMatrix, PolynomialMatrix:
@@ -186,28 +186,31 @@ func (p Polynomial) Plus(e interface{}) Expression {
 
 		switch {
 		case nResultRows == 1 && nResultCols == 1:
-			return p.Plus(rightAsME.At(0, 0)) // Reuse scalar case
+			out = p.Plus(rightAsME.At(0, 0)) // Reuse scalar case
 		default:
-			// Return a polynomial matrix
-			var polMatOut PolynomialMatrix
+			// Return a matrix expression using a template
+			var polMatOut [][]ScalarExpression
 			for ii := 0; ii < nResultRows; ii++ {
-				var polRowOut []Polynomial
+				var polRowOut []ScalarExpression
 				for jj := 0; jj < nResultCols; jj++ {
-					polRowOut = append(polRowOut, p.Plus(rightAsME.At(ii, jj)).(Polynomial))
+					polRowOut = append(polRowOut, p.Plus(rightAsME.At(ii, jj)).(ScalarExpression))
 				}
 				polMatOut = append(polMatOut, polRowOut)
 			}
-			return polMatOut
+			out = ConcretizeExpression(polMatOut)
 		}
+	default:
+		// Unrecognized response is a panic
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "Polynomial.Plus",
+				Input:        e,
+			},
+		)
 	}
 
-	// Unrecognized response is a panic
-	panic(
-		smErrors.UnsupportedInputError{
-			FunctionName: "Polynomial.Plus",
-			Input:        e,
-		},
-	)
+	// Return
+	return out.AsSimplifiedExpression()
 }
 
 /*
@@ -295,7 +298,7 @@ func (p Polynomial) VariableMonomialIndex(vIn Variable) int {
 
 	// Algorithm
 	for ii, monomial := range p.Monomials {
-		if monomial.IsVariable(vIn) {
+		if monomial.IsDegreeOneContainingVariable(vIn) {
 			return ii
 		}
 	}
@@ -361,33 +364,34 @@ func (p Polynomial) Multiply(e interface{}) Expression {
 	}
 
 	// Algorithm
+	var out Expression
 	switch right := e.(type) {
 	case float64:
-		return p.Multiply(K(right))
+		out = p.Multiply(K(right))
 	case K:
 		pCopy := p.Copy()
 		for ii, _ := range pCopy.Monomials {
 			product_ii := pCopy.Monomials[ii].Multiply(right)
 			pCopy.Monomials[ii] = product_ii.(Monomial) // Convert to Monomial
 		}
-		return pCopy
+		out = pCopy
 	case Variable:
 		pCopy := p.Copy()
 		for ii, _ := range pCopy.Monomials {
 			product_ii := pCopy.Monomials[ii].Multiply(right)
 			pCopy.Monomials[ii] = product_ii.(Monomial) // Convert to Monomial
 		}
-		return pCopy
+		out = pCopy
 	case Monomial:
 		pCopy := p.Copy()
-		var out Polynomial
+		var prod Polynomial
 		for _, m := range pCopy.Monomials {
-			out.Monomials = append(
-				out.Monomials,
+			prod.Monomials = append(
+				prod.Monomials,
 				m.Multiply(right).(Monomial),
 			)
 		}
-		return out
+		out = prod
 	case Polynomial:
 		pCopy := p.Copy()
 
@@ -400,21 +404,27 @@ func (p Polynomial) Multiply(e interface{}) Expression {
 			)
 		}
 
-		return productOut.(Polynomial).Simplify()
+		out = productOut
 	case KVector, VariableVector, MonomialVector, PolynomialVector:
 		// Right must be a vector of length 1
 		ve, _ := ToVectorExpression(right)
-		return ve.Multiply(p) // Reuse scalar case
+		out = ve.Multiply(p) // Reuse scalar case
 	case KMatrix, VariableMatrix, MonomialMatrix, PolynomialMatrix:
 		// Right must be a matrix of size [1,1]
 		me, _ := ToMatrixExpression(right)
-		return me.Multiply(p) // Reuse scalar case
+		out = me.Multiply(p) // Reuse scalar case
+	default:
+		// Unrecognized response is a panic
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "Polynomial.Multiply",
+				Input:        e,
+			},
+		)
 	}
 
-	// Unrecognized response is a panic
-	panic(
-		fmt.Errorf("Unexpected type of right in the Multiply() method: %T (%v)", e, e),
-	)
+	// Return
+	return out.AsSimplifiedExpression()
 }
 
 /*
@@ -553,46 +563,52 @@ func (p Polynomial) Simplify() Polynomial {
 		panic(err)
 	}
 
-	// Find first element that has nonzero coefficient
-	firstNonZeroIndex := -1
-	for ii, monomial := range p.Monomials {
-		if monomial.Coefficient != 0.0 {
-			firstNonZeroIndex = ii
-			break
-		}
+	// Create containers for constant monomials and non-constant monomials
+	// and then combine them.
+	constantMonomials := Monomial{
+		Coefficient: 0.0,
 	}
-
-	if len(p.Monomials) == 0 || firstNonZeroIndex == -1 {
-		// If there is only a single, zero monomial, then return the zero polynomial
-		return p
-	}
-
-	// Copy the first element of the polynomial into the new polynomial
-	pCopy := Polynomial{
-		Monomials: []Monomial{p.Monomials[firstNonZeroIndex]},
-	}
-
-	// Loop through the rest of the monomials
-	for ii := firstNonZeroIndex + 1; ii < len(p.Monomials); ii++ {
-		// Check to see if the monomials coefficient is zero
-		if p.Monomials[ii].Coefficient == 0.0 {
-			// Don't add it.
-			continue
-		}
-
-		// Check to see if the monomial is already in the polynomial
-		monomialIndex := pCopy.MonomialIndex(p.Monomials[ii])
-		if monomialIndex == -1 {
-			// Polynomial does not contain the monomial,
-			// so add a new monomial.
-			pCopy.Monomials = append(pCopy.Monomials, p.Monomials[ii])
+	nonConstantMonomials := []Monomial{}
+	for _, monomial := range p.Monomials {
+		if monomial.IsConstant() {
+			constantMonomials.Coefficient += monomial.Coefficient
 		} else {
-			// Monomial does contain the variable, so
-			// modify the monomial which represents that variable.
-			newMonomial := pCopy.Monomials[monomialIndex]
-			newMonomial.Coefficient += p.Monomials[ii].Coefficient
-			pCopy.Monomials[monomialIndex] = newMonomial
+			// Check to see if the monomial is already in the slice of non-constant monomials
+			monomialIndex := -1
+			for ii, existingMonomial := range nonConstantMonomials {
+				if existingMonomial.MatchesFormOf(monomial) {
+					monomialIndex = ii
+					break
+				}
+			}
+			// If the monomial is already in the slice, then add to its coefficient
+			if monomialIndex != -1 {
+				existingMonomial := nonConstantMonomials[monomialIndex]
+				existingMonomial.Coefficient += monomial.Coefficient
+				nonConstantMonomials[monomialIndex] = existingMonomial
+				continue
+			}
+			// Otherwise, add the monomial to the slice of non-constant monomials
+			nonConstantMonomials = append(nonConstantMonomials, monomial)
 		}
+	}
+	// If the constant monomial is not zero and there are no other monomials,
+	// then return just the constant monomial as a constant
+
+	// Create the output polynomial
+	var pCopy Polynomial
+	if constantMonomials.Coefficient != 0.0 {
+		pCopy.Monomials = append(pCopy.Monomials, constantMonomials)
+	}
+	for _, monomial := range nonConstantMonomials {
+		if monomial.Coefficient != 0.0 {
+			pCopy.Monomials = append(pCopy.Monomials, monomial)
+		}
+	}
+
+	// If the polynomial is empty, then return a zero polynomial
+	if len(pCopy.Monomials) == 0 {
+		pCopy.Monomials = append(pCopy.Monomials, K(0.0).ToMonomial())
 	}
 
 	// Return the simplified polynomial
@@ -601,7 +617,28 @@ func (p Polynomial) Simplify() Polynomial {
 }
 
 func (p Polynomial) AsSimplifiedExpression() Expression {
-	return p.Simplify()
+	// Simplify the polynomial
+	pReduced := p.Simplify()
+
+	// Create switch based on degree of the polynomial
+	switch pReduced.Degree() {
+	case 0:
+		// If the polynomial is a constant, then return the constant
+		return K(pReduced.Constant())
+	case 1:
+		// If the polynomial is linear, then check to see if it is just a variable
+		if len(pReduced.Monomials) == 1 && pReduced.Monomials[0].IsVariable(pReduced.Variables()[0]) {
+			return pReduced.Monomials[0].ToVariable()
+		}
+	}
+
+	// Otherwise, check the number of monomials
+	// if there is only one, then return that monomial
+	if len(pReduced.Monomials) == 1 {
+		return pReduced.Monomials[0]
+	}
+
+	return pReduced
 }
 
 /*
@@ -761,10 +798,26 @@ func (p Polynomial) String() string {
 
 	// Add monomials
 	for ii, monomial := range p.Monomials {
-		if ii != 0 {
-			polynomialString += " + "
+		if ii == 0 {
+			polynomialString += monomial.String()
+		} else {
+			var nextOperator string
+			if monomial.Coefficient >= 0 {
+				nextOperator = "+"
+			} else {
+				nextOperator = "-"
+			}
+
+			// Add next operator to polynomial string
+			polynomialString += fmt.Sprintf(" %v ", nextOperator)
+
+			// Include the monomial string with the "absolute value coefficient"
+			absValMonom := monomial.Copy()
+			absValMonom.Coefficient = math.Abs(absValMonom.Coefficient)
+
+			polynomialString += absValMonom.String()
 		}
-		polynomialString += monomial.String()
+
 	}
 
 	// Return

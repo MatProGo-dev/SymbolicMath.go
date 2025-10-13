@@ -1109,7 +1109,14 @@ func TestVectorConstraint_AsSimplifiedConstraint2(t *testing.T) {
 	N := 7
 	x := symbolic.NewVariableVector(N)
 	left := x.ToMonomialVector()
-	right := x.Multiply(2.0).Plus(symbolic.VecDenseToKVector(symbolic.OnesVector(N))).(symbolic.PolynomialVector)
+	tempRight := x.Multiply(2.0).Plus(symbolic.VecDenseToKVector(symbolic.OnesVector(N)))
+	right, ok := tempRight.(symbolic.VectorExpression)
+	if !ok {
+		t.Errorf(
+			"Expected right to be a VectorExpression; received %T",
+			tempRight,
+		)
+	}
 
 	// Create the vector constraint
 	vc := symbolic.VectorConstraint{left, right, symbolic.SenseLessThanEqual}
@@ -1118,12 +1125,24 @@ func TestVectorConstraint_AsSimplifiedConstraint2(t *testing.T) {
 	simplifiedVC := vc.AsSimplifiedConstraint().(symbolic.VectorConstraint)
 
 	// Check the left hand side
-	// it should now be a vector of polynomials
-	if _, ok := simplifiedVC.LeftHandSide.(symbolic.PolynomialVector); !ok {
+	// - it should now be a vector of polynomials
+	lhs, ok := simplifiedVC.LeftHandSide.(symbolic.MonomialVector)
+	if !ok {
 		t.Errorf(
-			"Expected vc.AsSimplifiedConstraint() to return a vector constraint with a polynomial vector on the left hand side; received %v",
+			"Expected vc.AsSimplifiedConstraint() to return a vector constraint with a monomial vector on the left hand side; received %v",
 			simplifiedVC.LeftHandSide,
 		)
+	}
+
+	// - With all negative coefficients
+	for i, monomial := range lhs {
+		if monomial.Coefficient != -1.0 {
+			t.Errorf(
+				"Expected monomial #%v's coefficient to be -1; received %v",
+				i,
+				monomial.Coefficient,
+			)
+		}
 	}
 
 	// Check the right hand side

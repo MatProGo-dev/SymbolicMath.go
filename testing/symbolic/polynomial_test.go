@@ -15,6 +15,7 @@ import (
 	getKVector "github.com/MatProGo-dev/SymbolicMath.go/get/KVector"
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
+	"gonum.org/v1/gonum/mat"
 )
 
 /*
@@ -424,32 +425,25 @@ func TestPolynomial_Plus1(t *testing.T) {
 
 	// Test
 	sum := p1.Plus(k1)
-	if len(sum.(symbolic.Polynomial).Monomials) != 1 {
-		t.Errorf(
-			"expected %v + %v to have 1 monomial; received %v",
-			p1,
-			k1,
-			len(sum.(symbolic.Polynomial).Monomials),
-		)
-	}
 
-	// Verify that the sum is a polynomial
-	if _, tf := sum.(symbolic.Polynomial); !tf {
+	// Verify that the sum is a constant
+	k3, tf := sum.(symbolic.K)
+	if !tf {
 		t.Errorf(
-			"expected %v + %v to be a polynomial; received %T",
+			"expected %v + %v to be a constant; received %T",
 			p1,
 			k1,
 			sum,
 		)
 	}
 
-	//Verify that the sum's value matches what we expect
-	if sum.(symbolic.Polynomial).Monomials[0].Coefficient != 5.85 {
+	// Verify that the value of the sum is correct
+	if !reflect.DeepEqual(float64(k3), 5.85) {
 		t.Errorf(
-			"expected %v + %v to have coefficient 5.85; received %v",
+			"expected %v + %v to have value 5.85; received %v",
 			p1,
 			k1,
-			sum.(symbolic.Polynomial).Monomials[0].Coefficient,
+			float64(k3),
 		)
 	}
 }
@@ -503,23 +497,25 @@ func TestPolynomial_Plus3(t *testing.T) {
 
 	// Test
 	sum := p1.Plus(v1)
-	if len(sum.(symbolic.Polynomial).Monomials) != 1 {
+
+	// Verify that the sum is a monomial
+	m3, tf := sum.(symbolic.Monomial)
+	if !tf {
 		t.Errorf(
-			"expected %v + %v to have 1 monomial; received %v",
+			"expected %v + %v to be a Monomial; received %T",
 			p1,
 			v1,
-			len(sum.(symbolic.Polynomial).Monomials),
+			sum,
 		)
 	}
 
-	// Verify that the coefficient of the sum's monomial
-	// is 1.0 more than the original
-	if sum.(symbolic.Polynomial).Monomials[0].Coefficient != 3.0 {
+	// Verify that the coefficient of the monomial is 3.0
+	if m3.Coefficient != 3.0 {
 		t.Errorf(
 			"expected %v + %v to have coefficient 3.0; received %v",
 			p1,
 			v1,
-			sum.(symbolic.Polynomial).Monomials[0].Coefficient,
+			m3.Coefficient,
 		)
 	}
 }
@@ -1396,12 +1392,19 @@ func TestPolynomial_Multiply5(t *testing.T) {
 
 	// Test
 	prod := p1.Multiply(3.14)
-	if len(prod.(symbolic.Polynomial).Monomials) != 1 {
+	m3, tf := prod.(symbolic.Monomial)
+	if !tf {
 		t.Errorf(
-			"expected %v * %v to have 1 monomial; received %v",
+			"expected product to be a Monomial; received %T",
+			prod,
+		)
+	}
+	if len(m3.Variables()) != 1 {
+		t.Errorf(
+			"expected %v * %v to have 1 variable; received %v",
 			p1,
 			3.14,
-			len(prod.(symbolic.Polynomial).Monomials),
+			len(m3.Variables()),
 		)
 	}
 }
@@ -1496,7 +1499,7 @@ Description:
 
 	Verifies that the Polynomial.Multiply method returns the correct output
 	when called with a well-defined polynomial and a well-defined constant matrix.
-	The resulting polynomial should be a polynomial matrix.
+	The resulting matrix should be a monomial matrix.
 */
 func TestPolynomial_Multiply8(t *testing.T) {
 	// Setup
@@ -1509,11 +1512,11 @@ func TestPolynomial_Multiply8(t *testing.T) {
 	// Test
 	prod := p1.Multiply(km1)
 
-	// Verify that the product is a polynomial matrix
-	prodAsPM, tf := prod.(symbolic.PolynomialMatrix)
+	// Verify that the product is a monomial matrix
+	prodAsMM, tf := prod.(symbolic.MonomialMatrix)
 	if !tf {
 		t.Errorf(
-			"expected %v * %v to return a polynomial matrix; received %T",
+			"expected %v * %v to return a monomial matrix; received %T",
 			p1,
 			km1,
 			prod,
@@ -1521,24 +1524,16 @@ func TestPolynomial_Multiply8(t *testing.T) {
 	}
 
 	// Verify that the coefficients of the product are correct
-	for ii, pRow := range prodAsPM {
-		for jj, p := range pRow {
-			if len(p.Monomials) != 1 {
-				t.Errorf(
-					"expected %v * %v to have 1 monomial; received %v",
-					p1,
-					km1,
-					len(p.Monomials),
-				)
-			}
+	for ii, monomialRow := range prodAsMM {
+		for jj, monomial := range monomialRow {
 
-			if prodAsPM[ii][jj].Monomials[0].Coefficient != float64(km1.At(ii, jj).(symbolic.K)) {
+			if monomial.Coefficient != float64(km1.At(ii, jj).(symbolic.K)) {
 				t.Errorf(
 					"expected %v * %v to have coefficient %v; received %v",
 					p1,
 					km1,
 					km1.At(ii, jj),
-					prodAsPM[ii][jj].Monomials[0].Coefficient,
+					monomial.Coefficient,
 				)
 			}
 
@@ -2115,6 +2110,58 @@ func TestPolynomial_String1(t *testing.T) {
 	p1.String()
 }
 
+func TestPolynomial_String2(t *testing.T) {
+	// Create polynomial with three terms
+	N := 3
+	vv1 := symbolic.NewVariableVector(N)
+	vec2 := mat.NewVecDense(N, []float64{-2.0, -4.0, 5.0})
+
+	prod := vv1.Transpose().Multiply(vec2)
+	poly3, tf := prod.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"Expected product to be a Polynomial; received %T",
+			prod,
+		)
+	}
+
+	// Create string
+	out := poly3.String()
+
+	// Check that the first character in the string is the negative symbol.
+	if string(out[0]) != "-" {
+		t.Errorf(
+			"Expected the first character of the string to be the \"-\" character; received %v",
+			out[0],
+		)
+	}
+
+	// Check that there are two negative signs in string
+	firstMinusIndex := strings.Index(out, "-")
+	secondMinusIndex := strings.Index(out[firstMinusIndex+1:], "-")
+
+	if secondMinusIndex == -1 {
+		t.Errorf(
+			"Expected there to be two minus indices in the string out; found only 1.",
+		)
+	}
+
+	// Check that there are no "+" signs between the first and second "-" signs
+	if strings.Index(out[firstMinusIndex:secondMinusIndex], "+") != -1 {
+		t.Errorf(
+			"the cleaner String() method should not contain \"+\" and \"-\" signs next to each other, but we observed: \"%v\"",
+			out[firstMinusIndex:secondMinusIndex],
+		)
+	}
+
+	// Check that last term is preceded by a "+" sign.
+	if strings.Index(out[secondMinusIndex:], "+") == -1 {
+		t.Errorf(
+			"there should be at least one \"+\" sign after the two minus signs; found none!",
+		)
+	}
+}
+
 /*
 TestPolynomial_Substitute1
 Description:
@@ -2159,13 +2206,25 @@ func TestPolynomial_Substitute2(t *testing.T) {
 
 	// Test
 	sub := p1.Substitute(v1, v2.Multiply(3.0).(symbolic.ScalarExpression))
-	if sub.(symbolic.Polynomial).Monomials[0].Coefficient != 3.0 {
+
+	// Verify that the output is a monomial with coefficient 3.0
+	subAsMonomial, tf := sub.(symbolic.Monomial)
+	if !tf {
+		t.Errorf(
+			"expected %v.substitute(%v, %v) to be a monomial; received %T",
+			p1,
+			v1,
+			v2.Multiply(3.0),
+			sub,
+		)
+	}
+	if subAsMonomial.Coefficient != 3.0 {
 		t.Errorf(
 			"expected %v.substitute(%v, %v) to have coefficient 3.0; received %v",
 			p1,
 			v1,
 			v2.Multiply(3.0),
-			sub.(symbolic.Polynomial).Monomials[0].Coefficient,
+			subAsMonomial.Coefficient,
 		)
 	}
 }
@@ -2238,8 +2297,20 @@ func TestPolynomial_SubstituteWith4(t *testing.T) {
 	// Test
 	substitution := p1.Substitute(x[0], symbolic.K(2.0))
 
+	// Verify that the output is a polynomial
+	p3, tf := substitution.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected %v.substitute(%v, %v) to be a polynomial; received %T",
+			p1,
+			x[0],
+			symbolic.K(2.0),
+			substitution,
+		)
+	}
+
 	// Search for a constant element in the monomials
-	for _, m := range substitution.(symbolic.Polynomial).Monomials {
+	for _, m := range p3.Monomials {
 		if m.IsConstant() {
 			if m.Coefficient != 3.0 {
 				t.Errorf(

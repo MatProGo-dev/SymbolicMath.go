@@ -494,7 +494,7 @@ Description:
 	are well-formed and the sense is well-formed.
 	The left hand side is a monomial matrix and the right hand side
 	is a constant matrix.
-	After substitution, the left hand side should be a polynomial matrix
+	After substitution, the left hand side should be a monomial matrix
 	and the right hand side should be a constant matrix.
 */
 func TestMatrixConstraint_Substitute2(t *testing.T) {
@@ -520,15 +520,17 @@ func TestMatrixConstraint_Substitute2(t *testing.T) {
 	}
 
 	// Verify that the left hand side is a polynomial matrix
-	if _, ok := mcSubstitutedAsMC.LeftHandSide.(symbolic.PolynomialMatrix); !ok {
+	_, ok = mcSubstitutedAsMC.LeftHandSide.(symbolic.MonomialMatrix)
+	if !ok {
 		t.Errorf(
-			"Expected mcSubstituted.LeftHandSide to be of type PolynomialMatrix; received %T",
+			"Expected mcSubstituted.LeftHandSide to be of type MonomialMatrix; received %T",
 			mcSubstitutedAsMC.LeftHandSide,
 		)
 	}
 
 	// Verify that the right hand side is a constant matrix
-	if _, ok := mcSubstitutedAsMC.RightHandSide.(symbolic.KMatrix); !ok {
+	_, ok = mcSubstitutedAsMC.RightHandSide.(symbolic.KMatrix)
+	if !ok {
 		t.Errorf(
 			"Expected mcSubstituted.RightHandSide to be of type KMatrix; received %T",
 			mcSubstitutedAsMC.RightHandSide,
@@ -596,7 +598,7 @@ Description:
 	are well-formed and the sense is well-formed.
 	The left hand side is a monomial matrix and the right hand side
 	is a constant matrix.
-	After substitution, the left hand side should be a polynomial matrix
+	After substitution, the left hand side should be a monomial matrix
 	and the right hand side should be a constant matrix.
 */
 func TestMatrixConstraint_SubstituteAccordingTo2(t *testing.T) {
@@ -626,7 +628,8 @@ func TestMatrixConstraint_SubstituteAccordingTo2(t *testing.T) {
 	}
 
 	// Verify that the left hand side is a polynomial matrix
-	if _, ok := mcSubstitutedAsMC.LeftHandSide.(symbolic.PolynomialMatrix); !ok {
+	_, ok = mcSubstitutedAsMC.LeftHandSide.(symbolic.MonomialMatrix)
+	if !ok {
 		t.Errorf(
 			"Expected mcSubstituted.LeftHandSide to be of type PolynomialMatrix; received %T",
 			mcSubstitutedAsMC.LeftHandSide,
@@ -634,7 +637,8 @@ func TestMatrixConstraint_SubstituteAccordingTo2(t *testing.T) {
 	}
 
 	// Verify that the right hand side is a constant matrix
-	if _, ok := mcSubstitutedAsMC.RightHandSide.(symbolic.KMatrix); !ok {
+	_, ok = mcSubstitutedAsMC.RightHandSide.(symbolic.KMatrix)
+	if !ok {
 		t.Errorf(
 			"Expected mcSubstituted.RightHandSide to be of type KMatrix; received %T",
 			mcSubstitutedAsMC.RightHandSide,

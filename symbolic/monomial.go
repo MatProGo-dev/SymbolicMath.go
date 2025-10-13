@@ -89,45 +89,50 @@ func (m Monomial) Plus(e interface{}) Expression {
 	}
 
 	// Algorithm
+	var out Expression
 	switch right := e.(type) {
 	case float64:
-		return m.Plus(K(right))
+		out = m.Plus(K(right))
 	case K:
 		if m.IsConstant() {
-			return K(m.Coefficient + float64(right))
+			out = K(m.Coefficient + float64(right))
 		} else {
-			return Polynomial{
-				Monomials: []Monomial{m, right.ToMonomial()},
+			out = Polynomial{
+				Monomials: []Monomial{m.Copy(), right.ToMonomial()},
 			}
 		}
 	case Variable:
-		if m.IsVariable(right) {
-			mCopy := m
+		if m.IsDegreeOneContainingVariable(right) {
+			mCopy := m.Copy()
 			mCopy.Coefficient += 1.0
-			return mCopy
+			out = mCopy
 		} else {
-			return Polynomial{
-				Monomials: []Monomial{m, right.ToMonomial()},
+			out = Polynomial{
+				Monomials: []Monomial{m.Copy(), right.ToMonomial()},
 			}
 		}
 	case Monomial:
 		if m.MatchesFormOf(right) {
 			monomialOut := m.Copy()
 			monomialOut.Coefficient += right.Coefficient
-			return monomialOut
+			out = monomialOut
 		} else {
-			return Polynomial{
-				Monomials: []Monomial{m, right},
+			out = Polynomial{
+				Monomials: []Monomial{m.Copy(), right},
 			}
 		}
 	case Polynomial:
-		return right.Plus(m)
+		out = right.Plus(m.Copy())
+	default:
+		panic(
+			smErrors.UnsupportedInputError{
+				FunctionName: "Monomial.Plus",
+				Input:        e,
+			},
+		)
 	}
 
-	// Unrecornized response is a panic
-	panic(
-		fmt.Errorf("Unexpected type of right in the Plus() method: %T (%v)", e, e),
-	)
+	return out.AsSimplifiedExpression()
 }
 
 /*
@@ -205,7 +210,7 @@ func (m Monomial) Multiply(e interface{}) Expression {
 		return m.Multiply(K(float64(right)))
 	case K:
 		rightAsFloat64 := float64(right)
-		monomialOut := m
+		monomialOut := m.Copy()
 		monomialOut.Coefficient *= rightAsFloat64
 		return monomialOut
 	case Variable:
@@ -439,13 +444,30 @@ func (m Monomial) IsConstant() bool {
 }
 
 /*
-IsVariable
+IsZero
+Description:
+
+	Returns true if the monomial defines the constant zero.
+*/
+func (m Monomial) IsZero() bool {
+	// Input Checking
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Algorithm
+	return m.Coefficient == 0.0
+}
+
+/*
+IsDegreeOneContainingVariable
 Description:
 
 	Returns true if the monomial defines an expression containing only the
 	variable v.
 */
-func (m Monomial) IsVariable(v Variable) bool {
+func (m Monomial) IsDegreeOneContainingVariable(v Variable) bool {
 	// Input Checking
 	err := m.Check()
 	if err != nil {
@@ -472,6 +494,29 @@ func (m Monomial) IsVariable(v Variable) bool {
 	} else {
 		return false
 	}
+}
+
+/*
+IsVariable
+Description:
+
+	Returns true if the monomial defines the variable v.
+*/
+func (m Monomial) IsVariable(v Variable) bool {
+	// Input Checking
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	err = v.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// True, if the monomial contains only the variable v
+	// and has coefficient 1.0 and degree 1.
+	return m.IsDegreeOneContainingVariable(v) && (m.Coefficient == 1.0)
 }
 
 /*
@@ -608,6 +653,34 @@ func (m Monomial) ToPolynomial() Polynomial {
 	// Return polynomial with copied monomial
 	return Polynomial{
 		Monomials: []Monomial{mCopy},
+	}
+}
+
+/*
+ToVariable
+Description:
+
+	Converts the monomial to a variable if it is a variable.
+	If the monomial is not a variable, then this function panics.
+*/
+func (m Monomial) ToVariable() Variable {
+	// Input Processing
+	err := m.Check()
+	if err != nil {
+		panic(err)
+	}
+
+	// Check that VariableFactors is not empty
+	if len(m.VariableFactors) == 0 {
+		panic(fmt.Errorf("Cannot convert monomial to variable: VariableFactors is empty"))
+	}
+	// Algorithm
+	if m.IsDegreeOneContainingVariable(m.VariableFactors[0]) {
+		return m.VariableFactors[0]
+	} else {
+		panic(
+			fmt.Errorf("Can not convert monomial to variable. The monomial is not a variable."),
+		)
 	}
 }
 
