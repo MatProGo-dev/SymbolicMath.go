@@ -150,92 +150,10 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 	switch right := term1.(type) {
 	case float64:
 		out = mv.Plus(K(right))
-	case K:
-		// Convert the scalar to a scalar vector
-		tempVD := OnesVector(mv.Len())
-		tempVD.ScaleVec(float64(right), &tempVD)
-
-		out = mv.Plus(VecDenseToKVector(tempVD))
-	case Monomial:
-		// Check to see if all elements of the monomial vector,
-		// are all monomials like the input monomial.
-		monomialVectorMatches := true
-		for _, monomial := range mv {
-			if !monomial.MatchesFormOf(right) {
-				monomialVectorMatches = false
-			}
-		}
-
-		if monomialVectorMatches {
-			// If all elements of the monomial vector are monomials like the input monomial,
-			// then simply add the coefficients. and return a monomial vector.
-			var mvOut MonomialVector
-			for _, monomial := range mv {
-				mvOut = append(mvOut, monomial.Plus(right).(Monomial))
-			}
-			out = mvOut
-		} else {
-			// Otherwise, create a polynomial vector
-			var pv PolynomialVector
-			for _, monomial := range mv {
-				pv = append(pv, monomial.Plus(right).(Polynomial))
-			}
-			out = pv.Simplify()
-		}
-	case KVector:
-		if mv.IsConstant() {
-			// If monomial vector is really a constant vector,
-			// then don't convert down but simply update the coefficients.
-			var kvOut KVector = VecDenseToKVector(mv.Constant())
-			out = kvOut.Plus(right)
-		} else {
-			// Create a polynomial vector
-			var ve []ScalarExpression
-			for ii, monomial := range mv {
-				ve = append(ve, monomial.Plus(right[ii]).(ScalarExpression))
-			}
-			out = ConcretizeVectorExpression(ve)
-		}
-	case MonomialVector:
-		// Check to see if all elements of the monomial vector,
-		// are all monomials like the input monomial.
-		monomialVectorMatches := true
-		for ii, monomial := range mv {
-			if !monomial.MatchesFormOf(right[ii]) {
-				monomialVectorMatches = false
-			}
-		}
-
-		if monomialVectorMatches {
-			// If all elements of the monomial vector are monomials like the input monomial,
-			// then simply add the coefficients. and return a monomial vector.
-			var mvOut MonomialVector
-			for ii, monomial := range mv {
-				mvOut = append(mvOut, monomial.Plus(right[ii]).(Monomial))
-			}
-			out = mvOut
-		} else {
-			// Otherwise, create a polynomial vector
-			var pv PolynomialVector
-			for ii, monomial := range mv {
-				sumII := monomial.Plus(right[ii])
-				switch sumII.(type) {
-				case Monomial:
-					pv = append(pv, sumII.(Monomial).ToPolynomial())
-				case Polynomial:
-					pv = append(pv, sumII.(Polynomial))
-				default:
-					panic(
-						fmt.Errorf(
-							"Unexpected type of sumII in the Plus() method: %T (%v)",
-							sumII, sumII,
-						),
-					)
-
-				}
-			}
-			out = pv.Simplify()
-		}
+	case int:
+		out = mv.Plus(K(float64(right)))
+	case Expression:
+		out = VectorPlusTemplate(mv, right)
 	default:
 		// If the right hand side is an unsupported type, then panic
 		panic(
