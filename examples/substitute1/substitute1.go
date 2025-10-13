@@ -16,7 +16,7 @@ Description:
 	expressions. In this case, we will use it to evaluate
 	a quadratic expression at the point [-3.0, 1.0].
 
-	The result should be a value of 10.0
+	The result should be a value of 10.0.
 */
 
 func main() {
