@@ -670,6 +670,10 @@ func (m Monomial) ToVariable() Variable {
 		panic(err)
 	}
 
+	// Check that VariableFactors is not empty
+	if len(m.VariableFactors) == 0 {
+		panic(fmt.Errorf("Cannot convert monomial to variable: VariableFactors is empty"))
+	}
 	// Algorithm
 	if m.IsDegreeOneContainingVariable(m.VariableFactors[0]) {
 		return m.VariableFactors[0]
