@@ -9,17 +9,18 @@ func (be *BasicEnvironment) GetName() string {
 	return be.name
 }
 
-func (be *BasicEnvironment) TrackVariable(v Variable) {
+func (be *BasicEnvironment) TrackVariable(v Variable) bool {
 	// Check if the variable is already in the environment
 	for _, existingVar := range be.Variables {
 		if existingVar.ID == v.ID {
 			// Variable already exists, do not add it again
-			return
+			return false
 		}
 	}
 
 	// Add the variable to the environment
 	be.Variables = append(be.Variables, v)
+	return true // Variable was added successfully
 }
 
 func (be *BasicEnvironment) AllTrackedVariables() []Variable {

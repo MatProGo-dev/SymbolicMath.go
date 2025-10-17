@@ -8,6 +8,6 @@ Description:
 
 type Environment interface {
 	GetName() string
-	TrackVariable(v Variable)
+	TrackVariable(v Variable) bool
 	AllTrackedVariables() []Variable
 }
