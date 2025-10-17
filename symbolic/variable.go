@@ -596,7 +596,7 @@ func (v Variable) Substitute(vIn Variable, seIn ScalarExpression) Expression {
 	// 1. The IDs are the same
 	// 2. The environment is the same
 	idsMatch := v.ID == vIn.ID
-	envsMatch := (*v.Environment).GetName() == (*vIn.Environment).GetName()
+	envsMatch := v.Environment == vIn.Environment
 	if idsMatch && envsMatch {
 		return seIn
 	} else {
