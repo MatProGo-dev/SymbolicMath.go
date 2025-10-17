@@ -411,7 +411,7 @@ func TestUtils_CheckSubstitutionMap1(t *testing.T) {
 		Upper:       -2,
 		Type:        symbolic.Binary,
 		Name:        "Russ",
-		Environment: &currentEnv,
+		Environment: currentEnv,
 	}
 	varMap := map[symbolic.Variable]symbolic.Expression{
 		symbolic.NewVariable(): symbolic.K(3),
@@ -457,7 +457,7 @@ func TestUtils_CheckSubstitutionMap2(t *testing.T) {
 		Upper:       -2,
 		Type:        symbolic.Binary,
 		Name:        "Russ",
-		Environment: &currentEnv,
+		Environment: currentEnv,
 	}
 	varMap := map[symbolic.Variable]symbolic.Expression{
 		symbolic.NewVariable(): symbolic.K(3),

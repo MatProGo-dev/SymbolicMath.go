@@ -448,7 +448,7 @@ func NewContinuousVariable(envs ...Environment) Variable {
 		Upper:       float64(+Infinity),
 		Type:        Continuous,
 		Name:        fmt.Sprintf("x_%v", nextIdx),
-		Environment: &currentEnv,
+		Environment: currentEnv,
 	}
 
 	// Update environment
@@ -484,7 +484,7 @@ func NewBinaryVariable(envs ...Environment) Variable {
 		Upper:       1.0,
 		Type:        Binary,
 		Name:        fmt.Sprintf("x_%v", nextIdx),
-		Environment: &currentEnv,
+		Environment: currentEnv,
 	}
 
 	// Update env
