@@ -16,7 +16,7 @@ type Variable struct {
 	Type  VarType
 	Name  string
 	// Environment is the environment that the variable belongs to.
-	Environment *Environment
+	Environment Environment
 }
 
 /*
