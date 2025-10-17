@@ -15,6 +15,8 @@ type Variable struct {
 	Upper float64
 	Type  VarType
 	Name  string
+	// Environment is the environment that the variable belongs to.
+	Environment Environment
 }
 
 /*
@@ -416,7 +418,7 @@ func (v Variable) Transpose() Expression {
 NewVariable
 Description:
 */
-func NewVariable(envs ...*Environment) Variable {
+func NewVariable(envs ...Environment) Variable {
 	return NewContinuousVariable(envs...)
 }
 
@@ -426,30 +428,31 @@ Description:
 
 	Creates a new continuous variable.
 */
-func NewContinuousVariable(envs ...*Environment) Variable {
+func NewContinuousVariable(envs ...Environment) Variable {
 	// Constants
 
 	// Input Processing
-	var currentEnv = &BackgroundEnvironment
+	var currentEnv Environment = &DefaultEnvironment
 	switch len(envs) {
 	case 1:
 		currentEnv = envs[0]
 	}
 
 	// Get New Index
-	nextIdx := len(currentEnv.Variables)
+	nextIdx := len(currentEnv.AllTrackedVariables())
 
 	// Create variable
 	variableOut := Variable{
-		ID:    uint64(nextIdx),
-		Lower: float64(-Infinity),
-		Upper: float64(+Infinity),
-		Type:  Continuous,
-		Name:  fmt.Sprintf("x_%v", nextIdx),
+		ID:          uint64(nextIdx),
+		Lower:       float64(-Infinity),
+		Upper:       float64(+Infinity),
+		Type:        Continuous,
+		Name:        fmt.Sprintf("x_%v", nextIdx),
+		Environment: currentEnv,
 	}
 
 	// Update environment
-	currentEnv.Variables = append(currentEnv.Variables, variableOut)
+	currentEnv.TrackVariable(variableOut)
 
 	return variableOut
 
@@ -461,30 +464,31 @@ Description:
 
 	Creates a new binary variable.
 */
-func NewBinaryVariable(envs ...*Environment) Variable {
+func NewBinaryVariable(envs ...Environment) Variable {
 	// Constants
 
 	// Input Processing
-	var currentEnv = &BackgroundEnvironment
+	var currentEnv Environment = &DefaultEnvironment
 	switch len(envs) {
 	case 1:
 		currentEnv = envs[0]
 	}
 
 	// Get New Index
-	nextIdx := len(currentEnv.Variables)
+	nextIdx := len(currentEnv.AllTrackedVariables())
 
 	// Get New Variable Object and add it to environment
 	variableOut := Variable{
-		ID:    uint64(nextIdx),
-		Lower: 0.0,
-		Upper: 1.0,
-		Type:  Binary,
-		Name:  fmt.Sprintf("x_%v", nextIdx),
+		ID:          uint64(nextIdx),
+		Lower:       0.0,
+		Upper:       1.0,
+		Type:        Binary,
+		Name:        fmt.Sprintf("x_%v", nextIdx),
+		Environment: currentEnv,
 	}
 
 	// Update env
-	currentEnv.Variables = append(currentEnv.Variables, variableOut)
+	currentEnv.TrackVariable(variableOut)
 
 	return variableOut
 
@@ -588,7 +592,12 @@ func (v Variable) Substitute(vIn Variable, seIn ScalarExpression) Expression {
 	}
 
 	// Algorithm
-	if v.ID == vIn.ID {
+	// Replace the variable if:
+	// 1. The IDs are the same
+	// 2. The environment is the same
+	idsMatch := v.ID == vIn.ID
+	envsMatch := v.Environment == vIn.Environment
+	if idsMatch && envsMatch {
 		return seIn
 	} else {
 		return v

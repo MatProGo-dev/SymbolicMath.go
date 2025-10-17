@@ -564,7 +564,7 @@ Description:
 	This function creates a new variable matrix
 	and properly initializes each element in it.
 */
-func NewVariableMatrix(nRows, nCols int, envs ...*Environment) VariableMatrix {
+func NewVariableMatrix(nRows, nCols int, envs ...Environment) VariableMatrix {
 	return NewVariableMatrixClassic(nRows, nCols, envs...)
 }
 
@@ -576,12 +576,12 @@ Description:
 	and properly initializes each element in it
 	when given a list of variables.
 */
-func NewVariableMatrixClassic(nRows, nCols int, envs ...*Environment) VariableMatrix {
+func NewVariableMatrixClassic(nRows, nCols int, envs ...Environment) VariableMatrix {
 	// Collect an environment if one exists
-	var env *Environment
+	var env Environment
 	switch len(envs) {
 	case 0:
-		env = &BackgroundEnvironment
+		env = &DefaultEnvironment
 	case 1:
 		env = envs[0]
 	default:
