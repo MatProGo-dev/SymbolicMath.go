@@ -2324,3 +2324,109 @@ func TestPolynomial_SubstituteWith4(t *testing.T) {
 		}
 	}
 }
+
+/*
+TestPolynomial_SubstituteAccordingTo1
+Description:
+
+	This test verifies that when we try to substitute a polynomial
+	expression (containing two variables) with:
+	1. a substitution map that contains the first of the two variables
+	   (x1 in the default environment)
+	2. a substitution map that contains a variable that is not in the
+	   expression (x1 in a new environment)
+*/
+func TestPolynomial_SubstituteAccordingTo1(t *testing.T) {
+	// Constants
+	x1 := symbolic.NewVariable()
+	x2 := symbolic.NewVariable()
+	poly := symbolic.K(3).Multiply(x1).Minus(
+		symbolic.K(4).Multiply(x2),
+	).Plus(
+		symbolic.K(5),
+	)
+
+	// 1. Substitution map that contains x1 in the default environment
+	varMap1 := map[symbolic.Variable]symbolic.Expression{
+		x1: symbolic.K(5),
+	}
+	sub1 := poly.SubstituteAccordingTo(varMap1)
+	sub1AsPoly, tf := sub1.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected %v.substituteAccordingTo(%v) to be a polynomial; received %T",
+			poly,
+			varMap1,
+			sub1,
+		)
+	}
+
+	// Verify that the substituted polynomial has the correct constant and linear coefficients
+	constantFound := false
+	x2CoeffFound := false
+	for _, m := range sub1AsPoly.Monomials {
+		if m.IsConstant() {
+			constantFound = true
+			if m.Coefficient != 20.0 {
+				t.Errorf(
+					"expected %v.substituteAccordingTo(%v) to have constant 20.0; received %v",
+					poly,
+					varMap1,
+					m.Coefficient,
+				)
+			}
+		} else if len(m.Variables()) == 1 && m.Variables()[0] == x2 {
+			x2CoeffFound = true
+			if m.Coefficient != -4.0 {
+				t.Errorf(
+					"expected %v.substituteAccordingTo(%v) to have x2 coefficient -4.0; received %v",
+					poly,
+					varMap1,
+					m.Coefficient,
+				)
+			}
+		}
+	}
+	if !constantFound {
+		t.Errorf(
+			"expected %v.substituteAccordingTo(%v) to have a constant term; received none",
+			poly,
+			varMap1,
+		)
+	}
+	if !x2CoeffFound {
+		t.Errorf(
+			"expected %v.substituteAccordingTo(%v) to have an x2 term; received none",
+			poly,
+			varMap1,
+		)
+	}
+
+	// 2. Substitution map that contains x1 in a new environment
+	newEnv := symbolic.MakeBasicEnvironment("test-Polynomial-SubstituteAccordingTo1-2")
+	x1NewEnv := symbolic.NewVariable(&newEnv)
+	varMap2 := map[symbolic.Variable]symbolic.Expression{
+		x1NewEnv: symbolic.K(5),
+	}
+	sub2 := poly.SubstituteAccordingTo(varMap2)
+	sub2AsPoly, tf := sub2.(symbolic.Polynomial)
+	if !tf {
+		t.Errorf(
+			"expected %v.substituteAccordingTo(%v) to be a polynomial; received %T",
+			poly,
+			varMap2,
+			sub2,
+		)
+	}
+
+	// Verify that the substituted polynomial is the same as the original polynomial
+	if !reflect.DeepEqual(poly, sub2AsPoly) {
+		t.Errorf(
+			"expected %v.substituteAccordingTo(%v) to be %v; received %v",
+			poly,
+			varMap2,
+			poly,
+			sub2AsPoly,
+		)
+	}
+}
