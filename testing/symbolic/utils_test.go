@@ -8,8 +8,9 @@ Description:
 
 import (
 	"fmt"
-	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 	"testing"
+
+	"github.com/MatProGo-dev/SymbolicMath.go/symbolic"
 )
 
 /*
@@ -403,7 +404,15 @@ Description:
 */
 func TestUtils_CheckSubstitutionMap1(t *testing.T) {
 	// Constants
-	badVar := symbolic.Variable{2, -1, -2, symbolic.Binary, "Russ"}
+	var currentEnv symbolic.Environment = &symbolic.DefaultEnvironment
+	badVar := symbolic.Variable{
+		ID:          2,
+		Lower:       -1,
+		Upper:       -2,
+		Type:        symbolic.Binary,
+		Name:        "Russ",
+		Environment: &currentEnv,
+	}
 	varMap := map[symbolic.Variable]symbolic.Expression{
 		symbolic.NewVariable(): symbolic.K(3),
 		badVar:                 symbolic.K(4),
@@ -441,7 +450,15 @@ Description:
 func TestUtils_CheckSubstitutionMap2(t *testing.T) {
 	// Constants
 	goodVar := symbolic.NewVariable()
-	badVar := symbolic.Variable{2, -1, -2, symbolic.Binary, "Russ"}
+	var currentEnv symbolic.Environment = &symbolic.DefaultEnvironment
+	badVar := symbolic.Variable{
+		ID:          2,
+		Lower:       -1,
+		Upper:       -2,
+		Type:        symbolic.Binary,
+		Name:        "Russ",
+		Environment: &currentEnv,
+	}
 	varMap := map[symbolic.Variable]symbolic.Expression{
 		symbolic.NewVariable(): symbolic.K(3),
 		goodVar:                badVar,

@@ -472,11 +472,11 @@ Description:
 
 	Returns a new VariableVector object.
 */
-func NewVariableVector(N int, envs ...*Environment) VariableVector {
+func NewVariableVector(N int, envs ...Environment) VariableVector {
 	// Constants
 
 	// Input Processing
-	var currentEnv = &BackgroundEnvironment
+	var currentEnv Environment = &DefaultEnvironment
 	switch len(envs) {
 	case 1:
 		currentEnv = envs[0]

@@ -1331,9 +1331,7 @@ Description:
 */
 func TestVariable_NewBinaryVariable2(t *testing.T) {
 	// Constants
-	env := symbolic.Environment{
-		Name: "test-nbv2",
-	}
+	env := symbolic.MakeBasicEnvironment("test-env")
 	symbolic.NewVariable(&env)
 	x := symbolic.NewBinaryVariable(&env)
 
