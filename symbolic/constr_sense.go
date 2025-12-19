@@ -14,6 +14,11 @@ const (
 	SenseGreaterThanEqual ConstrSense = '>'
 )
 
+/*
+Returns the string representation of the ConstrSense.
+
+Panics if the ConstrSense is invalid.
+*/
 func (cs ConstrSense) String() string {
 	switch cs {
 	case SenseEqual:
@@ -28,10 +33,8 @@ func (cs ConstrSense) String() string {
 }
 
 /*
-Check
-Description:
-
-	This method checks if the receiver is one of the allowed types of sense.
+Returns nil if the ConstrSense is valid (i.e., SenseEqual, SenseLessThanEqual, or SenseGreaterThanEqual).
+Otherwise, returns an error indicating the ConstrSense is invalid.
 */
 func (cs ConstrSense) Check() error {
 	switch cs {
