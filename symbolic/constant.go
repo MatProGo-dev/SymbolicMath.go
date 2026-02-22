@@ -20,25 +20,15 @@ const (
 // K is a constant expression type for an MIP. K for short ¯\_(ツ)_/¯
 type K float64
 
-/*
-Check
-Description:
-
-	Checks to make sure that the constant is initialized properly.
-	Constants are always initialized properly, so this should always return
-	no error.
-*/
+// Check Checks to make sure that the constant is initialized properly.
+// Constants are always initialized properly, so this should always return
+// no error.
 func (c K) Check() error {
 	return nil
 }
 
-/*
-Variables
-Description:
-
-	Shares all variables included in the expression that is K.
-	It is a constant, so there are none.
-*/
+// Variables Shares all variables included in the expression that is K.
+// It is a constant, so there are none.
 func (c K) Variables() []Variable {
 	return []Variable{}
 }
@@ -49,13 +39,8 @@ func (c K) Constant() float64 {
 	return float64(c)
 }
 
-/*
-LinearCoeff
-Description
-
-	Returns the coefficient of the linear term in the expression. For a constant,
-	this is always a matrix of zeros.
-*/
+// LinearCoeff Returns the coefficient of the linear term in the expression. For a constant,
+// this is always a matrix of zeros.
 func (c K) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	// Constants
 
@@ -78,12 +63,7 @@ func (c K) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	return ZerosVector(len(wrtVars))
 }
 
-/*
-Plus
-Description:
-
-	adds the current expression to another and returns the resulting expression
-*/
+// Plus adds the current expression to another and returns the resulting expression
 func (c K) Plus(rightIn interface{}) Expression {
 	// Input Processing
 	if IsExpression(rightIn) {
@@ -141,12 +121,7 @@ func (c K) Plus(rightIn interface{}) Expression {
 	)
 }
 
-/*
-Minus
-Description:
-
-	This function subtracts the current expression from another and returns the resulting expression.
-*/
+// Minus This function subtracts the current expression from another and returns the resulting expression.
 func (c K) Minus(rightIn interface{}) Expression {
 	// Input Processing
 	if IsExpression(rightIn) {
@@ -198,12 +173,7 @@ func (c K) Eq(rightIn interface{}) Constraint {
 	return c.Comparison(rightIn, SenseEqual)
 }
 
-/*
-Comparison
-Description:
-
-	This method compares the receiver with expression rhs in the sense provided by sense.
-*/
+// Comparison This method compares the receiver with expression rhs in the sense provided by sense.
 func (c K) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	// InputProcessing
 	if IsExpression(rhsIn) {
@@ -271,12 +241,7 @@ func (c K) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 
 }
 
-/*
-Multiply
-Description:
-
-	This method multiplies the input constant by another expression.
-*/
+// Multiply This method multiplies the input constant by another expression.
 func (c K) Multiply(term1 interface{}) Expression {
 	// Constants
 
@@ -321,20 +286,17 @@ func (c K) Multiply(term1 interface{}) Expression {
 	)
 }
 
+// Dims ...
 func (c K) Dims() []int {
 	return []int{1, 1} // Signifies scalar
 }
 
+// Transpose ...
 func (c K) Transpose() Expression {
 	return c
 }
 
-/*
-ToMonomial
-Description:
-
-	Converts the constant into a monomial.
-*/
+// ToMonomial Converts the constant into a monomial.
 func (c K) ToMonomial() Monomial {
 	return Monomial{
 		Coefficient:     float64(c),
@@ -343,89 +305,48 @@ func (c K) ToMonomial() Monomial {
 	}
 }
 
-/*
-ToPolynomial
-Description:
-
-	Converts the constant into a polynomial.
-*/
+// ToPolynomial Converts the constant into a polynomial.
 func (c K) ToPolynomial() Polynomial {
 	return Polynomial{
 		Monomials: []Monomial{c.ToMonomial()},
 	}
 }
 
-/*
-DerivativeWrt
-Description:
-
-	Computes the derivative of a constant, which should be 0 for any constant.
-*/
+// DerivativeWrt Computes the derivative of a constant, which should be 0 for any constant.
 func (c K) DerivativeWrt(vIn Variable) Expression {
 	return Zero
 }
 
-/*
-Degree
-Description:
-
-	The degree of a constant is always 0.
-*/
+// Degree The degree of a constant is always 0.
 func (c K) Degree() int {
 	return 0
 }
 
-/*
-String
-Description:
-
-	Returns a string representation of the constant.
-*/
+// String Returns a string representation of the constant.
 func (c K) String() string {
 	return fmt.Sprintf("%v", float64(c))
 }
 
-/*
-Substitute
-Description:
-
-	Substitutes the variable vIn with the expression eIn.
-*/
+// Substitute Substitutes the variable vIn with the expression eIn.
 func (c K) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	return c
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	Substitutes the variables in the map with the corresponding expressions.
-*/
+// SubstituteAccordingTo Substitutes the variables in the map with the corresponding expressions.
 func (c K) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	return c
 }
 
-/*
-Power
-Description:
-
-	Computes the power of the constant.
-*/
+// Power Computes the power of the constant.
 func (c K) Power(exponent int) Expression {
 	return ScalarPowerTemplate(c, exponent)
 }
 
-/*
-At
-Description:
-
-	Returns the value at the given row and column index.
-
-Note:
-
-	For a constant, this is always the constant itself.
-	The value of ii and jj should always be 0.
-*/
+// At Returns the value at the given row and column index.
+// Note:
+//
+// For a constant, this is always the constant itself.
+// The value of ii and jj should always be 0.
 func (c K) At(ii, jj int) ScalarExpression {
 	// Input Processing
 
@@ -438,12 +359,7 @@ func (c K) At(ii, jj int) ScalarExpression {
 	return c
 }
 
-/*
-AsSimplifiedExpression
-Description:
-
-	Returns the simplest form of the expression.
-*/
+// AsSimplifiedExpression Returns the simplest form of the expression.
 func (c K) AsSimplifiedExpression() Expression {
 	return c
 }

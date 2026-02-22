@@ -14,21 +14,14 @@ Description:
 	This file defines the function associated with the Polynomial object.
 */
 
-/*
-Type Definition
-*/
+// Polynomial Type Definition
 type Polynomial struct {
 	Monomials []Monomial
 }
 
 // Member Methods
 
-/*
-Check
-Description:
-
-	Verifies that all elements of the polynomial are defined correctly.
-*/
+// Check Verifies that all elements of the polynomial are defined correctly.
 func (p Polynomial) Check() error {
 	// Check that the polynomial has at least one monomial
 	if len(p.Monomials) == 0 {
@@ -47,12 +40,7 @@ func (p Polynomial) Check() error {
 	return nil
 }
 
-/*
-Variables
-Description:
-
-	The unique variables used to define the polynomial.
-*/
+// Variables The unique variables used to define the polynomial.
 func (p Polynomial) Variables() []Variable {
 	var variables []Variable // The variables in the polynomial
 	for _, monomial := range p.Monomials {
@@ -61,22 +49,12 @@ func (p Polynomial) Variables() []Variable {
 	return UniqueVars(variables)
 }
 
-/*
-Dims
-Description:
-
-	The scalar polynomial should have dimensions [1,1].
-*/
+// Dims The scalar polynomial should have dimensions [1,1].
 func (p Polynomial) Dims() []int {
 	return []int{1, 1}
 }
 
-/*
-Copy
-Description:
-
-	Returns a deep copy of the polynomial.
-*/
+// Copy Returns a deep copy of the polynomial.
 func (p Polynomial) Copy() Polynomial {
 	out := Polynomial{
 		Monomials: make([]Monomial, len(p.Monomials)),
@@ -85,12 +63,7 @@ func (p Polynomial) Copy() Polynomial {
 	return out
 }
 
-/*
-Plus
-Description:
-
-	Defines an addition between the polynomial and another expression.
-*/
+// Plus Defines an addition between the polynomial and another expression.
 func (p Polynomial) Plus(e interface{}) Expression {
 	// Input Processing
 	err := p.Check()
@@ -213,12 +186,7 @@ func (p Polynomial) Plus(e interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Minus
-Description:
-
-	Defines a subtraction between the polynomial and another expression.
-*/
+// Minus Defines a subtraction between the polynomial and another expression.
 func (p Polynomial) Minus(e interface{}) Expression {
 	// Input Processing
 	err := p.Check()
@@ -253,13 +221,8 @@ func (p Polynomial) Minus(e interface{}) Expression {
 	)
 }
 
-/*
-ConstantMonomialIndex
-Description:
-
-	Returns the index of the monomial in the polynomial which is a constant.
-	If none are found, then this returns -1.
-*/
+// ConstantMonomialIndex Returns the index of the monomial in the polynomial which is a constant.
+// If none are found, then this returns -1.
 func (p Polynomial) ConstantMonomialIndex() int {
 	// Input Processing
 	err := p.Check()
@@ -278,12 +241,7 @@ func (p Polynomial) ConstantMonomialIndex() int {
 	return -1
 }
 
-/*
-VariableMonomialIndex
-Description:
-
-	Returns the index of the monomial which represents the variable given as vIn.
-*/
+// VariableMonomialIndex Returns the index of the monomial which represents the variable given as vIn.
 func (p Polynomial) VariableMonomialIndex(vIn Variable) int {
 	// Input Processing
 	err := p.Check()
@@ -307,13 +265,8 @@ func (p Polynomial) VariableMonomialIndex(vIn Variable) int {
 	return -1
 }
 
-/*
-MonomialIndex
-Description:
-
-	Returns the index of the monomial which has the same
-	degrees and variables as the input monomial mIn.
-*/
+// MonomialIndex Returns the index of the monomial which has the same
+// degrees and variables as the input monomial mIn.
 func (p Polynomial) MonomialIndex(mIn Monomial) int {
 	// Input Processing
 	err := p.Check()
@@ -337,12 +290,7 @@ func (p Polynomial) MonomialIndex(mIn Monomial) int {
 	return -1
 }
 
-/*
-Multiply
-Description:
-
-	Implements the multiplication operator between a polynomial and another expression.
-*/
+// Multiply Implements the multiplication operator between a polynomial and another expression.
 func (p Polynomial) Multiply(e interface{}) Expression {
 	// Input Processing
 	err := p.Check()
@@ -427,12 +375,7 @@ func (p Polynomial) Multiply(e interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Transpose
-Description:
-
-	The transpose operator when applied to a scalar is just the same scalar object.
-*/
+// Transpose The transpose operator when applied to a scalar is just the same scalar object.
 func (p Polynomial) Transpose() Expression {
 	// Input Processing
 	err := p.Check()
@@ -443,13 +386,8 @@ func (p Polynomial) Transpose() Expression {
 	return p.Copy()
 }
 
-/*
-Comparison
-Description:
-
-	Creates a constraint between the polynomial and another expression
-	of the sense provided in Sense.
-*/
+// Comparison Creates a constraint between the polynomial and another expression
+// of the sense provided in Sense.
 func (p Polynomial) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
 	err := p.Check()
@@ -496,42 +434,22 @@ func (p Polynomial) Comparison(rightIn interface{}, sense ConstrSense) Constrain
 	)
 }
 
-/*
-LessEq
-Description:
-
-	Creates a less than equal constraint between the polynomial and another expression.
-*/
+// LessEq Creates a less than equal constraint between the polynomial and another expression.
 func (p Polynomial) LessEq(rightIn interface{}) Constraint {
 	return p.Comparison(rightIn, SenseLessThanEqual)
 }
 
-/*
-GreaterEq
-Description:
-
-	Creates a greater than equal constraint between the polynomial and another expression.
-*/
+// GreaterEq Creates a greater than equal constraint between the polynomial and another expression.
 func (p Polynomial) GreaterEq(rightIn interface{}) Constraint {
 	return p.Comparison(rightIn, SenseGreaterThanEqual)
 }
 
-/*
-Eq
-Description:
-
-	Creates an equality constraint between the polynomial and another expression.
-*/
+// Eq Creates an equality constraint between the polynomial and another expression.
 func (p Polynomial) Eq(rightIn interface{}) Constraint {
 	return p.Comparison(rightIn, SenseEqual)
 }
 
-/*
-Constant
-Description:
-
-	Retrieves the constant component of the polynomial if there is one.
-*/
+// Constant Retrieves the constant component of the polynomial if there is one.
 func (p Polynomial) Constant() float64 {
 	// Input Processing
 	err := p.Check()
@@ -548,14 +466,9 @@ func (p Polynomial) Constant() float64 {
 	}
 }
 
-/*
-Simplify
-Description:
-
-	This function simplifies the number of monomials in the polynomial,
-	by finding the matching terms (i.e., monomials with matching Variables and Exponents)
-	and combining them.
-*/
+// Simplify This function simplifies the number of monomials in the polynomial,
+// by finding the matching terms (i.e., monomials with matching Variables and Exponents)
+// and combining them.
 func (p Polynomial) Simplify() Polynomial {
 	// Input Processing
 	err := p.Check()
@@ -616,6 +529,7 @@ func (p Polynomial) Simplify() Polynomial {
 
 }
 
+// AsSimplifiedExpression ...
 func (p Polynomial) AsSimplifiedExpression() Expression {
 	// Simplify the polynomial
 	pReduced := p.Simplify()
@@ -641,12 +555,7 @@ func (p Polynomial) AsSimplifiedExpression() Expression {
 	return pReduced
 }
 
-/*
-DerivativeWrt
-Description:
-
-	The derivative of the polynomial with respect to the input variable.
-*/
+// DerivativeWrt The derivative of the polynomial with respect to the input variable.
 func (p Polynomial) DerivativeWrt(vIn Variable) Expression {
 	// Input Processing
 	err := p.Check()
@@ -691,12 +600,7 @@ func (p Polynomial) DerivativeWrt(vIn Variable) Expression {
 	return derivative
 }
 
-/*
-Degree
-Description:
-
-	The degree of the polynomial is the maximum degree of any of the monomials.
-*/
+// Degree The degree of the polynomial is the maximum degree of any of the monomials.
 func (p Polynomial) Degree() int {
 	// Input Processing
 	err := p.Check()
@@ -714,15 +618,10 @@ func (p Polynomial) Degree() int {
 	return degree
 }
 
-/*
-LinearCoeff
-Description:
-
-	This function returns a vector describing the coefficients of the linear component
-	of the polynomial.
-	The (ii)th element of the vector is the coefficient of the (ii)th variable in the
-	p.Variables() slice as it appears in the polynomial.
-*/
+// LinearCoeff This function returns a vector describing the coefficients of the linear component
+// of the polynomial.
+// The (ii)th element of the vector is the coefficient of the (ii)th variable in the
+// p.Variables() slice as it appears in the polynomial.
 func (p Polynomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	// Input Processing
 	err := p.Check()
@@ -761,13 +660,8 @@ func (p Polynomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	return coeffOut
 }
 
-/*
-IsConstant
-Description:
-
-	This method returns true if and only if the polynomial
-	represented by pv is a constant (i.e., it contains no variables).
-*/
+// IsConstant This method returns true if and only if the polynomial
+// represented by pv is a constant (i.e., it contains no variables).
 func (p Polynomial) IsConstant() bool {
 	// Input Processing
 	err := p.Check()
@@ -779,12 +673,7 @@ func (p Polynomial) IsConstant() bool {
 	return len(p.Variables()) == 0
 }
 
-/*
-String
-Description:
-
-	This method returns a string representation of the polynomial.
-*/
+// String This method returns a string representation of the polynomial.
 func (p Polynomial) String() string {
 	// Input Processing
 	err := p.Check()
@@ -824,12 +713,7 @@ func (p Polynomial) String() string {
 	return polynomialString
 }
 
-/*
-Substitute
-Description:
-
-	This method substitutes the variable vIn with the expression eIn.
-*/
+// Substitute This method substitutes the variable vIn with the expression eIn.
 func (p Polynomial) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	// Input Processing
 	err := p.Check()
@@ -857,12 +741,7 @@ func (p Polynomial) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	This method substitutes the variables in the map with the corresponding expressions.
-*/
+// SubstituteAccordingTo This method substitutes the variables in the map with the corresponding expressions.
 func (p Polynomial) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := p.Check()
@@ -885,26 +764,15 @@ func (p Polynomial) SubstituteAccordingTo(subMap map[Variable]Expression) Expres
 	return out
 }
 
-/*
-Power
-Description:
-
-	Computes the power of the constant.
-*/
+// Power Computes the power of the constant.
 func (p Polynomial) Power(exponent int) Expression {
 	return ScalarPowerTemplate(p, exponent)
 }
 
-/*
-At
-Description:
-
-	Returns the value at the given row and column index.
-
-Note:
-
-	For a constant, the indices should always be 0.
-*/
+// At Returns the value at the given row and column index.
+// Note:
+//
+// For a constant, the indices should always be 0.
 func (p Polynomial) At(ii, jj int) ScalarExpression {
 	// Input Processing
 	err := p.Check()

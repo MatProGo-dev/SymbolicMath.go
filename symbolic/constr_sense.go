@@ -14,6 +14,7 @@ const (
 	SenseGreaterThanEqual ConstrSense = '>'
 )
 
+// String ...
 func (cs ConstrSense) String() string {
 	switch cs {
 	case SenseEqual:
@@ -27,12 +28,7 @@ func (cs ConstrSense) String() string {
 	}
 }
 
-/*
-Check
-Description:
-
-	This method checks if the receiver is one of the allowed types of sense.
-*/
+// Check This method checks if the receiver is one of the allowed types of sense.
 func (cs ConstrSense) Check() error {
 	switch cs {
 	case SenseEqual:

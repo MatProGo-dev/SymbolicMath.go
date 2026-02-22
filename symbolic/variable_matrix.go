@@ -18,22 +18,18 @@ Description:
 // Types
 // =====
 
+// VariableMatrix is a matrix of variables.
 type VariableMatrix [][]Variable
 
 // =======
 // Methods
 // =======
 
-/*
-Check
-Description:
-
-	This method is used to make sure that the variable matrix is well-defined.
-	It checks:
-	- That the matrix is not empty.
-	- That all of the rows have the same number of columns.
-	- That all of the variables are well-defined.
-*/
+// Check This method is used to make sure that the variable matrix is well-defined.
+// It checks:
+// - That the matrix is not empty.
+// - That all of the rows have the same number of columns.
+// - That all of the variables are well-defined.
 func (vm VariableMatrix) Check() error {
 	// Input Processing
 
@@ -75,12 +71,7 @@ func (vm VariableMatrix) Check() error {
 	return nil
 }
 
-/*
-Variables
-Description:
-
-	This function returns the list of variables in the matrix.
-*/
+// Variables This function returns the list of variables in the matrix.
 func (vm VariableMatrix) Variables() []Variable {
 	// Input Processing
 	err := vm.Check()
@@ -97,12 +88,7 @@ func (vm VariableMatrix) Variables() []Variable {
 	return UniqueVars(variables)
 }
 
-/*
-Dims
-Description:
-
-	This function returns the dimensions of the variable matrix.
-*/
+// Dims This function returns the dimensions of the variable matrix.
 func (vm VariableMatrix) Dims() []int {
 	// Input Processing
 	err := vm.Check()
@@ -114,12 +100,7 @@ func (vm VariableMatrix) Dims() []int {
 	return []int{len(vm), len(vm[0])}
 }
 
-/*
-Plus
-Description:
-
-	This function adds two variable matrices together.
-*/
+// Plus This function adds two variable matrices together.
 func (vm VariableMatrix) Plus(e interface{}) Expression {
 	// Input Processing
 	err := vm.Check()
@@ -178,12 +159,7 @@ func (vm VariableMatrix) Plus(e interface{}) Expression {
 	)
 }
 
-/*
-Minus
-Description:
-
-	This function subtracts a variable matrix from another term.
-*/
+// Minus This function subtracts a variable matrix from another term.
 func (vm VariableMatrix) Minus(e interface{}) Expression {
 	// Input Processing
 	// - Check the variable matrix is well-defined
@@ -235,12 +211,7 @@ func (vm VariableMatrix) Minus(e interface{}) Expression {
 
 }
 
-/*
-Multiply
-Description:
-
-	This function multiplies a variable matrix by another term.
-*/
+// Multiply This function multiplies a variable matrix by another term.
 func (vm VariableMatrix) Multiply(e interface{}) Expression {
 	// Input Processing
 	err := vm.Check()
@@ -339,12 +310,7 @@ func (vm VariableMatrix) Multiply(e interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Transpose
-Description:
-
-	This function returns the transpose of the variable matrix.
-*/
+// Transpose This function returns the transpose of the variable matrix.
 func (vm VariableMatrix) Transpose() Expression {
 	// Input Processing
 	err := vm.Check()
@@ -369,12 +335,7 @@ func (vm VariableMatrix) Transpose() Expression {
 	return vmOut
 }
 
-/*
-Comparison
-Description:
-
-	This function compares the variable matrix to another expression.
-*/
+// Comparison This function compares the variable matrix to another expression.
 func (vm VariableMatrix) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
 	err := vm.Check()
@@ -406,6 +367,7 @@ func (vm VariableMatrix) Comparison(rightIn interface{}, sense ConstrSense) Cons
 	case K:
 		// Create a new matrix of polynomials.
 		onesMat := OnesMatrix(vm.Dims()[0], vm.Dims()[1])
+		// KAsDense ...
 		var KAsDense mat.Dense
 		KAsDense.Scale(float64(right), &onesMat)
 
@@ -431,46 +393,26 @@ func (vm VariableMatrix) Comparison(rightIn interface{}, sense ConstrSense) Cons
 	)
 }
 
-/*
-LessEq
-Description:
-
-	Returns a less than or equal to (<=) constraint between
-	the VariableMatrix and another expression.
-*/
+// LessEq Returns a less than or equal to (<=) constraint between
+// the VariableMatrix and another expression.
 func (vm VariableMatrix) LessEq(rightIn interface{}) Constraint {
 	return vm.Comparison(rightIn, SenseLessThanEqual)
 }
 
-/*
-GreaterEq
-Description:
-
-	Returns a greater than or equal to (>=) constraint between
-	the VariableMatrix and another expression.
-*/
+// GreaterEq Returns a greater than or equal to (>=) constraint between
+// the VariableMatrix and another expression.
 func (vm VariableMatrix) GreaterEq(rightIn interface{}) Constraint {
 	return vm.Comparison(rightIn, SenseGreaterThanEqual)
 }
 
-/*
-Eq
-Description:
-
-	Returns an equality (==) constraint between
-	the VariableMatrix and another expression.
-*/
+// Eq Returns an equality (==) constraint between
+// the VariableMatrix and another expression.
 func (vm VariableMatrix) Eq(rightIn interface{}) Constraint {
 	return vm.Comparison(rightIn, SenseEqual)
 }
 
-/*
-DerivativeWrt
-Description:
-
-	This function returns the derivative of the variable matrix
-	with respect to a given variable.
-*/
+// DerivativeWrt This function returns the derivative of the variable matrix
+// with respect to a given variable.
 func (vm VariableMatrix) DerivativeWrt(v Variable) Expression {
 	// Input Processing
 	err := vm.Check()
@@ -497,12 +439,7 @@ func (vm VariableMatrix) DerivativeWrt(v Variable) Expression {
 	return kmOut
 }
 
-/*
-At
-Description:
-
-	This function returns the element of the variable matrix at the given indices.
-*/
+// At This function returns the element of the variable matrix at the given indices.
 func (vm VariableMatrix) At(ii, jj int) ScalarExpression {
 	// Input Processing
 	err := vm.Check()
@@ -514,23 +451,13 @@ func (vm VariableMatrix) At(ii, jj int) ScalarExpression {
 	return vm[ii][jj]
 }
 
-/*
-Constant
-Description:
-
-	This function returns the constant value in the variable matrix.
-	this should always be zero.
-*/
+// Constant This function returns the constant value in the variable matrix.
+// this should always be zero.
 func (vm VariableMatrix) Constant() mat.Dense {
 	return ZerosMatrix(vm.Dims()[0], vm.Dims()[1])
 }
 
-/*
-String
-Description:
-
-	This function returns a string representation of the variable matrix.
-*/
+// String This function returns a string representation of the variable matrix.
 func (vm VariableMatrix) String() string {
 	// Input Processing
 	err := vm.Check()
@@ -557,25 +484,15 @@ func (vm VariableMatrix) String() string {
 	return out
 }
 
-/*
-NewVariableMatrix
-Description:
-
-	This function creates a new variable matrix
-	and properly initializes each element in it.
-*/
+// NewVariableMatrix This function creates a new variable matrix
+// and properly initializes each element in it.
 func NewVariableMatrix(nRows, nCols int, envs ...Environment) VariableMatrix {
 	return NewVariableMatrixClassic(nRows, nCols, envs...)
 }
 
-/*
-NewVariableMatrixClassic
-Description:
-
-	This function creates a new variable matrix
-	and properly initializes each element in it
-	when given a list of variables.
-*/
+// NewVariableMatrixClassic This function creates a new variable matrix
+// and properly initializes each element in it
+// when given a list of variables.
 func NewVariableMatrixClassic(nRows, nCols int, envs ...Environment) VariableMatrix {
 	// Collect an environment if one exists
 	var env Environment
@@ -601,12 +518,7 @@ func NewVariableMatrixClassic(nRows, nCols int, envs ...Environment) VariableMat
 	return vmOut
 }
 
-/*
-ToMonomialMatrix
-Description:
-
-	This function converts the variable matrix to a monomial matrix.
-*/
+// ToMonomialMatrix This function converts the variable matrix to a monomial matrix.
 func (vm VariableMatrix) ToMonomialMatrix() MonomialMatrix {
 	// Input Processing
 	err := vm.Check()
@@ -626,12 +538,7 @@ func (vm VariableMatrix) ToMonomialMatrix() MonomialMatrix {
 	return mmOut
 }
 
-/*
-ToPolynomialMatrix
-Description:
-
-	This function converts the variable matrix to a polynomial matrix.
-*/
+// ToPolynomialMatrix This function converts the variable matrix to a polynomial matrix.
 func (vm VariableMatrix) ToPolynomialMatrix() PolynomialMatrix {
 	// Input Processing
 	err := vm.Check()
@@ -651,33 +558,18 @@ func (vm VariableMatrix) ToPolynomialMatrix() PolynomialMatrix {
 	return pmOut
 }
 
-/*
-Degree
-Description:
-
-	Returns the maximum degree of the vector of
-	variables (which is always 1).
-*/
+// Degree Returns the maximum degree of the vector of
+// variables (which is always 1).
 func (vm VariableMatrix) Degree() int {
 	return 1
 }
 
-/*
-Substitute
-Description:
-
-	This function substitutes the variable vIn with the expression eIn.
-*/
+// Substitute This function substitutes the variable vIn with the expression eIn.
 func (vm VariableMatrix) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	return MatrixSubstituteTemplate(vm, vIn, eIn)
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	This function substitutes the variables in the map with the corresponding expressions.
-*/
+// SubstituteAccordingTo This function substitutes the variables in the map with the corresponding expressions.
 func (vm VariableMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := vm.Check()
@@ -700,22 +592,12 @@ func (vm VariableMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) E
 	return out
 }
 
-/*
-Power
-Description:
-
-	This function raises the variable matrix to a given power.
-*/
+// Power This function raises the variable matrix to a given power.
 func (vm VariableMatrix) Power(exponent int) Expression {
 	return MatrixPowerTemplate(vm, exponent)
 }
 
-/*
-AsSimplifiedExpression
-Description:
-
-	Simplifies the expression and returns the simplified version.
-*/
+// AsSimplifiedExpression Simplifies the expression and returns the simplified version.
 func (vm VariableMatrix) AsSimplifiedExpression() Expression {
 	return vm
 }

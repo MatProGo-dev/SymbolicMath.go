@@ -6,14 +6,9 @@ import (
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 )
 
-/*
-FindInSlice
-Description:
-
-	Identifies if the  input xIn is in the slice sliceIn.
-	If it is, then this function returns the index such that xIn = sliceIn[index] and no errors.
-	If it is not, then this function returns the index -1 and the boolean value false.
-*/
+// FindInSlice Identifies if the  input xIn is in the slice sliceIn.
+// If it is, then this function returns the index such that xIn = sliceIn[index] and no errors.
+// If it is not, then this function returns the index -1 and the boolean value false.
 func FindInSlice(xIn interface{}, sliceIn interface{}) (int, error) {
 	// Constants
 	allowedTypes := []string{"string", "int", "uint64", "Variable"}
@@ -106,12 +101,7 @@ func FindInSlice(xIn interface{}, sliceIn interface{}) (int, error) {
 
 }
 
-/*
-Unique
-Description:
-
-	Returns the unique list of variables in a slice of uint64's.
-*/
+// Unique Returns the unique list of variables in a slice of uint64's.
 func Unique(listIn []uint64) []uint64 {
 	// Create unique list
 	var uniqueList []uint64
@@ -135,13 +125,8 @@ func Unique(listIn []uint64) []uint64 {
 	return uniqueList
 }
 
-/*
-CheckDimensionsInComparison
-Description:
-
-	Verifies that the two objects being compared in a Comparison method (Comparison, LessEq, Eq, GreaterEq)
-	have the same dimensions.
-*/
+// CheckDimensionsInComparison Verifies that the two objects being compared in a Comparison method (Comparison, LessEq, Eq, GreaterEq)
+// have the same dimensions.
 func CheckDimensionsInComparison(left, right Expression, senseIn ConstrSense) error {
 	// Check that the size of columns in left and right agree
 	dimsAreMatched := (left.Dims()[0] == right.Dims()[0]) && (left.Dims()[1] == right.Dims()[1])
@@ -159,15 +144,10 @@ func CheckDimensionsInComparison(left, right Expression, senseIn ConstrSense) er
 	return nil
 }
 
-/*
-CheckSubstitutionMap
-Description:
-
-	This function verifies that the input substitution map is valid. i.e., the map should contain:
-		1. Valid variables as keys
-		2. Valid expressions as values
-		3. The values should also be scalar expressions
-*/
+// CheckSubstitutionMap This function verifies that the input substitution map is valid. i.e., the map should contain:
+// 1. Valid variables as keys
+// 2. Valid expressions as values
+// 3. The values should also be scalar expressions
 func CheckSubstitutionMap(subMap map[Variable]Expression) error {
 	var err error
 	// Check each key, value pair in the map

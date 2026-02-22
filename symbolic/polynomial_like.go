@@ -4,14 +4,9 @@ import (
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 )
 
-/*
-polynomial_like.go
-Description:
-
-	This interface should be implemented by all objects
-	that are polynomial like (i.e., are linear combinations
-	of variables (potentially raised to powers) and coefficients).
-*/
+// PolynomialLike is an interface that should be implemented by all objects
+// that are polynomial like (i.e., are linear combinations
+// of variables (potentially raised to powers) and coefficients).
 type PolynomialLike interface {
 	// NumVars returns the number of variables in the expression
 	Variables() []Variable
@@ -77,16 +72,12 @@ type PolynomialLike interface {
 	AsSimplifiedExpression() Expression
 }
 
-/*
-IsExpression
-Description:
-
-	Tests whether or not the input variable is one of the expression types.
-*/
+// IsPolynomialLike tests whether or not the input variable is one of the expression types.
 func IsPolynomialLike(e interface{}) bool {
 	return IsPolynomialLikeScalar(e) || IsPolynomialLikeVector(e) || IsPolynomialLikeMatrix(e)
 }
 
+// ToPolynomialLike ...
 func ToPolynomialLike(e interface{}) (PolynomialLike, error) {
 	switch {
 	case IsPolynomialLikeScalar(e):

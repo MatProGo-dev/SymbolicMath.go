@@ -18,21 +18,17 @@ Description:
 // Type Definition
 // ===============
 
+// PolynomialMatrix is a matrix of polynomials.
 type PolynomialMatrix [][]Polynomial
 
 // =========
 // Functions
 // =========
 
-/*
-Check
-Description:
-
-	Verifies that:
-	- The matrix has at least one row
-	- The number of columns is the same in each row.
-	- Each of the polynomials in the matrix are valid.
-*/
+// Check Verifies that:
+// - The matrix has at least one row
+// - The number of columns is the same in each row.
+// - Each of the polynomials in the matrix are valid.
 func (pm PolynomialMatrix) Check() error {
 	// Check that the matrix has at least one row
 	if len(pm) == 0 {
@@ -66,12 +62,7 @@ func (pm PolynomialMatrix) Check() error {
 	return nil
 }
 
-/*
-Variables
-Description:
-
-	Returns the variables in the polynomial matrix.
-*/
+// Variables Returns the variables in the polynomial matrix.
 func (pm PolynomialMatrix) Variables() []Variable {
 	err := pm.Check()
 	if err != nil {
@@ -88,12 +79,7 @@ func (pm PolynomialMatrix) Variables() []Variable {
 	return UniqueVars(variables)
 }
 
-/*
-Dims
-Description:
-
-	Returns the dimensions of the matrix of polynomials.
-*/
+// Dims Returns the dimensions of the matrix of polynomials.
 func (pm PolynomialMatrix) Dims() []int {
 	err := pm.Check()
 	if err != nil {
@@ -103,12 +89,7 @@ func (pm PolynomialMatrix) Dims() []int {
 	return []int{len(pm), len(pm[0])}
 }
 
-/*
-Plus
-Description:
-
-	Addition of the polynomial matrix with another expression.
-*/
+// Plus Addition of the polynomial matrix with another expression.
 func (pm PolynomialMatrix) Plus(e interface{}) Expression {
 	// Input Processing
 	// - Check that pm is valid
@@ -205,13 +186,8 @@ func (pm PolynomialMatrix) Plus(e interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Minus
-Description:
-
-	Subtracts another expression from the given polynomial matrix
-	and returns the result.
-*/
+// Minus Subtracts another expression from the given polynomial matrix
+// and returns the result.
 func (pm PolynomialMatrix) Minus(e interface{}) Expression {
 	// Input Processing
 	// - Check that pm is valid
@@ -249,12 +225,7 @@ func (pm PolynomialMatrix) Minus(e interface{}) Expression {
 	)
 }
 
-/*
-Multiply
-Description:
-
-	Multiplication of the polynomial matrix with another expression.
-*/
+// Multiply Multiplication of the polynomial matrix with another expression.
 func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 	// Input Processing
 	// - Check that pm is valid
@@ -341,12 +312,7 @@ func (pm PolynomialMatrix) Multiply(e interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Transpose
-Description:
-
-	Transposes the polynomial matrix.
-*/
+// Transpose Transposes the polynomial matrix.
 func (pm PolynomialMatrix) Transpose() Expression {
 	// Input Processing
 	// - Check that pm is valid
@@ -373,12 +339,7 @@ func (pm PolynomialMatrix) Transpose() Expression {
 	return pmT
 }
 
-/*
-Comparison
-Description:
-
-	Compares the polynomial matrix to another expression.
-*/
+// Comparison Compares the polynomial matrix to another expression.
 func (pm PolynomialMatrix) Comparison(e interface{}, sense ConstrSense) Constraint {
 	// Input Checking
 	// - Check that pm is valid
@@ -411,6 +372,7 @@ func (pm PolynomialMatrix) Comparison(e interface{}, sense ConstrSense) Constrai
 	case K:
 		// Create containers
 		onesMat := OnesMatrix(pm.Dims()[0], pm.Dims()[1])
+		// KAsDense ...
 		var KAsDense mat.Dense
 		KAsDense.Scale(float64(right), &onesMat)
 
@@ -435,46 +397,26 @@ func (pm PolynomialMatrix) Comparison(e interface{}, sense ConstrSense) Constrai
 	}
 }
 
-/*
-LessEq
-Description:
-
-	Compares the polynomial matrix to another expression using
-	the SenseLessThanEqual sense.
-*/
+// LessEq Compares the polynomial matrix to another expression using
+// the SenseLessThanEqual sense.
 func (pm PolynomialMatrix) LessEq(e interface{}) Constraint {
 	return pm.Comparison(e, SenseLessThanEqual)
 }
 
-/*
-GreaterEq
-Description:
-
-	Compares the polynomial matrix to another expression using
-	the SenseGreaterThanEqual sense.
-*/
+// GreaterEq Compares the polynomial matrix to another expression using
+// the SenseGreaterThanEqual sense.
 func (pm PolynomialMatrix) GreaterEq(e interface{}) Constraint {
 	return pm.Comparison(e, SenseGreaterThanEqual)
 }
 
-/*
-Eq
-Description:
-
-	Compares the polynomial matrix to another expression using
-	the SenseEqual sense.
-*/
+// Eq Compares the polynomial matrix to another expression using
+// the SenseEqual sense.
 func (pm PolynomialMatrix) Eq(e interface{}) Constraint {
 	return pm.Comparison(e, SenseEqual)
 }
 
-/*
-DerivativeWrt
-Description:
-
-	Returns the derivative of the polynomial matrix with respect to the
-	input variable.
-*/
+// DerivativeWrt Returns the derivative of the polynomial matrix with respect to the
+// input variable.
 func (pm PolynomialMatrix) DerivativeWrt(vIn Variable) Expression {
 	// Input Processing
 	// - Check that pm is valid
@@ -503,12 +445,7 @@ func (pm PolynomialMatrix) DerivativeWrt(vIn Variable) Expression {
 	return dpm
 }
 
-/*
-At
-Description:
-
-	Returns the (ii, jj)-th element of the polynomial matrix.
-*/
+// At Returns the (ii, jj)-th element of the polynomial matrix.
 func (pm PolynomialMatrix) At(ii int, jj int) ScalarExpression {
 	// Input Processing
 	// - Check that pm is valid
@@ -528,13 +465,8 @@ func (pm PolynomialMatrix) At(ii int, jj int) ScalarExpression {
 	return pm[ii][jj]
 }
 
-/*
-Constant
-Description:
-
-	Returns the components of the polynomial matrix which are
-	constant-valued.
-*/
+// Constant Returns the components of the polynomial matrix which are
+// constant-valued.
 func (pm PolynomialMatrix) Constant() mat.Dense {
 	// Input Processing
 	// - Check that pm is valid
@@ -555,12 +487,7 @@ func (pm PolynomialMatrix) Constant() mat.Dense {
 	return constant
 }
 
-/*
-Simplify
-Description:
-
-	Simplifies the polynomial matrix, if possible.
-*/
+// Simplify Simplifies the polynomial matrix, if possible.
 func (pm PolynomialMatrix) Simplify() MatrixExpression {
 	// Constants
 	nRows, nCols := pm.Dims()[0], pm.Dims()[1]
@@ -585,16 +512,12 @@ func (pm PolynomialMatrix) Simplify() MatrixExpression {
 	return ConcretizeMatrixExpression(simplified)
 }
 
+// AsSimplifiedExpression ...
 func (pm PolynomialMatrix) AsSimplifiedExpression() Expression {
 	return pm.Simplify()
 }
 
-/*
-String
-Description:
-
-	Returns a string representation of the polynomial matrix.
-*/
+// String Returns a string representation of the polynomial matrix.
 func (pm PolynomialMatrix) String() string {
 	// Input Processing
 	// - Check that pm is valid
@@ -627,13 +550,8 @@ func (pm PolynomialMatrix) String() string {
 	return out
 }
 
-/*
-Degree
-Description:
-
-	The degree of the polynomial matrix
-	is the maximum degree of the entries.
-*/
+// Degree The degree of the polynomial matrix
+// is the maximum degree of the entries.
 func (pm PolynomialMatrix) Degree() int {
 	// Input Processing
 	err := pm.Check()
@@ -653,22 +571,12 @@ func (pm PolynomialMatrix) Degree() int {
 	return maxDegree
 }
 
-/*
-Substitute
-Description:
-
-	Substitutes the variable vIn with the expression eIn in the polynomial matrix.
-*/
+// Substitute Substitutes the variable vIn with the expression eIn in the polynomial matrix.
 func (pm PolynomialMatrix) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	return MatrixSubstituteTemplate(pm, vIn, eIn)
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	Substitutes the variables in the polynomial matrix with the corresponding expressions in the map.
-*/
+// SubstituteAccordingTo Substitutes the variables in the polynomial matrix with the corresponding expressions in the map.
 func (pm PolynomialMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := pm.Check()
@@ -691,12 +599,7 @@ func (pm PolynomialMatrix) SubstituteAccordingTo(subMap map[Variable]Expression)
 	return out
 }
 
-/*
-Power
-Description:
-
-	Raises the polynomial matrix to the power of the input integer.
-*/
+// Power Raises the polynomial matrix to the power of the input integer.
 func (pm PolynomialMatrix) Power(exponent int) Expression {
 	return MatrixPowerTemplate(pm, exponent)
 }

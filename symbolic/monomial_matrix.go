@@ -18,21 +18,17 @@ Description:
 // Type Definition
 // ===============
 
+// MonomialMatrix is a matrix of monomials.
 type MonomialMatrix [][]Monomial
 
 // =========
 // Functions
 // =========
 
-/*
-Check
-Description:
-
-	Verifies that:
-	- The matrix has at least one row
-	- The number of columns is the same in each row.
-	- Each of the monomials in the matrix are valid.
-*/
+// Check Verifies that:
+// - The matrix has at least one row
+// - The number of columns is the same in each row.
+// - Each of the monomials in the matrix are valid.
 func (mm MonomialMatrix) Check() error {
 	// Check that the matrix has at least one row
 	if len(mm) == 0 {
@@ -66,12 +62,7 @@ func (mm MonomialMatrix) Check() error {
 	return nil
 }
 
-/*
-Variables
-Description:
-
-	Returns the variables in the matrix.
-*/
+// Variables Returns the variables in the matrix.
 func (mm MonomialMatrix) Variables() []Variable {
 	// Input Processing
 	err := mm.Check()
@@ -91,12 +82,7 @@ func (mm MonomialMatrix) Variables() []Variable {
 	return UniqueVars(variables)
 }
 
-/*
-Dims
-Description:
-
-	Returns the dimensions of the matrix.
-*/
+// Dims Returns the dimensions of the matrix.
 func (mm MonomialMatrix) Dims() []int {
 	err := mm.Check()
 	if err != nil {
@@ -106,12 +92,7 @@ func (mm MonomialMatrix) Dims() []int {
 	return []int{len(mm), len(mm[0])}
 }
 
-/*
-Plus
-Description:
-
-	Addition of the monomial matrix with another expression.
-*/
+// Plus Addition of the monomial matrix with another expression.
 func (mm MonomialMatrix) Plus(e interface{}) Expression {
 	// Input Processing
 	err := mm.Check()
@@ -223,12 +204,7 @@ func (mm MonomialMatrix) Plus(e interface{}) Expression {
 	}
 }
 
-/*
-Minus
-Description:
-
-	Subtraction of the monomial matrix with another expression.
-*/
+// Minus Subtraction of the monomial matrix with another expression.
 func (mm MonomialMatrix) Minus(e interface{}) Expression {
 	// Input Processing
 	err := mm.Check()
@@ -261,12 +237,7 @@ func (mm MonomialMatrix) Minus(e interface{}) Expression {
 	)
 }
 
-/*
-Multiply
-Description:
-
-	Multiplication of the monomial matrix with another expression.
-*/
+// Multiply Multiplication of the monomial matrix with another expression.
 func (mm MonomialMatrix) Multiply(e interface{}) Expression {
 	// Input Processing
 	err := mm.Check()
@@ -357,12 +328,7 @@ func (mm MonomialMatrix) Multiply(e interface{}) Expression {
 	)
 }
 
-/*
-Transpose
-Description:
-
-	Returns the transpose of the monomial matrix.
-*/
+// Transpose Returns the transpose of the monomial matrix.
 func (mm MonomialMatrix) Transpose() Expression {
 	// Input Processing
 	err := mm.Check()
@@ -390,12 +356,7 @@ func (mm MonomialMatrix) Transpose() Expression {
 	return mmOut
 }
 
-/*
-Comparison
-Description:
-
-	Compares the monomial matrix to another expression according to the sense `sense`.
-*/
+// Comparison Compares the monomial matrix to another expression according to the sense `sense`.
 func (mm MonomialMatrix) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
 	err := mm.Check()
@@ -423,6 +384,7 @@ func (mm MonomialMatrix) Comparison(rightIn interface{}, sense ConstrSense) Cons
 	case K:
 		// Create containers
 		onesMat := OnesMatrix(mm.Dims()[0], mm.Dims()[1])
+		// KAsDense ...
 		var KAsDense mat.Dense
 		KAsDense.Scale(float64(right), &onesMat)
 
@@ -466,45 +428,25 @@ func (mm MonomialMatrix) Comparison(rightIn interface{}, sense ConstrSense) Cons
 	)
 }
 
-/*
-LessEq
-Description:
-
-	Returns a less than or equal to (<=) constraint between the
-	current expression and another.
-*/
+// LessEq Returns a less than or equal to (<=) constraint between the
+// current expression and another.
 func (mm MonomialMatrix) LessEq(rightIn interface{}) Constraint {
 	return mm.Comparison(rightIn, SenseLessThanEqual)
 }
 
-/*
-GreaterEq
-Description:
-
-	Returns a greater than or equal to (>=) constraint between the
-	current expression and another.
-*/
+// GreaterEq Returns a greater than or equal to (>=) constraint between the
+// current expression and another.
 func (mm MonomialMatrix) GreaterEq(rightIn interface{}) Constraint {
 	return mm.Comparison(rightIn, SenseGreaterThanEqual)
 }
 
-/*
-Eq
-Description:
-
-	Returns an equality (==) constraint between the current expression
-	and another.
-*/
+// Eq Returns an equality (==) constraint between the current expression
+// and another.
 func (mm MonomialMatrix) Eq(rightIn interface{}) Constraint {
 	return mm.Comparison(rightIn, SenseEqual)
 }
 
-/*
-DerivativeWrt
-Description:
-
-	Returns the derivative of the monomial matrix with respect to the input variable.
-*/
+// DerivativeWrt Returns the derivative of the monomial matrix with respect to the input variable.
 func (mm MonomialMatrix) DerivativeWrt(vIn Variable) Expression {
 	// Input Processing
 	err := mm.Check()
@@ -533,12 +475,7 @@ func (mm MonomialMatrix) DerivativeWrt(vIn Variable) Expression {
 	return ConcretizeMatrixExpression(dmm)
 }
 
-/*
-At
-Description:
-
-	Returns the (ii,jj)-th value of the monomial matrix.
-*/
+// At Returns the (ii,jj)-th value of the monomial matrix.
 func (mm MonomialMatrix) At(ii, jj int) ScalarExpression {
 	// Input Processing
 	err := mm.Check()
@@ -550,12 +487,7 @@ func (mm MonomialMatrix) At(ii, jj int) ScalarExpression {
 	return mm[ii][jj]
 }
 
-/*
-Constant
-Description:
-
-	Returns the components of the monomial matrix which are constant-valued.
-*/
+// Constant Returns the components of the monomial matrix which are constant-valued.
 func (mm MonomialMatrix) Constant() mat.Dense {
 	// Input Processing
 	err := mm.Check()
@@ -579,12 +511,7 @@ func (mm MonomialMatrix) Constant() mat.Dense {
 	return constant
 }
 
-/*
-String
-Description:
-
-	Returns a string representation of the monomial matrix.
-*/
+// String Returns a string representation of the monomial matrix.
 func (mm MonomialMatrix) String() string {
 	// Input Processing
 	err := mm.Check()
@@ -614,12 +541,7 @@ func (mm MonomialMatrix) String() string {
 	return out
 }
 
-/*
-Degree
-Description:
-
-	Returns the MAXIMUM degree in the monomial matrix.
-*/
+// Degree Returns the MAXIMUM degree in the monomial matrix.
 func (mm MonomialMatrix) Degree() int {
 	// Input Processing
 	err := mm.Check()
@@ -642,22 +564,12 @@ func (mm MonomialMatrix) Degree() int {
 	return maxDegree
 }
 
-/*
-Substitute
-Description:
-
-	Substitutes the variable v with the expression e in the monomial matrix.
-*/
+// Substitute Substitutes the variable v with the expression e in the monomial matrix.
 func (mm MonomialMatrix) Substitute(v Variable, se ScalarExpression) Expression {
 	return MatrixSubstituteTemplate(mm, v, se)
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	Substitutes the variables in the monomial matrix according to the map provided in substitutions.
-*/
+// SubstituteAccordingTo Substitutes the variables in the monomial matrix according to the map provided in substitutions.
 func (mm MonomialMatrix) SubstituteAccordingTo(substitutions map[Variable]Expression) Expression {
 	// Input Processing
 	err := mm.Check()
@@ -679,22 +591,12 @@ func (mm MonomialMatrix) SubstituteAccordingTo(substitutions map[Variable]Expres
 	return out
 }
 
-/*
-Power
-Description:
-
-	Returns the monomial matrix raised to the power of the input integer.
-*/
+// Power Returns the monomial matrix raised to the power of the input integer.
 func (mm MonomialMatrix) Power(exponent int) Expression {
 	return MatrixPowerTemplate(mm, exponent)
 }
 
-/*
-AsSimplifiedExpression
-Description:
-
-	Returns the simplest form of the expression.
-*/
+// AsSimplifiedExpression Returns the simplest form of the expression.
 func (mm MonomialMatrix) AsSimplifiedExpression() Expression {
 	// Input Processing
 	err := mm.Check()

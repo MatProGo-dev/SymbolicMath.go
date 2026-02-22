@@ -6,7 +6,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-// ScalarExpression represents a linear general expression of the form
+// PolynomialLikeScalar represents a linear general expression of the form
 // c0 * x0 + c1 * x1 + ... + cn * xn + k where ci are coefficients and xi are
 // variables and k is a constant. This is a base interface that is implemented
 // by single variables, constants, and general linear expressions.
@@ -83,13 +83,8 @@ type PolynomialLikeScalar interface {
 	AsSimplifiedExpression() Expression
 }
 
-/*
-IsPolynomialLikeScalar
-Description:
-
-	Determines whether or not an input object is a
-	valid "PolynomialLikeScalar" according to MatProInterface.
-*/
+// IsPolynomialLikeScalar Determines whether or not an input object is a
+// valid "PolynomialLikeScalar" according to MatProInterface.
 func IsPolynomialLikeScalar(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
@@ -109,13 +104,8 @@ func IsPolynomialLikeScalar(e interface{}) bool {
 	}
 }
 
-/*
-ToPolynomialLikeScalar
-Description:
-
-	Converts the input expression to a valid type that
-	implements "PolynomialLikeScalar".
-*/
+// ToPolynomialLikeScalar Converts the input expression to a valid type that
+// implements "PolynomialLikeScalar".
 func ToPolynomialLikeScalar(e interface{}) (PolynomialLikeScalar, error) {
 	// Input Processing
 	if !IsPolynomialLikeScalar(e) {

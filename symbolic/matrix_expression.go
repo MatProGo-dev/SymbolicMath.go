@@ -7,12 +7,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-/*
-   matrix_expression.go
-   Description:
-
-*/
-
+// MatrixExpression defines an interface for matrix expressions.
 type MatrixExpression interface {
 	// Check returns an error if the expression is not initialized properly
 	Check() error
@@ -84,12 +79,7 @@ type MatrixExpression interface {
 	AsSimplifiedExpression() Expression
 }
 
-/*
-IsMatrixExpression
-Description:
-
-	Determines whether or not an input object is a valid "VectorExpression" according to MatProInterface.
-*/
+// IsMatrixExpression Determines whether or not an input object is a valid "VectorExpression" according to MatProInterface.
 func IsMatrixExpression(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
@@ -111,12 +101,7 @@ func IsMatrixExpression(e interface{}) bool {
 	}
 }
 
-/*
-ToMatrixExpression
-Description:
-
-	Converts the input expression to a valid type that implements "VectorExpression".
-*/
+// ToMatrixExpression Converts the input expression to a valid type that implements "VectorExpression".
 func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 	// Input Processing
 	if !IsMatrixExpression(e) {
@@ -149,23 +134,13 @@ func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 	}
 }
 
-/*
-IsSquare
-Description:
-
-	Determines whether the input matrix expression is square.
-*/
+// IsSquare Determines whether the input matrix expression is square.
 func IsSquare(e MatrixExpression) bool {
 	dims := e.Dims()
 	return dims[0] == dims[1]
 }
 
-/*
-MatrixPowerTemplate
-Description:
-
-	Template for the matrix power function.
-*/
+// MatrixPowerTemplate Template for the matrix power function.
 func MatrixPowerTemplate(me MatrixExpression, exponent int) MatrixExpression {
 	// Input Processing
 	err := me.Check()
@@ -193,12 +168,7 @@ func MatrixPowerTemplate(me MatrixExpression, exponent int) MatrixExpression {
 	return out
 }
 
-/*
-MatrixMultiplyTemplate
-Description:
-
-	Template for the matrix multiply function.
-*/
+// MatrixMultiplyTemplate Template for the matrix multiply function.
 func MatrixMultiplyTemplate(left MatrixExpression, right MatrixExpression) Expression {
 	// Input Processing
 	err := left.Check()
@@ -255,12 +225,7 @@ func MatrixMultiplyTemplate(left MatrixExpression, right MatrixExpression) Expre
 	return ConcretizeExpression(out)
 }
 
-/*
-MatrixPlusTemplate
-Description:
-
-	Template for the matrix plus function.
-*/
+// MatrixPlusTemplate Template for the matrix plus function.
 func MatrixPlusTemplate(left MatrixExpression, right MatrixExpression) MatrixExpression {
 	// Input Processing
 	err := left.Check()
@@ -300,12 +265,7 @@ func MatrixPlusTemplate(left MatrixExpression, right MatrixExpression) MatrixExp
 	return ConcretizeMatrixExpression(out)
 }
 
-/*
-MatrixSubstituteTemplate
-Description:
-
-	Template for the matrix substitute function.
-*/
+// MatrixSubstituteTemplate Template for the matrix substitute function.
 func MatrixSubstituteTemplate(me MatrixExpression, vIn Variable, seIn ScalarExpression) MatrixExpression {
 	// Input Processing
 	err := me.Check()
@@ -336,12 +296,7 @@ func MatrixSubstituteTemplate(me MatrixExpression, vIn Variable, seIn ScalarExpr
 	return ConcretizeMatrixExpression(out)
 }
 
-/*
-ConcretizeMatrixExpression
-Description:
-
-	Converts the input expression to a valid type that implements "MatrixExpression".
-*/
+// ConcretizeMatrixExpression Converts the input expression to a valid type that implements "MatrixExpression".
 func ConcretizeMatrixExpression(sliceIn [][]ScalarExpression) MatrixExpression {
 	// Input Processing
 	// - Check that the input slice is not empty

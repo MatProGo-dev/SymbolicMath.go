@@ -7,32 +7,17 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-/*
-constant_matrix.go
-Description:
-	Defines all methods related to the constant matrix type.
-*/
-
+// KMatrix defines all methods related to the constant matrix type.
 type KMatrix [][]K
 
-/*
-Check
-Description:
-
-	Checks to make sure that the constant is initialized properly.
-	ConstantMatrix objects are always initialized properly, so this should always return
-	no error.
-*/
+// Check Checks to make sure that the constant is initialized properly.
+// ConstantMatrix objects are always initialized properly, so this should always return
+// no error.
 func (km KMatrix) Check() error {
 	return nil
 }
 
-/*
-ToDense
-Description:
-
-	Converts the constant matrix to a dense matrix.
-*/
+// ToDense Converts the constant matrix to a dense matrix.
 func (km KMatrix) ToDense() mat.Dense {
 	// Input Checking
 	err := km.Check()
@@ -55,22 +40,12 @@ func (km KMatrix) ToDense() mat.Dense {
 	return *kmAsDense
 }
 
-/*
-Variables
-Description:
-
-	There are no variables in the constant matrix.
-*/
+// Variables There are no variables in the constant matrix.
 func (km KMatrix) Variables() []Variable {
 	return []Variable{}
 }
 
-/*
-Dims
-Description:
-
-	The dimensions of the given matrix.
-*/
+// Dims The dimensions of the given matrix.
 func (km KMatrix) Dims() []int {
 	// Input Checking
 	err := km.Check()
@@ -80,12 +55,7 @@ func (km KMatrix) Dims() []int {
 	return []int{len(km), len(km[0])}
 }
 
-/*
-Plus
-Description:
-
-	Addition of the constant matrix with another expression.
-*/
+// Plus Addition of the constant matrix with another expression.
 func (km KMatrix) Plus(e interface{}) Expression {
 	// Input Processing
 	err := km.Check()
@@ -166,12 +136,7 @@ func (km KMatrix) Plus(e interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Minus
-Description:
-
-	Subtraction of the constant matrix with another expression.
-*/
+// Minus Subtraction of the constant matrix with another expression.
 func (km KMatrix) Minus(e interface{}) Expression {
 	// Input Processing
 	err := km.Check()
@@ -219,12 +184,7 @@ func (km KMatrix) Minus(e interface{}) Expression {
 	)
 }
 
-/*
-Multiply
-Description:
-
-	Multiplication of the constant matrix with another expression.
-*/
+// Multiply Multiplication of the constant matrix with another expression.
 func (km KMatrix) Multiply(e interface{}) Expression {
 	// Input Processing
 	err := km.Check()
@@ -353,13 +313,8 @@ func (km KMatrix) Multiply(e interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Transpose
-Description:
-
-	Transposes the constant matrix and returns a new
-	matrix.
-*/
+// Transpose Transposes the constant matrix and returns a new
+// matrix.
 func (km KMatrix) Transpose() Expression {
 	// Constants
 
@@ -382,49 +337,29 @@ func (km KMatrix) Transpose() Expression {
 
 }
 
-/*
-LessEq
-Description:
-
-	Returns a constraint between the KMatrix and the
-	expression on the right hand side.
-*/
+// LessEq Returns a constraint between the KMatrix and the
+// expression on the right hand side.
 func (km KMatrix) LessEq(rightIn interface{}) Constraint {
 	return km.Comparison(rightIn, SenseLessThanEqual)
 
 }
 
-/*
-GreaterEq
-Description:
-
-	Returns a greater equal constraint between the KMatrix and the
-	expression on the right hand side.
-*/
+// GreaterEq Returns a greater equal constraint between the KMatrix and the
+// expression on the right hand side.
 func (km KMatrix) GreaterEq(rightIn interface{}) Constraint {
 	return km.Comparison(rightIn, SenseGreaterThanEqual)
 
 }
 
-/*
-Eq
-Description:
-
-	Returns an equal constraint between the KMatrix and the
-	expression on the right hand side.
-*/
+// Eq Returns an equal constraint between the KMatrix and the
+// expression on the right hand side.
 func (km KMatrix) Eq(rightIn interface{}) Constraint {
 	return km.Comparison(rightIn, SenseEqual)
 
 }
 
-/*
-Comparison
-Description:
-
-	Returns a constraint between the KMatrix and the
-	expression on the right hand side.
-*/
+// Comparison Returns a constraint between the KMatrix and the
+// expression on the right hand side.
 func (km KMatrix) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
 	//err := km.Check()
@@ -483,35 +418,20 @@ func (km KMatrix) Comparison(rightIn interface{}, sense ConstrSense) Constraint 
 
 }
 
-/*
-At
-Description:
-
-	Retrieves element at the specified indices.
-*/
+// At Retrieves element at the specified indices.
 func (km KMatrix) At(i, j int) ScalarExpression {
 	kmAsD := km.ToDense()
 	return K(kmAsD.At(i, j))
 }
 
-/*
-Constant
-Description:
-
-	Retrieves the constant component.
-*/
+// Constant Retrieves the constant component.
 func (km KMatrix) Constant() mat.Dense {
 	return km.ToDense()
 }
 
 // Other Functions
 
-/*
-ZerosMatrix
-Description:
-
-	Returns a dense matrix of all zeros.
-*/
+// ZerosMatrix Returns a dense matrix of all zeros.
 func ZerosMatrix(nR, nC int) mat.Dense {
 	// Create empty slice
 	elts := make([]float64, nR*nC)
@@ -524,12 +444,7 @@ func ZerosMatrix(nR, nC int) mat.Dense {
 	return *mat.NewDense(nR, nC, elts)
 }
 
-/*
-OnesMatrix
-Description:
-
-	Returns a dense matrix of all ones.
-*/
+// OnesMatrix Returns a dense matrix of all ones.
 func OnesMatrix(nR, nC int) mat.Dense {
 	// Create empty slice
 	elts := make([]float64, nR*nC)
@@ -542,13 +457,8 @@ func OnesMatrix(nR, nC int) mat.Dense {
 	return *mat.NewDense(nR, nC, elts)
 }
 
-/*
-Identity
-Description:
-
-	Returns a symmetric matrix that is the identity matrix.
-	Note: this function assumes lengthIn is a positive number.
-*/
+// Identity Returns a symmetric matrix that is the identity matrix.
+// Note: this function assumes lengthIn is a positive number.
 func Identity(dim int) mat.Dense {
 	// Create the empty matrix.
 	zeroBase := ZerosMatrix(dim, dim)
@@ -561,23 +471,13 @@ func Identity(dim int) mat.Dense {
 	return zeroBase
 }
 
-/*
-DerivativeWrt
-Description:
-
-	Computes the derivative of the constant matrix with respect to the variable
-	v. For a constant matrix, this should create a matrix of all zeros (ZerosMatrix).
-*/
+// DerivativeWrt Computes the derivative of the constant matrix with respect to the variable
+// v. For a constant matrix, this should create a matrix of all zeros (ZerosMatrix).
 func (km KMatrix) DerivativeWrt(vIn Variable) Expression {
 	return DenseToKMatrix(ZerosMatrix(km.Dims()[0], km.Dims()[1]))
 }
 
-/*
-String
-Description:
-
-	Returns a string representation of the constant matrix.
-*/
+// String Returns a string representation of the constant matrix.
 func (km KMatrix) String() string {
 	// Constants
 	nR, nC := km.Dims()[0], km.Dims()[1]
@@ -606,12 +506,7 @@ func (km KMatrix) String() string {
 	return out
 }
 
-/*
-DenseToKMatrix
-Description:
-
-	Converts a dense matrix to a KMatrix.
-*/
+// DenseToKMatrix Converts a dense matrix to a KMatrix.
 func DenseToKMatrix(denseIn mat.Dense) KMatrix {
 	// Constants
 	nR, nC := denseIn.Dims()
@@ -631,12 +526,7 @@ func DenseToKMatrix(denseIn mat.Dense) KMatrix {
 	return km
 }
 
-/*
-ToMonomialMatrix
-Description:
-
-	Converts the constant matrix to a monomial matrix.
-*/
+// ToMonomialMatrix Converts the constant matrix to a monomial matrix.
 func (km KMatrix) ToMonomialMatrix() MonomialMatrix {
 	// Constants
 	nR, nC := km.Dims()[0], km.Dims()[1]
@@ -654,12 +544,7 @@ func (km KMatrix) ToMonomialMatrix() MonomialMatrix {
 	return mm
 }
 
-/*
-ToPolynomialMatrix
-Description:
-
-	Converts the constant matrix to a polynomial matrix.
-*/
+// ToPolynomialMatrix Converts the constant matrix to a polynomial matrix.
 func (km KMatrix) ToPolynomialMatrix() PolynomialMatrix {
 	// Constants
 	nR, nC := km.Dims()[0], km.Dims()[1]
@@ -677,53 +562,28 @@ func (km KMatrix) ToPolynomialMatrix() PolynomialMatrix {
 	return pm
 }
 
-/*
-Degree
-Description:
-
-	The degree of a constant matrix is always 0.
-*/
+// Degree The degree of a constant matrix is always 0.
 func (km KMatrix) Degree() int {
 	return 0
 }
 
-/*
-Substitute
-Description:
-
-	Substitutes all occurrences of variable vIn with the expression eIn.
-*/
+// Substitute Substitutes all occurrences of variable vIn with the expression eIn.
 func (km KMatrix) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	return km
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	Substitutes all occurrences of the variables in the map with the corresponding expressions.
-*/
+// SubstituteAccordingTo Substitutes all occurrences of the variables in the map with the corresponding expressions.
 func (km KMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	return km
 }
 
-/*
-Power
-Description:
-
-	Raises the constant matrix to the power of the input integer.
-*/
+// Power Raises the constant matrix to the power of the input integer.
 func (km KMatrix) Power(exponent int) Expression {
 	return MatrixPowerTemplate(km, exponent)
 }
 
-/*
-AsSimplifiedExpression
-Description:
-
-	Simplifies the constant matrix. Since the constant matrix is always in simplest form,
-	this function simply returns the original constant matrix.
-*/
+// AsSimplifiedExpression Simplifies the constant matrix. Since the constant matrix is always in simplest form,
+// this function simply returns the original constant matrix.
 func (km KMatrix) AsSimplifiedExpression() Expression {
 	return km
 }

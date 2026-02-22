@@ -13,44 +13,25 @@ Description:
 	Creates a vector extension of the constant type K from the original goop.
 */
 
-/*
-KVector
-
-	A type which is built on top of the KVector()
-	a constant expression type for an MIP. K for short ¯\_(ツ)_/¯
-*/
+// KVector A type which is built on top of the KVector()
+// a constant expression type for an MIP. K for short ¯\_(ツ)_/¯
 type KVector []K // Inherit all methods from mat.VecDense
 
-/*
-Len
-
-	Computes the length of the KVector given.
-*/
+// Len Computes the length of the KVector given.
 func (kv KVector) Len() int {
 	return len(kv)
 }
 
-/*
-Check
-Description:
-
-	This method is used to make sure that the variable is well-defined.
-	For a constant vector, the vecdense should always be well-defined.
-*/
+// Check This method is used to make sure that the variable is well-defined.
+// For a constant vector, the vecdense should always be well-defined.
 func (kv KVector) Check() error {
 	return nil
 }
 
-/*
-At
-Description:
-
-	This function returns the value at the ii, jj index.
-
-Note:
-
-	For a constant vector, the jj index should always be 0.
-*/
+// At This function returns the value at the ii, jj index.
+// Note:
+//
+// For a constant vector, the jj index should always be 0.
 func (kv KVector) At(ii, jj int) ScalarExpression {
 	// Input Processing
 
@@ -65,12 +46,7 @@ func (kv KVector) At(ii, jj int) ScalarExpression {
 
 }
 
-/*
-AtVec
-Description:
-
-	This function returns the value at the k index.
-*/
+// AtVec This function returns the value at the k index.
 func (kv KVector) AtVec(idx int) ScalarExpression {
 	// Input Processing
 
@@ -85,41 +61,22 @@ func (kv KVector) AtVec(idx int) ScalarExpression {
 	return K(kvAsVector.AtVec(idx))
 }
 
-/*
-Variables
-Description:
-
-	This function returns the empty slice because no variables are in a constant vector.
-*/
+// Variables This function returns the empty slice because no variables are in a constant vector.
 func (kv KVector) Variables() []Variable {
 	return []Variable{}
 }
 
-/*
-LinearCoeff
-Description:
-
-	This function returns a slice of the coefficients in the expression. For constants, this is always nil.
-*/
+// LinearCoeff This function returns a slice of the coefficients in the expression. For constants, this is always nil.
 func (kv KVector) LinearCoeff(wrt ...[]Variable) mat.Dense {
 	return PolynomialLikeVector_SharedLinearCoeffCalc(kv, wrt...)
 }
 
-/*
-Constant
-
-	Returns the constant additive value in the expression. For constants, this is just the constants value
-*/
+// Constant Returns the constant additive value in the expression. For constants, this is just the constants value
 func (kv KVector) Constant() mat.VecDense {
 	return kv.ToVecDense()
 }
 
-/*
-Plus
-Description:
-
-	Adds the current expression to another and returns the resulting expression
-*/
+// Plus Adds the current expression to another and returns the resulting expression
 func (kv KVector) Plus(rightIn interface{}) Expression {
 	// Input Processing
 	err := kv.Check()
@@ -182,12 +139,7 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Minus
-Description:
-
-	Subtracts the current expression from another and returns the resulting expression
-*/
+// Minus Subtracts the current expression from another and returns the resulting expression
 func (kv KVector) Minus(e interface{}) Expression {
 	// Input Processing
 	err := kv.Check()
@@ -240,36 +192,22 @@ func (kv KVector) Minus(e interface{}) Expression {
 	)
 }
 
-/*
-LessEq
-Description:
-
-	Returns a less than or equal to (<=) constraint between the current expression and another
-*/
+// LessEq Returns a less than or equal to (<=) constraint between the current expression and another
 func (kv KVector) LessEq(rightIn interface{}) Constraint {
 	return kv.Comparison(rightIn, SenseLessThanEqual)
 }
 
-/*
-GreaterEq
-Description:
-
-	This method returns a greater than or equal to (>=) constraint between the current expression and another
-*/
+// GreaterEq This method returns a greater than or equal to (>=) constraint between the current expression and another
 func (kv KVector) GreaterEq(rightIn interface{}) Constraint {
 	return kv.Comparison(rightIn, SenseGreaterThanEqual)
 }
 
-/*
-Eq
-Description:
-
-	This method returns an equality (==) constraint between the current expression and another
-*/
+// Eq This method returns an equality (==) constraint between the current expression and another
 func (kv KVector) Eq(rightIn interface{}) Constraint {
 	return kv.Comparison(rightIn, SenseEqual)
 }
 
+// Comparison ...
 func (kv KVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
 	// Input Checking
 	err := kv.Check()
@@ -332,12 +270,7 @@ func (kv KVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint 
 	}
 }
 
-/*
-Multiply
-Description:
-
-	This method is used to compute the multiplication of the input vector constant with another term.
-*/
+// Multiply This method is used to compute the multiplication of the input vector constant with another term.
 func (kv KVector) Multiply(rightIn interface{}) Expression {
 	// Input Processing
 	err := kv.Check()
@@ -431,12 +364,7 @@ func (kv KVector) Multiply(rightIn interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Transpose
-Description:
-
-	This method creates the transpose of the current vector and returns it.
-*/
+// Transpose This method creates the transpose of the current vector and returns it.
 func (kv KVector) Transpose() Expression {
 	// Constants
 	kvAsVD := kv.ToVecDense()
@@ -451,25 +379,15 @@ func (kv KVector) Transpose() Expression {
 	return DenseToKMatrix(kvT)
 }
 
-/*
-Dims
-Description:
-
-	Returns the dimension of the constant vector.
-*/
+// Dims Returns the dimension of the constant vector.
 func (kv KVector) Dims() []int {
 	return []int{kv.Len(), 1}
 }
 
 // Other Functions
 
-/*
-OnesVector
-Description:
-
-	Returns a vector of ones with length lengthIn.
-	Note: this function assumes lengthIn is a positive number.
-*/
+// OnesVector Returns a vector of ones with length lengthIn.
+// Note: this function assumes lengthIn is a positive number.
 func OnesVector(lengthIn int) mat.VecDense {
 	// Create the empty slice.
 	elts := make([]float64, lengthIn)
@@ -480,13 +398,8 @@ func OnesVector(lengthIn int) mat.VecDense {
 	return *mat.NewVecDense(lengthIn, elts)
 }
 
-/*
-ZerosVector
-Description:
-
-	Returns a vector of zeros with length lengthIn.
-	Note: this function assumes lengthIn is a positive number.
-*/
+// ZerosVector Returns a vector of zeros with length lengthIn.
+// Note: this function assumes lengthIn is a positive number.
 func ZerosVector(lengthIn int) mat.VecDense {
 	// Create the empty slice.
 	elts := make([]float64, lengthIn)
@@ -497,23 +410,13 @@ func ZerosVector(lengthIn int) mat.VecDense {
 	return *mat.NewVecDense(lengthIn, elts)
 }
 
-/*
-DerivativeWrt
-Description:
-
-	Computes the derivative of the symbolic expression with respect to the
-	variable vIn which should be a vector of all zeros.
-*/
+// DerivativeWrt Computes the derivative of the symbolic expression with respect to the
+// variable vIn which should be a vector of all zeros.
 func (kv KVector) DerivativeWrt(vIn Variable) Expression {
 	return VecDenseToKVector(ZerosVector(kv.Len()))
 }
 
-/*
-String
-Description:
-
-	Returns a string representation of the constant vector.
-*/
+// String Returns a string representation of the constant vector.
 func (kv KVector) String() string {
 	// Constants
 	lenKV := kv.Len()
@@ -531,12 +434,7 @@ func (kv KVector) String() string {
 	return stringKV
 }
 
-/*
-ToVecDense
-Description:
-
-	This method converts the KVector to a mat.VecDense.
-*/
+// ToVecDense This method converts the KVector to a mat.VecDense.
 func (kv KVector) ToVecDense() mat.VecDense {
 	dataIn := make([]float64, kv.Len())
 	for ii, tempK := range kv {
@@ -545,12 +443,7 @@ func (kv KVector) ToVecDense() mat.VecDense {
 	return *mat.NewVecDense(len(kv), dataIn)
 }
 
-/*
-VecDenseToKVector
-Description:
-
-	This method converts the mat.VecDense to a KVector.
-*/
+// VecDenseToKVector This method converts the mat.VecDense to a KVector.
 func VecDenseToKVector(v mat.VecDense) KVector {
 	out := make([]K, v.Len())
 	for ii := 0; ii < v.Len(); ii++ {
@@ -559,12 +452,7 @@ func VecDenseToKVector(v mat.VecDense) KVector {
 	return out
 }
 
-/*
-ToMonomialVector
-Description:
-
-	This function converts the input expression to a monomial vector.
-*/
+// ToMonomialVector This function converts the input expression to a monomial vector.
 func (kv KVector) ToMonomialVector() MonomialVector {
 	// Input Processing
 	err := kv.Check()
@@ -582,12 +470,7 @@ func (kv KVector) ToMonomialVector() MonomialVector {
 	return mvOut
 }
 
-/*
-ToPolynomialVector
-Description:
-
-	This function converts the input expression to a polynomial vector.
-*/
+// ToPolynomialVector This function converts the input expression to a polynomial vector.
 func (kv KVector) ToPolynomialVector() PolynomialVector {
 	return kv.ToMonomialVector().ToPolynomialVector()
 }
@@ -597,62 +480,32 @@ ToKMatrix
 Description:
 */
 
-/*
-Degree
-Description:
-
-	The degree of a constant matrix is always 0.
-*/
+// Degree The degree of a constant matrix is always 0.
 func (kv KVector) Degree() int {
 	return 0
 }
 
-/*
-Substitute
-Description:
-
-	Substitutes all occurrences of variable vIn with the expression eIn.
-*/
+// Substitute Substitutes all occurrences of variable vIn with the expression eIn.
 func (kv KVector) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	return kv
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	Substitutes all occurrences of the variables in the map with the corresponding expressions.
-*/
+// SubstituteAccordingTo Substitutes all occurrences of the variables in the map with the corresponding expressions.
 func (kv KVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	return kv
 }
 
-/*
-Power
-Description:
-
-	Raises the scalar expression to the power of the input integer.
-*/
+// Power Raises the scalar expression to the power of the input integer.
 func (kv KVector) Power(exponent int) Expression {
 	return VectorPowerTemplate(kv, exponent)
 }
 
-/*
-AsSimplifiedExpression
-Description:
-
-	Returns the simplest form of the expression.
-*/
+// AsSimplifiedExpression Returns the simplest form of the expression.
 func (kv KVector) AsSimplifiedExpression() Expression {
 	return kv
 }
 
-/*
-ToScalarExpressions
-Description:
-
-	Converts the KVector into a slice of ScalarExpression type objects.
-*/
+// ToScalarExpressions Converts the KVector into a slice of ScalarExpression type objects.
 func (kv KVector) ToScalarExpressions() []ScalarExpression {
 	var out []ScalarExpression
 	for _, k := range kv {

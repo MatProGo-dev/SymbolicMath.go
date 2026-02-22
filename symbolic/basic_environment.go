@@ -1,14 +1,17 @@
 package symbolic
 
+// BasicEnvironment ...
 type BasicEnvironment struct {
 	name      string
 	Variables []Variable
 }
 
+// GetName ...
 func (be *BasicEnvironment) GetName() string {
 	return be.name
 }
 
+// TrackVariable ...
 func (be *BasicEnvironment) TrackVariable(v Variable) bool {
 	// Check if the variable is already in the environment
 	for _, existingVar := range be.Variables {
@@ -23,14 +26,12 @@ func (be *BasicEnvironment) TrackVariable(v Variable) bool {
 	return true // Variable was added successfully
 }
 
+// AllTrackedVariables ...
 func (be *BasicEnvironment) AllTrackedVariables() []Variable {
 	return be.Variables
 }
 
-/*
-Public Functions
-*/
-
+// MakeBasicEnvironment creates a new BasicEnvironment with the given name.
 func MakeBasicEnvironment(nameIn string) BasicEnvironment {
 	return BasicEnvironment{
 		name:      nameIn,
@@ -38,8 +39,5 @@ func MakeBasicEnvironment(nameIn string) BasicEnvironment {
 	}
 }
 
-/*
-DefaultEnvironment
-A variable that exists in the background and used to store information about the variables currently created.
-*/
+// DefaultEnvironment A variable that exists in the background and used to store information about the variables currently created.
 var DefaultEnvironment = MakeBasicEnvironment("DefaultEnvironment")

@@ -13,21 +13,14 @@ Description:
 	This file defines the function associated with the Monomial object.
 */
 
-/*
-Type Definition
-*/
+// Monomial Type Definition
 type Monomial struct {
 	Coefficient     float64
 	Exponents       []int
 	VariableFactors []Variable
 }
 
-/*
-Check
-Description:
-
-	This function checks that the monomial is valid.
-*/
+// Check This function checks that the monomial is valid.
 func (m Monomial) Check() error {
 	// Check that the number of degrees matches the number of variables
 	if len(m.Exponents) != len(m.VariableFactors) {
@@ -41,32 +34,17 @@ func (m Monomial) Check() error {
 	return nil
 }
 
-/*
-Variables
-Description:
-
-	Returns the variables in the monomial.
-*/
+// Variables Returns the variables in the monomial.
 func (m Monomial) Variables() []Variable {
 	return m.VariableFactors
 }
 
-/*
-Dims
-Description:
-
-	Returns the dimensions of the monomial. (It is a scalar, so this is [1,1])
-*/
+// Dims Returns the dimensions of the monomial. (It is a scalar, so this is [1,1])
 func (m Monomial) Dims() []int {
 	return []int{1, 1}
 }
 
-/*
-Plus
-Description:
-
-	Multiplication of the monomial with another expression.
-*/
+// Plus Multiplication of the monomial with another expression.
 func (m Monomial) Plus(e interface{}) Expression {
 	// Input Processing
 	err := m.Check()
@@ -135,12 +113,7 @@ func (m Monomial) Plus(e interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Minus
-Description:
-
-	Subtraction of the monomial with another expression.
-*/
+// Minus Subtraction of the monomial with another expression.
 func (m Monomial) Minus(e interface{}) Expression {
 	// Input Processing
 	err := m.Check()
@@ -174,12 +147,7 @@ func (m Monomial) Minus(e interface{}) Expression {
 	)
 }
 
-/*
-Multiply
-Description:
-
-	Defines the multiplication operation between a monomial and another expression.
-*/
+// Multiply Defines the multiplication operation between a monomial and another expression.
 func (m Monomial) Multiply(e interface{}) Expression {
 	// Input Processing
 	err := m.Check()
@@ -263,12 +231,7 @@ func (m Monomial) Multiply(e interface{}) Expression {
 	)
 }
 
-/*
-Transpose
-Description:
-
-	Transposes the scalar monomial and returns it. (This is the same as simply copying the monomial.)
-*/
+// Transpose Transposes the scalar monomial and returns it. (This is the same as simply copying the monomial.)
 func (m Monomial) Transpose() Expression {
 	// Input Processing
 	err := m.Check()
@@ -279,46 +242,26 @@ func (m Monomial) Transpose() Expression {
 	return m
 }
 
-/*
-LessEq
-Description:
-
-	Returns a constraint between a monomial being less than an
-	expression.
-*/
+// LessEq Returns a constraint between a monomial being less than an
+// expression.
 func (m Monomial) LessEq(rightIn interface{}) Constraint {
 	return m.Comparison(rightIn, SenseLessThanEqual)
 }
 
-/*
-GreaterEq
-Description:
-
-	Returns a constraint between a monomial being greater than an
-	expression.
-*/
+// GreaterEq Returns a constraint between a monomial being greater than an
+// expression.
 func (m Monomial) GreaterEq(rightIn interface{}) Constraint {
 	return m.Comparison(rightIn, SenseGreaterThanEqual)
 }
 
-/*
-Eq
-Description:
-
-	Returns a constraint between a monomial being equal to an
-	expression.
-*/
+// Eq Returns a constraint between a monomial being equal to an
+// expression.
 func (m Monomial) Eq(rightIn interface{}) Constraint {
 	return m.Comparison(rightIn, SenseEqual)
 }
 
-/*
-Comparison
-Description:
-
-	Base method for creating constraints as comparisons between
-	two different expressions according to a sense.
-*/
+// Comparison Base method for creating constraints as comparisons between
+// two different expressions according to a sense.
 func (m Monomial) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
 	err := m.Check()
@@ -366,13 +309,8 @@ func (m Monomial) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	)
 }
 
-/*
-Constant
-Description:
-
-	Returns the constant component in the scalar monomial.
-	This should be zero unless there are no variables present. Then it will be the coefficient.
-*/
+// Constant Returns the constant component in the scalar monomial.
+// This should be zero unless there are no variables present. Then it will be the coefficient.
 func (m Monomial) Constant() float64 {
 	if len(m.VariableFactors) == 0 {
 		return m.Coefficient
@@ -381,12 +319,7 @@ func (m Monomial) Constant() float64 {
 	}
 }
 
-/*
-LinearCoeffs
-Description:
-
-	Returns the coefficients of the linear terms in the monomial.
-*/
+// LinearCoeff returns the coefficients of the linear terms in the monomial.
 func (m Monomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	// Input Processing
 	err := m.Check()
@@ -426,12 +359,7 @@ func (m Monomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	return linearCoeffs
 }
 
-/*
-IsConstant
-Description:
-
-	Returns true if the monomial defines a constant.
-*/
+// IsConstant Returns true if the monomial defines a constant.
 func (m Monomial) IsConstant() bool {
 	// Input Checking
 	err := m.Check()
@@ -443,12 +371,7 @@ func (m Monomial) IsConstant() bool {
 	return len(m.VariableFactors) == 0
 }
 
-/*
-IsZero
-Description:
-
-	Returns true if the monomial defines the constant zero.
-*/
+// IsZero Returns true if the monomial defines the constant zero.
 func (m Monomial) IsZero() bool {
 	// Input Checking
 	err := m.Check()
@@ -460,13 +383,8 @@ func (m Monomial) IsZero() bool {
 	return m.Coefficient == 0.0
 }
 
-/*
-IsDegreeOneContainingVariable
-Description:
-
-	Returns true if the monomial defines an expression containing only the
-	variable v.
-*/
+// IsDegreeOneContainingVariable Returns true if the monomial defines an expression containing only the
+// variable v.
 func (m Monomial) IsDegreeOneContainingVariable(v Variable) bool {
 	// Input Checking
 	err := m.Check()
@@ -496,12 +414,7 @@ func (m Monomial) IsDegreeOneContainingVariable(v Variable) bool {
 	}
 }
 
-/*
-IsVariable
-Description:
-
-	Returns true if the monomial defines the variable v.
-*/
+// IsVariable Returns true if the monomial defines the variable v.
 func (m Monomial) IsVariable(v Variable) bool {
 	// Input Checking
 	err := m.Check()
@@ -519,13 +432,8 @@ func (m Monomial) IsVariable(v Variable) bool {
 	return m.IsDegreeOneContainingVariable(v) && (m.Coefficient == 1.0)
 }
 
-/*
-MatchesFormOf
-Description:
-
-	Returns true if the monomial matches the form of the input monomial.
-	(in other words if the input monomial has the same variables and degrees as the input monomial.)
-*/
+// MatchesFormOf Returns true if the monomial matches the form of the input monomial.
+// (in other words if the input monomial has the same variables and degrees as the input monomial.)
 func (m Monomial) MatchesFormOf(mIn Monomial) bool {
 	// Input Checking
 	err := m.Check()
@@ -561,16 +469,11 @@ func (m Monomial) MatchesFormOf(mIn Monomial) bool {
 	return true
 }
 
-/*
-DerivativeWrt
-Description:
-
-	This function returns the derivative of the monomial with respect to the input
-	variable vIn. If the monomial does not contain the variable vIn, then the
-	derivative is zero.
-	If the monomial does contain the variable vIn, then the derivative is the monomial
-	with a decreased degree of vIn and a coefficient equal to the original coefficient.
-*/
+// DerivativeWrt This function returns the derivative of the monomial with respect to the input
+// variable vIn. If the monomial does not contain the variable vIn, then the
+// derivative is zero.
+// If the monomial does contain the variable vIn, then the derivative is the monomial
+// with a decreased degree of vIn and a coefficient equal to the original coefficient.
 func (m Monomial) DerivativeWrt(vIn Variable) Expression {
 	// Input Processing
 	err := m.Check()
@@ -617,12 +520,7 @@ func (m Monomial) DerivativeWrt(vIn Variable) Expression {
 	}
 }
 
-/*
-Degree
-Description:
-
-	Returns the degree of the monomial.
-*/
+// Degree Returns the degree of the monomial.
 func (m Monomial) Degree() int {
 	// Input Processing
 	err := m.Check()
@@ -640,12 +538,7 @@ func (m Monomial) Degree() int {
 	return degree
 }
 
-/*
-ToPolynomial
-Description:
-
-	Creates a copy of the monomial m as a polynomial.
-*/
+// ToPolynomial Creates a copy of the monomial m as a polynomial.
 func (m Monomial) ToPolynomial() Polynomial {
 	// Copy Values
 	mCopy := m.Copy()
@@ -656,13 +549,8 @@ func (m Monomial) ToPolynomial() Polynomial {
 	}
 }
 
-/*
-ToVariable
-Description:
-
-	Converts the monomial to a variable if it is a variable.
-	If the monomial is not a variable, then this function panics.
-*/
+// ToVariable Converts the monomial to a variable if it is a variable.
+// If the monomial is not a variable, then this function panics.
 func (m Monomial) ToVariable() Variable {
 	// Input Processing
 	err := m.Check()
@@ -684,12 +572,7 @@ func (m Monomial) ToVariable() Variable {
 	}
 }
 
-/*
-String
-Description:
-
-	Returns a string representation of the monomial.
-*/
+// String Returns a string representation of the monomial.
 func (m Monomial) String() string {
 	// Input Processing
 	err := m.Check()
@@ -721,12 +604,7 @@ func (m Monomial) String() string {
 	return monomialString
 }
 
-/*
-Copy
-Description:
-
-	Returns a copy of the monomial.
-*/
+// Copy Returns a copy of the monomial.
 func (m Monomial) Copy() Monomial {
 	// Copy Values
 	mCopy := Monomial{
@@ -741,12 +619,7 @@ func (m Monomial) Copy() Monomial {
 	return mCopy
 }
 
-/*
-Substitute
-Description:
-
-	Substitutes all occurrences of variable vIn with the expression eIn.
-*/
+// Substitute Substitutes all occurrences of variable vIn with the expression eIn.
 func (m Monomial) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	// Input Processing
 	err := m.Check()
@@ -784,12 +657,7 @@ func (m Monomial) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	return prod
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	Substitutes all occurrences of the variables in the map with the corresponding expressions.
-*/
+// SubstituteAccordingTo Substitutes all occurrences of the variables in the map with the corresponding expressions.
 func (m Monomial) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := m.Check()
@@ -817,22 +685,12 @@ func (m Monomial) SubstituteAccordingTo(subMap map[Variable]Expression) Expressi
 	return out
 }
 
-/*
-Power
-Description:
-
-	Computes the power of the monomial.
-*/
+// Power Computes the power of the monomial.
 func (m Monomial) Power(exponent int) Expression {
 	return ScalarPowerTemplate(m, exponent)
 }
 
-/*
-At
-Description:
-
-	Returns the value at the given row and column index.
-*/
+// At Returns the value at the given row and column index.
 func (m Monomial) At(ii, jj int) ScalarExpression {
 	// Input Processing
 	err := m.Check()
@@ -849,21 +707,16 @@ func (m Monomial) At(ii, jj int) ScalarExpression {
 	return m
 }
 
-/*
-AsSimplifiedExpression
-Description:
-
-	Returns the simplest form of the expression.
-	- If the monomial contains no variables,
-	then it is simply the constant coefficient. (return K(m.Coefficient))
-	- If the monomial coefficient is zero,
-	then it is simply the constant zero. (return K(0))
-	- If the monomial contains variables BUT all exponents are zero,
-	then it is simply the constant zero. (return K(0))
-	- If the monomial's coefficient is 1.0 and it contains one variable with degree 1,
-	then it is simply that variable. (return that variable)
-	- Otherwise, return the monomial itself.
-*/
+// AsSimplifiedExpression Returns the simplest form of the expression.
+// - If the monomial contains no variables,
+// then it is simply the constant coefficient. (return K(m.Coefficient))
+// - If the monomial coefficient is zero,
+// then it is simply the constant zero. (return K(0))
+// - If the monomial contains variables BUT all exponents are zero,
+// then it is simply the constant zero. (return K(0))
+// - If the monomial's coefficient is 1.0 and it contains one variable with degree 1,
+// then it is simply that variable. (return that variable)
+// - Otherwise, return the monomial itself.
 func (m Monomial) AsSimplifiedExpression() Expression {
 	// Input Processing
 	err := m.Check()
