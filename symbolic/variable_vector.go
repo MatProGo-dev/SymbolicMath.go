@@ -291,7 +291,7 @@ func (vv VariableVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 	)
 }
 
-// Copy ...
+// Copy returns a new VariableVector with the same variables as the receiver.
 func (vv VariableVector) Copy() VariableVector {
 	// Constants
 

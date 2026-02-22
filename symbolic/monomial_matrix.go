@@ -384,7 +384,6 @@ func (mm MonomialMatrix) Comparison(rightIn interface{}, sense ConstrSense) Cons
 	case K:
 		// Create containers
 		onesMat := OnesMatrix(mm.Dims()[0], mm.Dims()[1])
-		// KAsDense ...
 		var KAsDense mat.Dense
 		KAsDense.Scale(float64(right), &onesMat)
 

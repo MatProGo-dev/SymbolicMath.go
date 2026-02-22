@@ -207,7 +207,8 @@ func (kv KVector) Eq(rightIn interface{}) Constraint {
 	return kv.Comparison(rightIn, SenseEqual)
 }
 
-// Comparison ...
+// Comparison creates a constraint comparing the KVector with the given
+// expression in the sense provided by sense.
 func (kv KVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
 	// Input Checking
 	err := kv.Check()

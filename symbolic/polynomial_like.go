@@ -77,7 +77,8 @@ func IsPolynomialLike(e interface{}) bool {
 	return IsPolynomialLikeScalar(e) || IsPolynomialLikeVector(e) || IsPolynomialLikeMatrix(e)
 }
 
-// ToPolynomialLike ...
+// ToPolynomialLike converts an interface to a PolynomialLike type.
+// Returns an error if the input is not a recognized PolynomialLike type.
 func ToPolynomialLike(e interface{}) (PolynomialLike, error) {
 	switch {
 	case IsPolynomialLikeScalar(e):

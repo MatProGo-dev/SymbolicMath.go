@@ -529,7 +529,8 @@ func (p Polynomial) Simplify() Polynomial {
 
 }
 
-// AsSimplifiedExpression ...
+// AsSimplifiedExpression returns the simplest form of the polynomial,
+// reducing it to a lower-degree expression type when possible.
 func (p Polynomial) AsSimplifiedExpression() Expression {
 	// Simplify the polynomial
 	pReduced := p.Simplify()

@@ -360,7 +360,8 @@ func VectorPowerTemplate(base VectorExpression, exponent int) Expression {
 	return result
 }
 
-// VectorMultiplyTemplate ...
+// VectorMultiplyTemplate multiplies a VectorExpression by a scalar Expression
+// element-wise and returns the result.
 func VectorMultiplyTemplate(ve VectorExpression, right Expression) Expression {
 	// Setup
 	veAsSlice := ve.ToScalarExpressions()
@@ -384,7 +385,8 @@ func VectorMultiplyTemplate(ve VectorExpression, right Expression) Expression {
 	return ConcretizeExpression(prod)
 }
 
-// VectorPlusTemplate ...
+// VectorPlusTemplate adds a scalar Expression to each element of a VectorExpression
+// and returns the result.
 func VectorPlusTemplate(ve VectorExpression, right Expression) Expression {
 	// Setup
 	veAsSlice := ve.ToScalarExpressions()

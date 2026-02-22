@@ -372,7 +372,6 @@ func (pm PolynomialMatrix) Comparison(e interface{}, sense ConstrSense) Constrai
 	case K:
 		// Create containers
 		onesMat := OnesMatrix(pm.Dims()[0], pm.Dims()[1])
-		// KAsDense ...
 		var KAsDense mat.Dense
 		KAsDense.Scale(float64(right), &onesMat)
 
@@ -512,7 +511,7 @@ func (pm PolynomialMatrix) Simplify() MatrixExpression {
 	return ConcretizeMatrixExpression(simplified)
 }
 
-// AsSimplifiedExpression ...
+// AsSimplifiedExpression returns the simplest form of the polynomial matrix.
 func (pm PolynomialMatrix) AsSimplifiedExpression() Expression {
 	return pm.Simplify()
 }

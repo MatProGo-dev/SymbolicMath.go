@@ -286,12 +286,12 @@ func (c K) Multiply(term1 interface{}) Expression {
 	)
 }
 
-// Dims ...
+// Dims returns the dimensions of the constant K as a scalar [1, 1].
 func (c K) Dims() []int {
 	return []int{1, 1} // Signifies scalar
 }
 
-// Transpose ...
+// Transpose returns the constant itself, as the transpose of a scalar is itself.
 func (c K) Transpose() Expression {
 	return c
 }

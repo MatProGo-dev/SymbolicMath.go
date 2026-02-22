@@ -14,7 +14,7 @@ const (
 	SenseGreaterThanEqual ConstrSense = '>'
 )
 
-// String ...
+// String returns a string representation of the constraint sense (e.g., "=", "<=", ">=").
 func (cs ConstrSense) String() string {
 	switch cs {
 	case SenseEqual:

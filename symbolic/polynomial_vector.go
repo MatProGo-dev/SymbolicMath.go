@@ -435,7 +435,7 @@ func (pv PolynomialVector) Simplify() VectorExpression {
 	return ConcretizeVectorExpression(simplified)
 }
 
-// AsSimplifiedExpression ...
+// AsSimplifiedExpression returns the simplest form of the polynomial vector.
 func (pv PolynomialVector) AsSimplifiedExpression() Expression {
 	return pv.Simplify()
 }

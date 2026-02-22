@@ -367,7 +367,6 @@ func (vm VariableMatrix) Comparison(rightIn interface{}, sense ConstrSense) Cons
 	case K:
 		// Create a new matrix of polynomials.
 		onesMat := OnesMatrix(vm.Dims()[0], vm.Dims()[1])
-		// KAsDense ...
 		var KAsDense mat.Dense
 		KAsDense.Scale(float64(right), &onesMat)
 

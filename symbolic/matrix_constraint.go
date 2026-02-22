@@ -13,12 +13,12 @@ type MatrixConstraint struct {
 	Sense         ConstrSense
 }
 
-// Left ...
+// Left returns the left-hand side expression of the matrix constraint.
 func (mc MatrixConstraint) Left() Expression {
 	return mc.LeftHandSide
 }
 
-// Right ...
+// Right returns the right-hand side expression of the matrix constraint.
 func (mc MatrixConstraint) Right() Expression {
 	return mc.RightHandSide
 }
@@ -92,7 +92,7 @@ func (mc MatrixConstraint) Dims() []int {
 
 }
 
-// At retrieves the constraint formed by one element of the "vector" constraint.
+// At retrieves the scalar constraint formed by the element at row ii and column jj of the matrix constraint.
 func (mc MatrixConstraint) At(ii, jj int) ScalarConstraint {
 	// Input Processing
 	err := mc.Check()

@@ -16,12 +16,12 @@ type ScalarConstraint struct {
 	Sense         ConstrSense
 }
 
-// Left ...
+// Left returns the left-hand side expression of the scalar constraint.
 func (sc ScalarConstraint) Left() Expression {
 	return sc.LeftHandSide
 }
 
-// Right ...
+// Right returns the right-hand side expression of the scalar constraint.
 func (sc ScalarConstraint) Right() Expression {
 	return sc.RightHandSide
 }
@@ -246,12 +246,13 @@ func (sc ScalarConstraint) AsSimplifiedConstraint() Constraint {
 	return sc.Simplify()
 }
 
-// Variables ...
+// Variables returns all variables appearing in the scalar constraint.
 func (sc ScalarConstraint) Variables() []Variable {
 	return VariablesInThisConstraint(sc)
 }
 
-// ScaleBy ...
+// ScaleBy multiplies both sides of the constraint by the given factor
+// and returns the resulting constraint.
 func (sc ScalarConstraint) ScaleBy(factor float64) Constraint {
 	// Check that the constraint is well formed.
 	err := sc.Check()

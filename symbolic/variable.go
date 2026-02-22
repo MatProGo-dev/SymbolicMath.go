@@ -369,12 +369,13 @@ func (v Variable) Check() error {
 	return nil
 }
 
-// Transpose ...
+// Transpose returns the variable itself, as the transpose of a scalar is itself.
 func (v Variable) Transpose() Expression {
 	return v
 }
 
-// NewVariable ...
+// NewVariable creates a new continuous variable in the given environment
+// (or the default environment if none is provided).
 func NewVariable(envs ...Environment) Variable {
 	return NewContinuousVariable(envs...)
 }
@@ -570,7 +571,8 @@ func (v Variable) At(ii, jj int) ScalarExpression {
 	return v
 }
 
-// UnionOfVariables ...
+// UnionOfVariables returns a slice containing the unique union of all variables
+// from the given slices.
 func UnionOfVariables(varSlices ...[]Variable) []Variable {
 	var allVars []Variable
 	for _, varSlice := range varSlices {

@@ -80,12 +80,12 @@ func (vc VectorConstraint) Check() error {
 	return nil
 }
 
-// Left ...
+// Left returns the left-hand side expression of the vector constraint.
 func (vc VectorConstraint) Left() Expression {
 	return vc.LeftHandSide
 }
 
-// Right ...
+// Right returns the right-hand side expression of the vector constraint.
 func (vc VectorConstraint) Right() Expression {
 	return vc.RightHandSide
 }

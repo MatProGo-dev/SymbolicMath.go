@@ -92,7 +92,8 @@ func IsExpression(e interface{}) bool {
 	return IsScalarExpression(e) || IsVectorExpression(e) || IsMatrixExpression(e)
 }
 
-// ToExpression ...
+// ToExpression converts an interface to an Expression type.
+// Returns an error if the input is not a recognized expression type.
 func ToExpression(e interface{}) (Expression, error) {
 	switch {
 	case IsScalarExpression(e):

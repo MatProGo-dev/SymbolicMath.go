@@ -30,7 +30,7 @@ type Constraint interface {
 	// IsNonnegativityConstraint() bool
 }
 
-// IsConstraint ...
+// IsConstraint returns true if the given interface is a recognized Constraint type.
 func IsConstraint(c interface{}) bool {
 	switch c.(type) {
 	case ScalarConstraint:
