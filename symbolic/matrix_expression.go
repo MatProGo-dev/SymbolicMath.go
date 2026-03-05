@@ -225,7 +225,8 @@ func MatrixMultiplyTemplate(left MatrixExpression, right MatrixExpression) Expre
 	return ConcretizeExpression(out)
 }
 
-// MatrixPlusTemplate Template for the matrix plus function.
+// MatrixPlusTemplate is a function that can compute the addition of two matrix objects. Any object that implements MatrixExpression can be used in this function to compute sums.
+// This is also heavily used across all matrix objects because they are required to implement Plus().
 func MatrixPlusTemplate(left MatrixExpression, right MatrixExpression) MatrixExpression {
 	// Input Processing
 	err := left.Check()
