@@ -65,7 +65,8 @@ func (kv KVector) Variables() []Variable {
 	return []Variable{}
 }
 
-// LinearCoeff This function returns a slice of the coefficients in the expression. For constants, this is always nil.
+// LinearCoeff computes the linear coefficient vector that, when multiplied by kv.Variables(), can produce the given KVector kv.
+// The constant vector contains no variables, so this vector is always an empty vector. I.e., this is always nil.
 func (kv KVector) LinearCoeff(wrt ...[]Variable) mat.Dense {
 	return PolynomialLikeVector_SharedLinearCoeffCalc(kv, wrt...)
 }
