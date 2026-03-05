@@ -562,7 +562,7 @@ func (km KMatrix) ToPolynomialMatrix() PolynomialMatrix {
 	return pm
 }
 
-// Degree The degree of a constant matrix is always 0.
+// Degree returns the degree of the constant matrix (which is always 0).
 func (km KMatrix) Degree() int {
 	return 0
 }
