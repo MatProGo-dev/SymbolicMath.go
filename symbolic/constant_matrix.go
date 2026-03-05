@@ -567,7 +567,7 @@ func (km KMatrix) Degree() int {
 	return 0
 }
 
-// Substitute Substitutes all occurrences of variable vIn with the expression eIn.
+// Substitute Substitutes all occurrences of variable vIn with the expression eIn. Because a constant matrix contains no variables, this function always returns the original matrix.
 func (km KMatrix) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	return km
 }
