@@ -7,7 +7,8 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-// MatrixExpression defines an interface for matrix expressions.
+// MatrixExpression is a mathematical expression that is shaped like a matrix (i.e., with rows and columns).
+// This object is an interface for matrix expressions, and so is implemented by other structs in Go (e.g., VariableMatrix).
 type MatrixExpression interface {
 	// Check returns an error if the expression is not initialized properly
 	Check() error
