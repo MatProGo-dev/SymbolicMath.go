@@ -481,7 +481,7 @@ ToKMatrix
 Description:
 */
 
-// Degree The degree of a constant matrix is always 0.
+// Degree returns the polynomial degree of the constant vector. The degree of a constant vector is always 0.
 func (kv KVector) Degree() int {
 	return 0
 }
