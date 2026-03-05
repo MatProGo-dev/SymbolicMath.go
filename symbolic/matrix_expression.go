@@ -101,7 +101,7 @@ func IsMatrixExpression(e interface{}) bool {
 	}
 }
 
-// ToMatrixExpression Converts the input expression to a valid type that implements "VectorExpression".
+// ToMatrixExpression Converts the input expression to a valid type that implements "MatrixExpression".
 func ToMatrixExpression(e interface{}) (MatrixExpression, error) {
 	// Input Processing
 	if !IsMatrixExpression(e) {
