@@ -40,7 +40,7 @@ func (km KMatrix) ToDense() mat.Dense {
 	return *kmAsDense
 }
 
-// Variables There are no variables in the constant matrix.
+// Variables returns the number of variables contained in the constant matrix. (There are no variables in the constant matrix.)
 func (km KMatrix) Variables() []Variable {
 	return []Variable{}
 }
