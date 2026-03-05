@@ -573,6 +573,7 @@ func (km KMatrix) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 }
 
 // SubstituteAccordingTo Substitutes all occurrences of the variables in the map with the corresponding expressions.
+// Similar to the above, there are no variables in a constant matrix and so this will always return the constant matrix.
 func (km KMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	return km
 }
