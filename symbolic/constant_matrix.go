@@ -457,7 +457,7 @@ func OnesMatrix(nR, nC int) mat.Dense {
 	return *mat.NewDense(nR, nC, elts)
 }
 
-// Identity Returns a symmetric matrix that is the identity matrix.
+// Identity Returns the identity matrix of a given size (note that this matrix is symmetric).
 // Note: this function assumes lengthIn is a positive number.
 func Identity(dim int) mat.Dense {
 	// Create the empty matrix.
