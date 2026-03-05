@@ -22,7 +22,7 @@ func (kv KVector) Len() int {
 }
 
 // Check This method is used to make sure that the variable is well-defined.
-// For a constant vector, the vecdense should always be well-defined.
+// For a constant vector, the slice should always be well-defined. This always returns no errors.
 func (kv KVector) Check() error {
 	return nil
 }
