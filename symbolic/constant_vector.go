@@ -271,7 +271,7 @@ func (kv KVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint 
 	}
 }
 
-// Multiply This method is used to compute the multiplication of the input vector constant with another term.
+// Multiply returns the product of the input vector constant with another term.
 func (kv KVector) Multiply(rightIn interface{}) Expression {
 	// Input Processing
 	err := kv.Check()
