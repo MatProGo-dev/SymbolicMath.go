@@ -140,7 +140,7 @@ func IsSquare(e MatrixExpression) bool {
 	return dims[0] == dims[1]
 }
 
-// MatrixPowerTemplate Template for the matrix power function.
+// MatrixPowerTemplate template which can easily compute the exponential of an input matrix. Useful, for all MatrixExpression's Power() method (they are required to implement this).
 func MatrixPowerTemplate(me MatrixExpression, exponent int) MatrixExpression {
 	// Input Processing
 	err := me.Check()
