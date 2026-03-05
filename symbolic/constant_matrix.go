@@ -444,7 +444,7 @@ func ZerosMatrix(nR, nC int) mat.Dense {
 	return *mat.NewDense(nR, nC, elts)
 }
 
-// OnesMatrix Returns a dense matrix of all ones.
+// OnesMatrix Returns a mat.Dense matrix (from gonum) of all ones.
 func OnesMatrix(nR, nC int) mat.Dense {
 	// Create empty slice
 	elts := make([]float64, nR*nC)
