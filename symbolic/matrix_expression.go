@@ -265,7 +265,8 @@ func MatrixPlusTemplate(left MatrixExpression, right MatrixExpression) MatrixExp
 	return ConcretizeMatrixExpression(out)
 }
 
-// MatrixSubstituteTemplate Template for the matrix substitute function.
+// MatrixSubstituteTemplate is a function that can compute the substitution of a variable with a scalar expression into a matrix object. Any object that implements MatrixExpression can be used in this function to compute substitutions.
+// This is also heavily used across all matrix objects because they are required to implement SubstituteWith (or related) methods.
 func MatrixSubstituteTemplate(me MatrixExpression, vIn Variable, seIn ScalarExpression) MatrixExpression {
 	// Input Processing
 	err := me.Check()
