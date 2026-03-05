@@ -337,7 +337,7 @@ func (km KMatrix) Transpose() Expression {
 
 }
 
-// LessEq Returns a constraint between the KMatrix and the
+// LessEq Returns a "Less Than or Equal To" constraint between the KMatrix and the
 // expression on the right hand side.
 func (km KMatrix) LessEq(rightIn interface{}) Constraint {
 	return km.Comparison(rightIn, SenseLessThanEqual)
