@@ -138,7 +138,7 @@ func (kv KVector) Plus(rightIn interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-// Minus Subtracts the current expression from another and returns the resulting expression
+// Minus subtracts an input expression from the current constant vector and returns the resulting expression
 func (kv KVector) Minus(e interface{}) Expression {
 	// Input Processing
 	err := kv.Check()
