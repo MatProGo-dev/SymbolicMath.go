@@ -487,6 +487,7 @@ func (kv KVector) Degree() int {
 }
 
 // Substitute Substitutes all occurrences of variable vIn with the expression eIn.
+// Because a KVector contains no variables, this will always return a copy of the original vector.
 func (kv KVector) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	return kv
 }
