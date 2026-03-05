@@ -115,7 +115,7 @@ func ToExpression(e interface{}) (Expression, error) {
 	)
 }
 
-// Minus subtracts the current expression from another and returns the resulting expression
+// Minus subtracts one expression (right) from another (left) and returns the resulting expression
 func Minus(left, right Expression) Expression {
 	return left.Plus(
 		right.Multiply(-1.0),
