@@ -2,8 +2,8 @@ package symbolic
 
 import "fmt"
 
-// Constraint defines an interface that we are meant to use with the ScalarContraint and VectorConstraint
-// objects.
+// Constraint is a mathematical constraint (either <=, =, >=) between to expressions from SymbolicMath.go.
+// This interface is later implemented by specific types like: ScalarConstraint, VectorConstraint, MatrixConstraint.
 type Constraint interface {
 	Left() Expression
 	Right() Expression
