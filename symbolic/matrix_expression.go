@@ -80,7 +80,7 @@ type MatrixExpression interface {
 	AsSimplifiedExpression() Expression
 }
 
-// IsMatrixExpression Determines whether or not an input object is a valid "VectorExpression" according to MatProInterface.
+// IsMatrixExpression Determines whether or not an input object is a valid "VectorExpression" according to SymbolicMath.go.
 func IsMatrixExpression(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
