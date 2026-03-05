@@ -197,7 +197,7 @@ func (kv KVector) LessEq(rightIn interface{}) Constraint {
 	return kv.Comparison(rightIn, SenseLessThanEqual)
 }
 
-// GreaterEq This method returns a greater than or equal to (>=) constraint between the current expression and another
+// GreaterEq returns a greater than or equal to (>=) constraint between the current expression and another
 func (kv KVector) GreaterEq(rightIn interface{}) Constraint {
 	return kv.Comparison(rightIn, SenseGreaterThanEqual)
 }
