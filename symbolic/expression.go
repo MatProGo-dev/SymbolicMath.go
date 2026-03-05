@@ -77,7 +77,7 @@ func NumVariables(e Expression) int {
 	return len(e.Variables())
 }
 
-// VariableIDs Returns a list of ids associated with each variable.
+// VariableIDs returns a list of the unique ids associated with each variable contained in this expression.
 func VariableIDs(e Expression) []uint64 {
 	vSlice := e.Variables()
 
