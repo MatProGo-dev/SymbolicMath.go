@@ -344,8 +344,8 @@ func (km KMatrix) LessEq(rightIn interface{}) Constraint {
 
 }
 
-// GreaterEq Returns a greater equal constraint between the KMatrix and the
-// expression on the right hand side.
+// GreaterEq Returns a "greater than or equal to" constraint between the KMatrix and the
+// expression rightIn, with rightIn being on the right hand side.
 func (km KMatrix) GreaterEq(rightIn interface{}) Constraint {
 	return km.Comparison(rightIn, SenseGreaterThanEqual)
 
