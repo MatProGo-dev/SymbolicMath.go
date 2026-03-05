@@ -168,7 +168,8 @@ func MatrixPowerTemplate(me MatrixExpression, exponent int) MatrixExpression {
 	return out
 }
 
-// MatrixMultiplyTemplate Template for the matrix multiply function.
+// MatrixMultiplyTemplate is a function that can compute the multiplication of two matrix objects. Any object that implements MatrixExpression can be used in this function to compute products.
+// This is also heavily used across all matrix objects because they are required to implement Multiply.
 func MatrixMultiplyTemplate(left MatrixExpression, right MatrixExpression) Expression {
 	// Input Processing
 	err := left.Check()
