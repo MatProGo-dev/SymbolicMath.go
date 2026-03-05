@@ -14,7 +14,6 @@ Description:
 */
 
 // KVector A type which is built on top of the KVector()
-// a constant expression type for an MIP. K for short ¯\_(ツ)_/¯
 type KVector []K // Inherit all methods from mat.VecDense
 
 // Len Computes the length of the KVector given.
