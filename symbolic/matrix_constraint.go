@@ -6,7 +6,8 @@ import (
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 )
 
-// MatrixConstraint defines functions related to the matrix constraint object.
+// MatrixConstraint is an object that defines mathematical constraints between two matrices.
+// This should implement the Constraint interface.
 type MatrixConstraint struct {
 	LeftHandSide  MatrixExpression
 	RightHandSide MatrixExpression
