@@ -579,6 +579,7 @@ func (km KMatrix) SubstituteAccordingTo(subMap map[Variable]Expression) Expressi
 }
 
 // Power Raises the constant matrix to the power of the input integer.
+// For now, this assumes that the power is positive.
 func (km KMatrix) Power(exponent int) Expression {
 	return MatrixPowerTemplate(km, exponent)
 }
