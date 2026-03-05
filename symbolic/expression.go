@@ -72,7 +72,7 @@ type Expression interface {
 	AsSimplifiedExpression() Expression
 }
 
-// NumVariables The number of distinct variables.
+// NumVariables returns the number of unique symbolic.Variable objects contained in this Expression.
 func NumVariables(e Expression) int {
 	return len(e.Variables())
 }
