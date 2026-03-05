@@ -6,7 +6,9 @@ import (
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 )
 
-// Expression This interface should be implemented by and ScalarExpression and VectorExpression
+// Expression is a mathematical object that we can perform operations on with SymbolicMath.go.
+// This interface should be implemented by any scalar, vector, etc. in the package.
+// Similarly, useful interfaces like ScalarExpression should implement this interface.
 type Expression interface {
 	// NumVars returns the number of variables in the expression
 	Variables() []Variable
