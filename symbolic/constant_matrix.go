@@ -17,7 +17,7 @@ func (km KMatrix) Check() error {
 	return nil
 }
 
-// ToDense Converts the constant matrix to a dense matrix.
+// ToDense Converts the constant matrix to a mat.Dense matrix from the gonum library.
 func (km KMatrix) ToDense() mat.Dense {
 	// Input Checking
 	err := km.Check()
