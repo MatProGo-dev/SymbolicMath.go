@@ -13,7 +13,7 @@ Description:
 	Creates a vector extension of the constant type K from the original goop.
 */
 
-// KVector A type which is built on top of the KVector()
+// KVector A slice of constant (K) values, to be used as a VectorExpression. (and also an Expression)
 type KVector []K // Inherit all methods from mat.VecDense
 
 // Len Computes the length of the KVector given.
