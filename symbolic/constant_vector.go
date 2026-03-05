@@ -493,6 +493,7 @@ func (kv KVector) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 }
 
 // SubstituteAccordingTo Substitutes all occurrences of the variables in the map with the corresponding expressions.
+// As mentioned above, the constant vector contains no variables, so this substitution should always return the original constant vector.
 func (kv KVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	return kv
 }
