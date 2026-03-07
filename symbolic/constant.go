@@ -337,7 +337,7 @@ func (c K) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	return c
 }
 
-// Power Computes the power of the constant.
+// Power computes the result of the constant taken to the given exponent.
 func (c K) Power(exponent int) Expression {
 	return ScalarPowerTemplate(c, exponent)
 }
