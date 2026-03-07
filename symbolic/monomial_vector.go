@@ -229,7 +229,7 @@ func (mv MonomialVector) Multiply(term1 interface{}) Expression {
 
 }
 
-// Transpose This function returns the transpose of the monomial vector.
+// Transpose returns the transpose of the monomial vector.
 func (mv MonomialVector) Transpose() Expression {
 	// Input Processing
 	err := mv.Check()
