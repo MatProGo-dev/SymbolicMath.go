@@ -238,7 +238,7 @@ func (mm MonomialMatrix) Minus(e interface{}) Expression {
 	)
 }
 
-// Multiply Multiplication of the monomial matrix with another expression.
+// Multiply returns the product of the monomial matrix with another expression.
 func (mm MonomialMatrix) Multiply(e interface{}) Expression {
 	// Input Processing
 	err := mm.Check()
