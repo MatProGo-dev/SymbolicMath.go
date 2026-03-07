@@ -117,7 +117,7 @@ func (m Monomial) Plus(e interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-// Minus Subtraction of the monomial with another expression.
+// Minus returns the difference between a monomial and another expression.
 func (m Monomial) Minus(e interface{}) Expression {
 	// Input Processing
 	err := m.Check()
