@@ -248,7 +248,7 @@ func (mv MonomialVector) Transpose() Expression {
 	return mm
 }
 
-// LessEq This function creates a constraint that the monomial vector is less than or equal to the input expression.
+// LessEq returns a constraint that the monomial vector is less than or equal to the input expression.
 func (mv MonomialVector) LessEq(rightIn interface{}) Constraint {
 	return mv.Comparison(rightIn, SenseLessThanEqual)
 }
