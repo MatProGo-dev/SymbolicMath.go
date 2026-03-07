@@ -258,7 +258,7 @@ func (mv MonomialVector) GreaterEq(rightIn interface{}) Constraint {
 	return mv.Comparison(rightIn, SenseGreaterThanEqual)
 }
 
-// Eq This function creates a constraint that the monomial vector is equal to the input expression.
+// Eq returns a constraint that the monomial vector is equal to the input expression.
 func (mv MonomialVector) Eq(rightIn interface{}) Constraint {
 	return mv.Comparison(rightIn, SenseEqual)
 }
