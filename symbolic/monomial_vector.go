@@ -65,7 +65,8 @@ func (mv MonomialVector) Len() int {
 	return len(mv)
 }
 
-// Dims Returns the dimensions of the monomial vector.
+// Dims returns the dimensions of the monomial vector.
+// Because this is a vector, the dimensions will always be [N, 1].
 func (mv MonomialVector) Dims() []int {
 	return []int{mv.Len(), 1}
 }
