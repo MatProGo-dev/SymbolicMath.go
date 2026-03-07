@@ -246,8 +246,8 @@ func (m Monomial) Transpose() Expression {
 	return m
 }
 
-// LessEq Returns a constraint between a monomial being less than an
-// expression.
+// LessEq returns a less than equal constraint between the current monomial (on the left) and 
+// another expression (on the right).
 func (m Monomial) LessEq(rightIn interface{}) Constraint {
 	return m.Comparison(rightIn, SenseLessThanEqual)
 }
