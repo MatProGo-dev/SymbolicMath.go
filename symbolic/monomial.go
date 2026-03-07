@@ -259,8 +259,8 @@ func (m Monomial) GreaterEq(rightIn interface{}) Constraint {
 	return m.Comparison(rightIn, SenseGreaterThanEqual)
 }
 
-// Eq Returns a constraint between a monomial being equal to an
-// expression.
+// Eq returns the equality constraint between the input monomial and
+// another expression.
 func (m Monomial) Eq(rightIn interface{}) Constraint {
 	return m.Comparison(rightIn, SenseEqual)
 }
