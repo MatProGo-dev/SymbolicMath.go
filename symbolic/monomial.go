@@ -151,7 +151,7 @@ func (m Monomial) Minus(e interface{}) Expression {
 	)
 }
 
-// Multiply Defines the multiplication operation between a monomial and another expression.
+// Multiply returns the product of the input monomial and another expression.
 func (m Monomial) Multiply(e interface{}) Expression {
 	// Input Processing
 	err := m.Check()
