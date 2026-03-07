@@ -402,7 +402,7 @@ func (mv MonomialVector) At(ii, jj int) ScalarExpression {
 	return mv[ii]
 }
 
-// AtVec This function returns the value of the monomial vector at the input vector.
+// AtVec returns the value of the monomial vector at the input vector.
 func (mv MonomialVector) AtVec(idx int) ScalarExpression {
 	// Input Processing
 	err := mv.Check()
