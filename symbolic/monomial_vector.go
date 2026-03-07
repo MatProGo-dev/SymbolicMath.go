@@ -413,7 +413,7 @@ func (mv MonomialVector) AtVec(idx int) ScalarExpression {
 	return mv[idx]
 }
 
-// String This function returns a string representation of the monomial vector.
+// String returns a string representation of the monomial vector.
 func (mv MonomialVector) String() string {
 	// Input Processing
 	err := mv.Check()
