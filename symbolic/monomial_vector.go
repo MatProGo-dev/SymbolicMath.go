@@ -331,7 +331,7 @@ func (mv MonomialVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 
 }
 
-// DerivativeWrt This function returns the derivative of the monomial vector with respect to the input variable.
+// DerivativeWrt returns the derivative of the monomial vector with respect to the input variable.
 func (mv MonomialVector) DerivativeWrt(v Variable) Expression {
 	// Input Processing
 	err := mv.Check()
