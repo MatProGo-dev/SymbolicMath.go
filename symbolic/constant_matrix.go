@@ -55,7 +55,7 @@ func (km KMatrix) Dims() []int {
 	return []int{len(km), len(km[0])}
 }
 
-// Plus Addition of the constant matrix with another expression.
+// Plus returns the sum of the constant matrix with another expression.
 func (km KMatrix) Plus(e interface{}) Expression {
 	// Input Processing
 	err := km.Check()
