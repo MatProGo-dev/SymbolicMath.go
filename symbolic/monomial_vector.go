@@ -519,7 +519,7 @@ func (mv MonomialVector) SubstituteAccordingTo(subMap map[Variable]Expression) E
 	return out
 }
 
-// Power This function raises the monomial vector to the input power.
+// Power raises the monomial vector to the input power.
 func (mv MonomialVector) Power(exponent int) Expression {
 	return VectorPowerTemplate(mv, exponent)
 }
