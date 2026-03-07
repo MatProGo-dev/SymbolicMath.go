@@ -93,7 +93,7 @@ func (mm MonomialMatrix) Dims() []int {
 	return []int{len(mm), len(mm[0])}
 }
 
-// Plus Addition of the monomial matrix with another expression.
+// Plus returns the sum of the monomial matrix with another expression.
 func (mm MonomialMatrix) Plus(e interface{}) Expression {
 	// Input Processing
 	err := mm.Check()
