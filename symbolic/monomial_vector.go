@@ -497,7 +497,7 @@ func (mv MonomialVector) Substitute(vIn Variable, seIn ScalarExpression) Express
 	return VectorSubstituteTemplate(mv, vIn, seIn)
 }
 
-// SubstituteAccordingTo This function substitutes all instances of variables in the substitutions map with their corresponding expressions.
+// SubstituteAccordingTo substitutes all instances of variables in the substitutions map with their corresponding expressions.
 func (mv MonomialVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := mv.Check()
