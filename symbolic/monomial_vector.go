@@ -94,7 +94,7 @@ func (mv MonomialVector) Constant() mat.VecDense {
 	return constant
 }
 
-// Plus This function returns the sum of the monomial vector and the input expression.
+// Plus returns the sum of the monomial vector and the input expression.
 func (mv MonomialVector) Plus(term1 interface{}) Expression {
 	// Input Processing
 	err := mv.Check()
