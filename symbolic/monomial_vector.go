@@ -453,7 +453,7 @@ func (mv MonomialVector) IsConstant() bool {
 	return true
 }
 
-// ToPolynomialVector This function converts the input monomial vector to a polynomial vector.
+// ToPolynomialVector converts the input monomial vector to a polynomial vector.
 func (mv MonomialVector) ToPolynomialVector() PolynomialVector {
 	// Input Checking
 	err := mv.Check()
