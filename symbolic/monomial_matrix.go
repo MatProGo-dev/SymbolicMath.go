@@ -205,7 +205,7 @@ func (mm MonomialMatrix) Plus(e interface{}) Expression {
 	}
 }
 
-// Minus Subtraction of the monomial matrix with another expression.
+// Minus returns the difference between the monomial matrix and another expression.
 func (mm MonomialMatrix) Minus(e interface{}) Expression {
 	// Input Processing
 	err := mm.Check()
