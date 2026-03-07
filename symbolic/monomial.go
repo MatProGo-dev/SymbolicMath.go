@@ -698,6 +698,7 @@ func (m Monomial) Power(exponent int) Expression {
 }
 
 // At Returns the value at the given row and column index.
+// Because a Monomial is a scalar, there is only one element the (0,0)-th element.
 func (m Monomial) At(ii, jj int) ScalarExpression {
 	// Input Processing
 	err := m.Check()
