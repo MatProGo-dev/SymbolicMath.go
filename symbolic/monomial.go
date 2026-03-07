@@ -20,7 +20,10 @@ type Monomial struct {
 	VariableFactors []Variable
 }
 
-// Check This function checks that the monomial is valid.
+// Check verifies that:
+// - The number of degrees in the monomial matches the number of variables in the monomial.
+// 
+// TODO: Perhaps we should check if each of the Variables is well-defined with `Check`?
 func (m Monomial) Check() error {
 	// Check that the number of degrees matches the number of variables
 	if len(m.Exponents) != len(m.VariableFactors) {
