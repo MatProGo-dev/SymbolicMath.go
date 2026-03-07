@@ -326,6 +326,7 @@ func (m Monomial) Constant() float64 {
 }
 
 // LinearCoeff returns the coefficients of the linear terms in the monomial.
+// If the monomial is not linear, then this will return a vector of zeros.
 func (m Monomial) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	// Input Processing
 	err := m.Check()
