@@ -140,7 +140,7 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-// Minus This function returns the difference of the monomial vector and the input expression.
+// Minus returns the difference of the monomial vector and the input expression.
 func (mv MonomialVector) Minus(term1 interface{}) Expression {
 	// Input Processing
 	err := mv.Check()
