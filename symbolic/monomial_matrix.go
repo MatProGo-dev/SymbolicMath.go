@@ -62,7 +62,8 @@ func (mm MonomialMatrix) Check() error {
 	return nil
 }
 
-// Variables Returns the variables in the matrix.
+// Variables returns the unique variables that are contained in the matrix. 
+// This collects all variables in all entries of the matrix.
 func (mm MonomialMatrix) Variables() []Variable {
 	// Input Processing
 	err := mm.Check()
