@@ -265,8 +265,9 @@ func (m Monomial) Eq(rightIn interface{}) Constraint {
 	return m.Comparison(rightIn, SenseEqual)
 }
 
-// Comparison Base method for creating constraints as comparisons between
-// two different expressions according to a sense.
+// Comparison returns the "comparison constraint" between the input monomial and another expression.
+// The type of comparison (for example, GreaterThanOrEqual) is provided.
+// Usually, we recommend using the convenience methods instead (for example, GreaterEq(), Eq(), etc.) instead of this one.
 func (m Monomial) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
 	err := m.Check()
