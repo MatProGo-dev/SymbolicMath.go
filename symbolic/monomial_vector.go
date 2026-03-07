@@ -42,7 +42,7 @@ func (mv MonomialVector) Check() error {
 	return nil
 }
 
-// Variables Returns the variables in the monomial vector.
+// Variables returns the unique variables that are present anywhere in the monomial vector.
 func (mv MonomialVector) Variables() []Variable {
 	// Check that the monomial vector is well formed
 	err := mv.Check()
