@@ -492,7 +492,7 @@ func (mv MonomialVector) Degree() int {
 	return maxDegree
 }
 
-// Substitute This function substitutes the input variable with the input scalar expression.
+// Substitute substitutes the input variable with the input scalar expression.
 func (mv MonomialVector) Substitute(vIn Variable, seIn ScalarExpression) Expression {
 	return VectorSubstituteTemplate(mv, vIn, seIn)
 }
