@@ -263,7 +263,7 @@ func (mv MonomialVector) Eq(rightIn interface{}) Constraint {
 	return mv.Comparison(rightIn, SenseEqual)
 }
 
-// Comparison This function compares the monomial vector to the input expression in the sense provided by sense.
+// Comparison returns a constraint which compares the monomial vector to the input expression in the sense provided by sense.
 func (mv MonomialVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
 	err := mv.Check()
