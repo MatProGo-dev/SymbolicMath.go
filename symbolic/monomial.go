@@ -252,8 +252,9 @@ func (m Monomial) LessEq(rightIn interface{}) Constraint {
 	return m.Comparison(rightIn, SenseLessThanEqual)
 }
 
-// GreaterEq Returns a constraint between a monomial being greater than an
-// expression.
+// GreaterEq returns a "greater than or equal to" constraint between an input monomial and
+// another expression.
+// c1 := m1.GreaterEq(e2) defines the constraint c1 as the constraint expressing monomial 1 is "greater than or equal to expression e2. 
 func (m Monomial) GreaterEq(rightIn interface{}) Constraint {
 	return m.Comparison(rightIn, SenseGreaterThanEqual)
 }
