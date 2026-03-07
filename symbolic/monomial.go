@@ -37,7 +37,8 @@ func (m Monomial) Check() error {
 	return nil
 }
 
-// Variables Returns the variables in the monomial.
+// Variables returns the unique variables in the monomial.
+// TODO(Kwesi): Add a unique-ness check.
 func (m Monomial) Variables() []Variable {
 	return m.VariableFactors
 }
