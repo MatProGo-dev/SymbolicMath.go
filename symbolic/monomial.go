@@ -48,7 +48,7 @@ func (m Monomial) Dims() []int {
 	return []int{1, 1}
 }
 
-// Plus Multiplication of the monomial with another expression.
+// Plus return the sum of the monomial with another expression.
 func (m Monomial) Plus(e interface{}) Expression {
 	// Input Processing
 	err := m.Check()
