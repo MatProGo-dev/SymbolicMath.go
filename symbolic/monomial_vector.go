@@ -253,7 +253,7 @@ func (mv MonomialVector) LessEq(rightIn interface{}) Constraint {
 	return mv.Comparison(rightIn, SenseLessThanEqual)
 }
 
-// GreaterEq This function creates a constraint that the monomial vector is greater than or equal to the input expression.
+// GreaterEq returns a constraint that the monomial vector is greater than or equal to the input expression.
 func (mv MonomialVector) GreaterEq(rightIn interface{}) Constraint {
 	return mv.Comparison(rightIn, SenseGreaterThanEqual)
 }
