@@ -185,7 +185,7 @@ func (mv MonomialVector) Minus(term1 interface{}) Expression {
 	)
 }
 
-// Multiply This function returns the product of the monomial vector and the input expression.
+// Multiply returns the product of the monomial vector and the input expression.
 func (mv MonomialVector) Multiply(term1 interface{}) Expression {
 	// Input Processing
 	err := mv.Check()
