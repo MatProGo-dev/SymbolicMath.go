@@ -7,24 +7,14 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-/*
-polynomial_vector.go
-Description:
-	Defines a vector of polynomials.
-*/
-
+// PolynomialVector defines a vector of polynomials.
 type PolynomialVector []Polynomial
 
 // =========
 // Functions
 // =========
 
-/*
-Check
-Description:
-
-	Verifies that each of the polynomials in the vector are valid.
-*/
+// Check Verifies that each of the polynomials in the vector are valid.
 func (pv PolynomialVector) Check() error {
 	// Check that the polynomial has at least one monomial
 	if len(pv) == 0 {
@@ -43,12 +33,7 @@ func (pv PolynomialVector) Check() error {
 	return nil
 }
 
-/*
-Length
-Description:
-
-	The number of elements in the Polynomial vector.
-*/
+// Length The number of elements in the Polynomial vector.
 func (pv PolynomialVector) Length() int {
 	err := pv.Check()
 	if err != nil {
@@ -58,26 +43,15 @@ func (pv PolynomialVector) Length() int {
 	return len(pv)
 }
 
-/*
-Len
-Description:
-
-	Mirrors the gonum api for vectors. This extracts the element of the variable vector at the index x.
-*/
+// Len Mirrors the gonum api for vectors. This extracts the element of the variable vector at the index x.
 func (pv PolynomialVector) Len() int {
 	return pv.Length()
 }
 
-/*
-At
-Description:
-
-	Returns the polynomial at the (ii,jj) index.
-
-Note:
-
-  - The jj index should always be 0.
-*/
+// At Returns the polynomial at the (ii,jj) index.
+// Note:
+//
+// - The jj index should always be 0.
 func (pv PolynomialVector) At(ii, jj int) ScalarExpression {
 	// Input Processing
 	err := pv.Check()
@@ -94,12 +68,7 @@ func (pv PolynomialVector) At(ii, jj int) ScalarExpression {
 	return pv[ii]
 }
 
-/*
-AtVec
-Description:
-
-	Retrieves the polynomial at the index idx.
-*/
+// AtVec Retrieves the polynomial at the index idx.
 func (pv PolynomialVector) AtVec(idx int) ScalarExpression {
 	// Input Checking
 	err := pv.Check()
@@ -116,12 +85,7 @@ func (pv PolynomialVector) AtVec(idx int) ScalarExpression {
 	return pv[idx]
 }
 
-/*
-Variables
-Description:
-
-	Retrieves the set of all unique variables in the polynomial vector.
-*/
+// Variables Retrieves the set of all unique variables in the polynomial vector.
 func (pv PolynomialVector) Variables() []Variable {
 	var variables []Variable // The variables in the polynomial
 	for _, polynomial := range pv {
@@ -130,12 +94,7 @@ func (pv PolynomialVector) Variables() []Variable {
 	return UniqueVars(variables)
 }
 
-/*
-Constant
-Description:
-
-	Returns all of the constant components of the polynomial vector.
-*/
+// Constant Returns all of the constant components of the polynomial vector.
 func (pv PolynomialVector) Constant() mat.VecDense {
 	// Input Processing
 	err := pv.Check()
@@ -153,24 +112,14 @@ func (pv PolynomialVector) Constant() mat.VecDense {
 	return constant
 }
 
-/*
-LinearCoeff
-Description:
-
-	Retrieves the coefficients of the linear terms in the polynomial vector.
-	The output is a matrix where element (ii,jj) of the matrix describes the coefficient
-	of variable jj (from pv.Variables()) in the polynomial at index ii.
-*/
+// LinearCoeff Retrieves the coefficients of the linear terms in the polynomial vector.
+// The output is a matrix where element (ii,jj) of the matrix describes the coefficient
+// of variable jj (from pv.Variables()) in the polynomial at index ii.
 func (pv PolynomialVector) LinearCoeff(wrt ...[]Variable) mat.Dense {
 	return PolynomialLikeVector_SharedLinearCoeffCalc(pv, wrt...)
 }
 
-/*
-Plus
-Description:
-
-	Defines an addition between the polynomial vector and another expression.
-*/
+// Plus Defines an addition between the polynomial vector and another expression.
 func (pv PolynomialVector) Plus(e interface{}) Expression {
 	// Input Processing
 	err := pv.Check()
@@ -217,12 +166,7 @@ func (pv PolynomialVector) Plus(e interface{}) Expression {
 
 }
 
-/*
-Minus
-Description:
-
-	Defines a subtraction between the polynomial vector and another expression.
-*/
+// Minus Defines a subtraction between the polynomial vector and another expression.
 func (pv PolynomialVector) Minus(e interface{}) Expression {
 	// Input Processing
 	// - Check the polynomial vector
@@ -260,12 +204,7 @@ func (pv PolynomialVector) Minus(e interface{}) Expression {
 	)
 }
 
-/*
-Multiply
-Description:
-
-	Computes the product of a polynomial vector and another expression.
-*/
+// Multiply Computes the product of a polynomial vector and another expression.
 func (pv PolynomialVector) Multiply(rightIn interface{}) Expression {
 	// Input Processing
 	err := pv.Check()
@@ -323,12 +262,7 @@ func (pv PolynomialVector) Multiply(rightIn interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Transpose
-Description:
-
-	Computes the transpose of the polynomial vector.
-*/
+// Transpose Computes the transpose of the polynomial vector.
 func (pv PolynomialVector) Transpose() Expression {
 	// Input Processing
 	err := pv.Check()
@@ -345,23 +279,13 @@ func (pv PolynomialVector) Transpose() Expression {
 	return pvT
 }
 
-/*
-Dims
-Description:
-
-	Returns the shape of the vector which should always be (pv.Len(), 1).
-*/
+// Dims Returns the shape of the vector which should always be (pv.Len(), 1).
 func (pv PolynomialVector) Dims() []int {
 	return []int{pv.Len(), 1}
 }
 
-/*
-Comparison
-Description:
-
-	Creates the vector constraint between the polynomial vector pv and another
-	expression according to the sense senseIn.
-*/
+// Comparison Creates the vector constraint between the polynomial vector pv and another
+// expression according to the sense senseIn.
 func (pv PolynomialVector) Comparison(e interface{}, senseIn ConstrSense) Constraint {
 	// Input Processing
 	err := pv.Check()
@@ -435,47 +359,27 @@ func (pv PolynomialVector) Comparison(e interface{}, senseIn ConstrSense) Constr
 	}
 }
 
-/*
-LessEq
-Description:
-
-	Returns a vector constraint between pv and the input expression.
-	Leverages the Comparison method.
-*/
+// LessEq Returns a vector constraint between pv and the input expression.
+// Leverages the Comparison method.
 func (pv PolynomialVector) LessEq(e interface{}) Constraint {
 	return pv.Comparison(e, SenseLessThanEqual)
 }
 
-/*
-GreaterEq
-Description:
-
-	Returns a vector constraint comparing pv and the input expression according
-	to the GreaterEq sense.
-	Leverages the Comparison method.
-*/
+// GreaterEq Returns a vector constraint comparing pv and the input expression according
+// to the GreaterEq sense.
+// Leverages the Comparison method.
 func (pv PolynomialVector) GreaterEq(e interface{}) Constraint {
 	return pv.Comparison(e, SenseGreaterThanEqual)
 }
 
-/*
-Eq
-Description:
-
-	Returns a vector constraint comparing pv and the input expression according
-	to the Eq sense.
-	Leverages the Comparison method.
-*/
+// Eq Returns a vector constraint comparing pv and the input expression according
+// to the Eq sense.
+// Leverages the Comparison method.
 func (pv PolynomialVector) Eq(e interface{}) Constraint {
 	return pv.Comparison(e, SenseEqual)
 }
 
-/*
-DerivativeWrt
-Description:
-
-	Returns the derivative of the polynomial vector with respect to the input variable.
-*/
+// DerivativeWrt Returns the derivative of the polynomial vector with respect to the input variable.
 func (pv PolynomialVector) DerivativeWrt(vIn Variable) Expression {
 	// Constants
 	var derivative PolynomialVector = pv
@@ -488,12 +392,7 @@ func (pv PolynomialVector) DerivativeWrt(vIn Variable) Expression {
 	return derivative
 }
 
-/*
-IsConstantVector
-Description:
-
-	This method returns true if the polynomial vector is constant.
-*/
+// IsConstantVector This method returns true if the polynomial vector is constant.
 func (pv PolynomialVector) IsConstantVector() bool {
 	// Constants
 	var isConstant bool = true
@@ -506,12 +405,7 @@ func (pv PolynomialVector) IsConstantVector() bool {
 	return isConstant
 }
 
-/*
-Simplify
-Description:
-
-	This method simplifies the polynomial vector.
-*/
+// Simplify This method simplifies the polynomial vector.
 func (pv PolynomialVector) Simplify() VectorExpression {
 	// Input Processing
 	err := pv.Check()
@@ -541,16 +435,12 @@ func (pv PolynomialVector) Simplify() VectorExpression {
 	return ConcretizeVectorExpression(simplified)
 }
 
+// AsSimplifiedExpression returns the simplest form of the polynomial vector.
 func (pv PolynomialVector) AsSimplifiedExpression() Expression {
 	return pv.Simplify()
 }
 
-/*
-String
-Description:
-
-	Returns a string representation of the polynomial vector.
-*/
+// String Returns a string representation of the polynomial vector.
 func (pv PolynomialVector) String() string {
 	// Input Processing
 	err := pv.Check()
@@ -570,13 +460,8 @@ func (pv PolynomialVector) String() string {
 	return output
 }
 
-/*
-Degree
-Description:
-
-	Returns the maximum degree of any of the entries
-	in the polynomial vector.
-*/
+// Degree Returns the maximum degree of any of the entries
+// in the polynomial vector.
 func (pv PolynomialVector) Degree() int {
 	// Input Processing
 	err := pv.Check()
@@ -597,22 +482,12 @@ func (pv PolynomialVector) Degree() int {
 	return maxDegree
 }
 
-/*
-Substitute
-Description:
-
-	Substitutes the variable vIn with the expression eIn in the polynomial vector.
-*/
+// Substitute Substitutes the variable vIn with the expression eIn in the polynomial vector.
 func (pv PolynomialVector) Substitute(vIn Variable, eIn ScalarExpression) Expression {
 	return VectorSubstituteTemplate(pv, vIn, eIn)
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	Substitutes the variables in the polynomial vector with the expressions in the map.
-*/
+// SubstituteAccordingTo Substitutes the variables in the polynomial vector with the expressions in the map.
 func (pv PolynomialVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Checking
 	err := pv.Check()
@@ -635,22 +510,12 @@ func (pv PolynomialVector) SubstituteAccordingTo(subMap map[Variable]Expression)
 	return result
 }
 
-/*
-Power
-Description:
-
-	Computes the power of the polynomial vector.
-*/
+// Power Computes the power of the polynomial vector.
 func (pv PolynomialVector) Power(exponent int) Expression {
 	return VectorPowerTemplate(pv, exponent)
 }
 
-/*
-ToScalarExpressions
-Description:
-
-	Converts the PolynomialVector into a slice of ScalarExpression type objects.
-*/
+// ToScalarExpressions Converts the PolynomialVector into a slice of ScalarExpression type objects.
 func (pv PolynomialVector) ToScalarExpressions() []ScalarExpression {
 	var out []ScalarExpression
 	for _, polynomial := range pv {

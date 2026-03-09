@@ -13,16 +13,11 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-/*
-VectorExpression
-Description:
-
-	This interface represents any expression written in terms of a
-	vector of represents a linear general expression of the form
-		c0 * x0 + c1 * x1 + ... + cn * xn + k where ci are coefficients and xi are
-	variables and k is a constant. This is a base interface that is implemented
-	by single variables, constants, and general linear expressions.
-*/
+// VectorExpression This interface represents any expression written in terms of a
+// vector of represents a linear general expression of the form
+// c0 * x0 + c1 * x1 + ... + cn * xn + k where ci are coefficients and xi are
+// variables and k is a constant. This is a base interface that is implemented
+// by single variables, constants, and general linear expressions.
 type VectorExpression interface {
 	// Check returns an error if the expression is not valid
 	Check() error
@@ -103,12 +98,7 @@ type VectorExpression interface {
 	ToScalarExpressions() []ScalarExpression
 }
 
-/*
-IsVectorExpression
-Description:
-
-	Determines whether or not an input object is a valid "VectorExpression" according to MatProInterface.
-*/
+// IsVectorExpression Determines whether or not an input object is a valid "VectorExpression" according to MatProInterface.
 func IsVectorExpression(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
@@ -130,12 +120,7 @@ func IsVectorExpression(e interface{}) bool {
 	}
 }
 
-/*
-ToVectorExpression
-Description:
-
-	Converts the input expression to a valid type that implements "VectorExpression".
-*/
+// ToVectorExpression Converts the input expression to a valid type that implements "VectorExpression".
 func ToVectorExpression(e interface{}) (VectorExpression, error) {
 	// Input Processing
 	if !IsVectorExpression(e) {
@@ -167,12 +152,7 @@ func ToVectorExpression(e interface{}) (VectorExpression, error) {
 	}
 }
 
-/*
-ConcretizeVectorExpression
-Description:
-
-	Converts the input expression to a valid type that implements "VectorExpression".
-*/
+// ConcretizeVectorExpression Converts the input expression to a valid type that implements "VectorExpression".
 func ConcretizeVectorExpression(sliceIn []ScalarExpression) VectorExpression {
 	// Input Processing
 	if len(sliceIn) == 0 {
@@ -318,12 +298,7 @@ func ConcretizeVectorExpression(sliceIn []ScalarExpression) VectorExpression {
 	}
 }
 
-/*
-VectorSubstituteTemplate
-Description:
-
-	Defines the template for the vector substitution operation.
-*/
+// VectorSubstituteTemplate Defines the template for the vector substitution operation.
 func VectorSubstituteTemplate(ve VectorExpression, vIn Variable, se ScalarExpression) VectorExpression {
 	// Input Processing
 	err := ve.Check()
@@ -352,12 +327,7 @@ func VectorSubstituteTemplate(ve VectorExpression, vIn Variable, se ScalarExpres
 	return ConcretizeVectorExpression(result)
 }
 
-/*
-VectorPowerTemplate
-Description:
-
-	Defines the template for the vector power operation.
-*/
+// VectorPowerTemplate Defines the template for the vector power operation.
 func VectorPowerTemplate(base VectorExpression, exponent int) Expression {
 	// Setup
 
@@ -390,6 +360,8 @@ func VectorPowerTemplate(base VectorExpression, exponent int) Expression {
 	return result
 }
 
+// VectorMultiplyTemplate multiplies a VectorExpression by a scalar Expression
+// element-wise and returns the result.
 func VectorMultiplyTemplate(ve VectorExpression, right Expression) Expression {
 	// Setup
 	veAsSlice := ve.ToScalarExpressions()
@@ -413,6 +385,8 @@ func VectorMultiplyTemplate(ve VectorExpression, right Expression) Expression {
 	return ConcretizeExpression(prod)
 }
 
+// VectorPlusTemplate adds a scalar Expression to each element of a VectorExpression
+// and returns the result.
 func VectorPlusTemplate(ve VectorExpression, right Expression) Expression {
 	// Setup
 	veAsSlice := ve.ToScalarExpressions()

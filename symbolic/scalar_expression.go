@@ -91,13 +91,8 @@ type ScalarExpression interface {
 //	return ScalarLinearExpr{C: c}
 //}
 
-/*
-IsScalarExpression
-Description:
-
-	Determines whether or not an input object is a
-	valid "ScalarExpression" according to MatProInterface.
-*/
+// IsScalarExpression Determines whether or not an input object is a
+// valid "ScalarExpression" according to MatProInterface.
 func IsScalarExpression(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
@@ -117,13 +112,8 @@ func IsScalarExpression(e interface{}) bool {
 	}
 }
 
-/*
-ToScalarExpression
-Description:
-
-	Converts the input expression to a valid type that
-	implements "ScalarExpression".
-*/
+// ToScalarExpression Converts the input expression to a valid type that
+// implements "ScalarExpression".
 func ToScalarExpression(e interface{}) (ScalarExpression, error) {
 	// Input Processing
 	if !IsScalarExpression(e) {
@@ -153,12 +143,7 @@ func ToScalarExpression(e interface{}) (ScalarExpression, error) {
 	}
 }
 
-/*
-ScalarPowerTemplate
-Description:
-
-	Defines the template for the scalar power operation.
-*/
+// ScalarPowerTemplate Defines the template for the scalar power operation.
 func ScalarPowerTemplate(base ScalarExpression, exponent int) Expression {
 	// Setup
 

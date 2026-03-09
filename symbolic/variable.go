@@ -7,7 +7,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-// Var represnts a variable in a optimization problem. The variable is
+// Variable represents a variable in an optimization problem. The variable is
 // identified with an uint64.
 type Variable struct {
 	ID    uint64
@@ -19,12 +19,7 @@ type Variable struct {
 	Environment Environment
 }
 
-/*
-Variables
-Description:
-
-	This function returns a slice containing all unique variables in the variable expression v.
-*/
+// Variables This function returns a slice containing all unique variables in the variable expression v.
 func (v Variable) Variables() []Variable {
 	return []Variable{v}
 }
@@ -35,13 +30,8 @@ func (v Variable) Constant() float64 {
 	return 0
 }
 
-/*
-LinearCoeff
-Description:
-
-	Returns the coefficient of the linear term in the expression. For a variable,
-	this is always a vector containing exactly 1 value of 1.0 all others are zero.
-*/
+// LinearCoeff Returns the coefficient of the linear term in the expression. For a variable,
+// this is always a vector containing exactly 1 value of 1.0 all others are zero.
 func (v Variable) LinearCoeff(wrt ...[]Variable) mat.VecDense {
 	// Input Processing
 	err := v.Check()
@@ -141,13 +131,8 @@ func (v Variable) Plus(rightIn interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Minus
-Description:
-
-	This function subtracts an expression from the current
-	variable.
-*/
+// Minus This function subtracts an expression from the current
+// variable.
 func (v Variable) Minus(rightIn interface{}) Expression {
 	// Input Processing
 	err := v.Check()
@@ -204,16 +189,10 @@ func (v Variable) Eq(rhsIn interface{}) Constraint {
 	return v.Comparison(rhsIn, SenseEqual)
 }
 
-/*
-Comparison
-Description:
-
-	This method compares the receiver with expression rhs in the sense provided by sense.
-
-Usage:
-
-	constr, err := v.Comparison(expr1,SenseGreaterThanEqual)
-*/
+// Comparison This method compares the receiver with expression rhs in the sense provided by sense.
+// Usage:
+//
+// constr, err := v.Comparison(expr1,SenseGreaterThanEqual)
 func (v Variable) Comparison(rhsIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
 	err := v.Check()
@@ -274,13 +253,8 @@ const (
 	Integer            = 'I'
 )
 
-/*
-UniqueVars
-Description:
-
-	This function creates a slice of unique variables from the slice given in
-	varsIn
-*/
+// UniqueVars This function creates a slice of unique variables from the slice given in
+// varsIn
 func UniqueVars(varsIn []Variable) []Variable {
 	// Constants
 
@@ -296,12 +270,7 @@ func UniqueVars(varsIn []Variable) []Variable {
 
 }
 
-/*
-Multiply
-Description:
-
-	multiplies the current expression to another and returns the resulting expression
-*/
+// Multiply multiplies the current expression to another and returns the resulting expression
 func (v Variable) Multiply(rightIn interface{}) Expression {
 	// Input Processing
 	err := v.Check()
@@ -381,22 +350,12 @@ func (v Variable) Multiply(rightIn interface{}) Expression {
 
 }
 
-/*
-Dims
-Description:
-
-	Returns the dimension of the Variable object (should be scalar).
-*/
+// Dims Returns the dimension of the Variable object (should be scalar).
 func (v Variable) Dims() []int {
 	return []int{1, 1}
 }
 
-/*
-Check
-Description:
-
-	Checks whether the Variable has a sensible initialization.
-*/
+// Check Checks whether the Variable has a sensible initialization.
 func (v Variable) Check() error {
 	// Check that the lower bound is below is the upper bound
 	if v.Lower >= v.Upper {
@@ -410,24 +369,18 @@ func (v Variable) Check() error {
 	return nil
 }
 
+// Transpose returns the variable itself, as the transpose of a scalar is itself.
 func (v Variable) Transpose() Expression {
 	return v
 }
 
-/*
-NewVariable
-Description:
-*/
+// NewVariable creates a new continuous variable in the given environment
+// (or the default environment if none is provided).
 func NewVariable(envs ...Environment) Variable {
 	return NewContinuousVariable(envs...)
 }
 
-/*
-NewContinuousVariable
-Description:
-
-	Creates a new continuous variable.
-*/
+// NewContinuousVariable Creates a new continuous variable.
 func NewContinuousVariable(envs ...Environment) Variable {
 	// Constants
 
@@ -458,12 +411,7 @@ func NewContinuousVariable(envs ...Environment) Variable {
 
 }
 
-/*
-NewContinuousVariable
-Description:
-
-	Creates a new binary variable.
-*/
+// NewBinaryVariable creates a new binary variable.
 func NewBinaryVariable(envs ...Environment) Variable {
 	// Constants
 
@@ -494,12 +442,7 @@ func NewBinaryVariable(envs ...Environment) Variable {
 
 }
 
-/*
-ToMonomial
-Description:
-
-	Converts the variable into a monomial.
-*/
+// ToMonomial Converts the variable into a monomial.
 func (v Variable) ToMonomial() Monomial {
 	return Monomial{
 		Coefficient:     1.0,
@@ -508,26 +451,16 @@ func (v Variable) ToMonomial() Monomial {
 	}
 }
 
-/*
-ToPolynomial
-Description:
-
-	Converts the variable into a monomial and then into a polynomial.
-*/
+// ToPolynomial Converts the variable into a monomial and then into a polynomial.
 func (v Variable) ToPolynomial() Polynomial {
 	return Polynomial{
 		Monomials: []Monomial{v.ToMonomial()},
 	}
 }
 
-/*
-DerivativeWrt
-Description:
-
-	Computes the derivative of the Variable with respect to vIn.
-	If vIn is the same as the Variable, then this returns 1.0. Otherwise, it
-	returns 0.0.
-*/
+// DerivativeWrt Computes the derivative of the Variable with respect to vIn.
+// If vIn is the same as the Variable, then this returns 1.0. Otherwise, it
+// returns 0.0.
 func (v Variable) DerivativeWrt(vIn Variable) Expression {
 	// Input Processing
 	err := v.Check()
@@ -548,32 +481,17 @@ func (v Variable) DerivativeWrt(vIn Variable) Expression {
 	}
 }
 
-/*
-Degree
-Description:
-
-	Returns the degree of the variable (which is always 1).
-*/
+// Degree Returns the degree of the variable (which is always 1).
 func (v Variable) Degree() int {
 	return 1
 }
 
-/*
-String
-Description:
-
-	This method returns a string representation of the variable.
-*/
+// String This method returns a string representation of the variable.
 func (v Variable) String() string {
 	return v.Name
 }
 
-/*
-Substitute
-Description:
-
-	Substitutes the variable vIn with the expression eIn.
-*/
+// Substitute Substitutes the variable vIn with the expression eIn.
 func (v Variable) Substitute(vIn Variable, seIn ScalarExpression) Expression {
 	// Input Processing
 	err := v.Check()
@@ -604,12 +522,7 @@ func (v Variable) Substitute(vIn Variable, seIn ScalarExpression) Expression {
 	}
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	Substitutes the variable in the map with the corresponding expression.
-*/
+// SubstituteAccordingTo Substitutes the variable in the map with the corresponding expression.
 func (v Variable) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := v.Check()
@@ -630,26 +543,15 @@ func (v Variable) SubstituteAccordingTo(subMap map[Variable]Expression) Expressi
 	}
 }
 
-/*
-Power
-Description:
-
-	Computes the power of the variable.
-*/
+// Power Computes the power of the variable.
 func (v Variable) Power(exponent int) Expression {
 	return ScalarPowerTemplate(v, exponent)
 }
 
-/*
-At
-Description:
-
-	Returns the value at the given row and column index.
-
-Note:
-
-	For a variable, the row and column index should always be 0.
-*/
+// At Returns the value at the given row and column index.
+// Note:
+//
+// For a variable, the row and column index should always be 0.
 func (v Variable) At(ii, jj int) ScalarExpression {
 	// Input Processing
 
@@ -669,6 +571,8 @@ func (v Variable) At(ii, jj int) ScalarExpression {
 	return v
 }
 
+// UnionOfVariables returns a slice containing the unique union of all variables
+// from the given slices.
 func UnionOfVariables(varSlices ...[]Variable) []Variable {
 	var allVars []Variable
 	for _, varSlice := range varSlices {
@@ -677,12 +581,7 @@ func UnionOfVariables(varSlices ...[]Variable) []Variable {
 	return UniqueVars(allVars)
 }
 
-/*
-AsSimplifiedExpression
-Description:
-
-	Simplifies the expression and returns the simplified version.
-*/
+// AsSimplifiedExpression Simplifies the expression and returns the simplified version.
 func (v Variable) AsSimplifiedExpression() Expression {
 	return v
 }

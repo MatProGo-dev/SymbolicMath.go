@@ -6,12 +6,9 @@ import (
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 )
 
-/*
-Expression
-Description:
-
-	This interface should be implemented by and ScalarExpression and VectorExpression
-*/
+// Expression is a mathematical object that we can perform operations on with SymbolicMath.go.
+// This interface should be implemented by any scalar, vector, etc. in the package.
+// Similarly, useful interfaces like ScalarExpression should implement this interface.
 type Expression interface {
 	// NumVars returns the number of variables in the expression
 	Variables() []Variable
@@ -75,22 +72,12 @@ type Expression interface {
 	AsSimplifiedExpression() Expression
 }
 
-/*
-NumVariables
-Description:
-
-	The number of distinct variables.
-*/
+// NumVariables returns the number of unique symbolic.Variable objects contained in this Expression.
 func NumVariables(e Expression) int {
 	return len(e.Variables())
 }
 
-/*
-VariableIDs
-Description:
-
-	Returns a list of ids associated with each variable.
-*/
+// VariableIDs returns a list of the unique ids associated with each variable contained in this expression.
 func VariableIDs(e Expression) []uint64 {
 	vSlice := e.Variables()
 
@@ -102,16 +89,13 @@ func VariableIDs(e Expression) []uint64 {
 	return idSlice
 }
 
-/*
-IsExpression
-Description:
-
-	Tests whether or not the input variable is one of the expression types.
-*/
+// IsExpression Tests whether or not the input variable is one of the expression types.
 func IsExpression(e interface{}) bool {
 	return IsScalarExpression(e) || IsVectorExpression(e) || IsMatrixExpression(e)
 }
 
+// ToExpression converts an interface to an Expression type.
+// Returns an error if the input is not a recognized expression type.
 func ToExpression(e interface{}) (Expression, error) {
 	switch {
 	case IsScalarExpression(e):
@@ -131,27 +115,17 @@ func ToExpression(e interface{}) (Expression, error) {
 	)
 }
 
-/*
-Minus
-Description:
-
-	subtracts the current expression from another and returns the resulting expression
-*/
+// Minus subtracts one expression (right) from another (left) and returns the resulting expression
 func Minus(left, right Expression) Expression {
 	return left.Plus(
 		right.Multiply(-1.0),
 	)
 }
 
-/*
-IsLinear
-Description:
-
-	Determines whether an input object is a
-	valid linear expression.
-	In math, this means that the polynomial like expression
-	has a degree less than or equal to 1.
-*/
+// IsLinear Determines whether an input object is a
+// valid linear expression.
+// In math, this means that the polynomial like expression
+// has a degree less than or equal to 1.
 func IsLinear(e Expression) bool {
 	// Input Processing
 	if !IsPolynomialLike(e) {
@@ -163,15 +137,10 @@ func IsLinear(e Expression) bool {
 	return eAsPL.Degree() <= 1
 }
 
-/*
-IsQuadratic
-Description:
-
-	Determines whether or not an input object is a
-	valid Quadratic Expression.
-	In math, this means that the polynomial like expression
-	has a degree less than or equal to 2.
-*/
+// IsQuadratic Determines whether or not an input object is a
+// valid Quadratic Expression.
+// In math, this means that the polynomial like expression
+// has a degree less than or equal to 2.
 func IsQuadratic(e Expression) bool {
 	// Input Processing
 	if !IsPolynomialLike(e) {
@@ -183,12 +152,7 @@ func IsQuadratic(e Expression) bool {
 	return eAsPL.Degree() <= 2
 }
 
-/*
-HStack
-Description:
-
-	Stacks the input expressions horizontally.
-*/
+// HStack Stacks the input expressions horizontally.
 func HStack(eIn ...Expression) Expression {
 	// Input Checking
 
@@ -235,12 +199,7 @@ func HStack(eIn ...Expression) Expression {
 	return ConcretizeExpression(result)
 }
 
-/*
-VStack
-Description:
-
-	Stacks the input expressions vertically.
-*/
+// VStack Stacks the input expressions vertically.
 func VStack(eIn ...Expression) Expression {
 	// Input Checking
 
@@ -283,12 +242,7 @@ func VStack(eIn ...Expression) Expression {
 	return ConcretizeExpression(result)
 }
 
-/*
-ConcretizeExpression
-Description:
-
-	Converts the input expression to a valid type that implements "Expression".
-*/
+// ConcretizeExpression Converts the input expression to a valid type that implements "Expression".
 func ConcretizeExpression(e interface{}) Expression {
 	// Input Processing
 

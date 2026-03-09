@@ -7,25 +7,15 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-/*
-vector_constraint.go
-Description:
-
-*/
-
+// VectorConstraint defines a constraint on two vector expressions.
 type VectorConstraint struct {
 	LeftHandSide  VectorExpression
 	RightHandSide VectorExpression
 	Sense         ConstrSense
 }
 
-/*
-Dims
-Description:
-
-	The dimension of the vector constraint (ideally this should be the same as the dimensions
-	of the left and right hand sides).
-*/
+// Dims The dimension of the vector constraint (ideally this should be the same as the dimensions
+// of the left and right hand sides).
 func (vc VectorConstraint) Dims() []int {
 	err := vc.Check()
 	if err != nil {
@@ -37,12 +27,7 @@ func (vc VectorConstraint) Dims() []int {
 
 }
 
-/*
-AtVec
-Description:
-
-	Retrieves the constraint formed by one element of the "vector" constraint.
-*/
+// AtVec Retrieves the constraint formed by one element of the "vector" constraint.
 func (vc VectorConstraint) AtVec(i int) ScalarConstraint {
 	// Input Processing
 	err := vc.Check()
@@ -63,12 +48,7 @@ func (vc VectorConstraint) AtVec(i int) ScalarConstraint {
 	return ScalarConstraint{lhsAtI, rhsAtI, vc.Sense}
 }
 
-/*
-Check
-Description:
-
-	Checks that the VectorConstraint is valid.
-*/
+// Check Checks that the VectorConstraint is valid.
 func (vc VectorConstraint) Check() error {
 	// Constants
 
@@ -100,43 +80,30 @@ func (vc VectorConstraint) Check() error {
 	return nil
 }
 
+// Left returns the left-hand side expression of the vector constraint.
 func (vc VectorConstraint) Left() Expression {
 	return vc.LeftHandSide
 }
 
+// Right returns the right-hand side expression of the vector constraint.
 func (vc VectorConstraint) Right() Expression {
 	return vc.RightHandSide
 }
 
-/*
-ConstrSense
-Description:
-
-	Returns the sense of the constraint.
-*/
+// ConstrSense Returns the sense of the constraint.
 func (vc VectorConstraint) ConstrSense() ConstrSense {
 	return vc.Sense
 }
 
-/*
-IsLinear
-Description:
-
-	Describes whether a given vector constraint is
-	linear or not.
-*/
+// IsLinear Describes whether a given vector constraint is
+// linear or not.
 func (vc VectorConstraint) IsLinear() bool {
 	return IsLinear(vc.RightHandSide) && IsLinear(vc.LeftHandSide)
 }
 
-/*
-LinearInequalityConstraintRepresentation
-Description:
-
-	Returns the linear constraint representation of the scalar constraint.
-	Returns a tuple of the form (A, b) where A is a vector and b is a constant such that:
-	A.Dot(x) <= b
-*/
+// LinearInequalityConstraintRepresentation Returns the linear constraint representation of the scalar constraint.
+// Returns a tuple of the form (A, b) where A is a vector and b is a constant such that:
+// A.Dot(x) <= b
 func (vc VectorConstraint) LinearInequalityConstraintRepresentation(wrt ...[]Variable) (A mat.Dense, b mat.VecDense) {
 	// Check that the constraint is well formed.
 	err := vc.Check()
@@ -199,14 +166,9 @@ func (vc VectorConstraint) LinearInequalityConstraintRepresentation(wrt ...[]Var
 	return A, b
 }
 
-/*
-LinearEqualityConstraintRepresentation
-Description:
-
-	Returns the representation of the constraint as a linear equality constraint.
-	Returns a tuple of the form (C, d) where C is a matrix and d is a vector such that:
-	C*x = d
-*/
+// LinearEqualityConstraintRepresentation Returns the representation of the constraint as a linear equality constraint.
+// Returns a tuple of the form (C, d) where C is a matrix and d is a vector such that:
+// C*x = d
 func (vc VectorConstraint) LinearEqualityConstraintRepresentation(wrt ...[]Variable) (C mat.Dense, d mat.VecDense) {
 	// Check that the constraint is well formed.
 	err := vc.Check()
@@ -260,12 +222,7 @@ func (vc VectorConstraint) LinearEqualityConstraintRepresentation(wrt ...[]Varia
 	return C, d
 }
 
-/*
-Substitute
-Description:
-
-	Substitutes the variable vIn with the scalar expression seIn in the vector constraint.
-*/
+// Substitute Substitutes the variable vIn with the scalar expression seIn in the vector constraint.
 func (vc VectorConstraint) Substitute(vIn Variable, seIn ScalarExpression) Constraint {
 	// Check that the constraint is well formed.
 	err := vc.Check()
@@ -281,12 +238,7 @@ func (vc VectorConstraint) Substitute(vIn Variable, seIn ScalarExpression) Const
 	return VectorConstraint{newLHS, newRHS, vc.Sense}
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	Substitutes the variables in the map with the corresponding expressions
-*/
+// SubstituteAccordingTo Substitutes the variables in the map with the corresponding expressions
 func (vc VectorConstraint) SubstituteAccordingTo(subMap map[Variable]Expression) Constraint {
 	// Check that the constraint is well formed.
 	err := vc.Check()
@@ -302,12 +254,7 @@ func (vc VectorConstraint) SubstituteAccordingTo(subMap map[Variable]Expression)
 	return VectorConstraint{newLHS, newRHS, vc.Sense}
 }
 
-/*
-Len
-Description:
-
-	Returns the length of the vector constraint.
-*/
+// Len Returns the length of the vector constraint.
 func (vc VectorConstraint) Len() int {
 	// Check that the constraint is well formed.
 	err := vc.Check()
@@ -319,12 +266,7 @@ func (vc VectorConstraint) Len() int {
 	return vc.LeftHandSide.Len()
 }
 
-/*
-AsSimplifiedConstraint
-Description:
-
-	Simplifies the constraint by moving all variables to the left hand side and the constants to the right.
-*/
+// AsSimplifiedConstraint Simplifies the constraint by moving all variables to the left hand side and the constants to the right.
 func (vc VectorConstraint) AsSimplifiedConstraint() Constraint {
 	// Input Checking
 	err := vc.Check()
@@ -351,22 +293,12 @@ func (vc VectorConstraint) AsSimplifiedConstraint() Constraint {
 	}
 }
 
-/*
-Variables
-Description:
-
-	Returns a slice of all the variables in the constraint.
-*/
+// Variables Returns a slice of all the variables in the constraint.
 func (vc VectorConstraint) Variables() []Variable {
 	return VariablesInThisConstraint(vc)
 }
 
-/*
-ImpliesThisIsAlsoSatisfied
-Description:
-
-	Returns true if this constraint implies that the other constraint is also satisfied.
-*/
+// ImpliesThisIsAlsoSatisfied Returns true if this constraint implies that the other constraint is also satisfied.
 func (vc VectorConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
 	// Input Processing
 	err := vc.Check()

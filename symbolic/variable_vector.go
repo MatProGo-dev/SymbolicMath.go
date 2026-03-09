@@ -13,48 +13,27 @@ Description:
 	The VariableVector type will represent a
 */
 
-/*
-VariableVector
-Description:
-
-	Represnts a variable in a optimization problem. The variable is
-*/
+// VariableVector represents a vector of variables in an optimization problem.
 type VariableVector []Variable
 
 // =========
 // Functions
 // =========
 
-/*
-Length
-Description:
-
-	Returns the length of the vector of optimization variables.
-*/
+// Length Returns the length of the vector of optimization variables.
 func (vv VariableVector) Length() int {
 	return len(vv)
 }
 
-/*
-Len
-Description:
-
-	This function is created to mirror the GoNum Vector API. Does the same thing as Length.
-*/
+// Len This function is created to mirror the GoNum Vector API. Does the same thing as Length.
 func (vv VariableVector) Len() int {
 	return vv.Length()
 }
 
-/*
-At
-Description:
-
-	Returns the variable at the (ii, jj)-th index of the vector.
-
-Note:
-
-	Because this is a vector, the jj index SHOULD always 0.
-*/
+// At Returns the variable at the (ii, jj)-th index of the vector.
+// Note:
+//
+// Because this is a vector, the jj index SHOULD always 0.
 func (vv VariableVector) At(ii, jj int) ScalarExpression {
 	// Input Checking
 	err := vv.Check()
@@ -72,12 +51,7 @@ func (vv VariableVector) At(ii, jj int) ScalarExpression {
 	return vv[ii]
 }
 
-/*
-AtVec
-Description:
-
-	Mirrors the gonum api for vectors. This extracts the element of the variable vector at the index x.
-*/
+// AtVec Mirrors the gonum api for vectors. This extracts the element of the variable vector at the index x.
 func (vv VariableVector) AtVec(idx int) ScalarExpression {
 	// Constants
 
@@ -91,45 +65,25 @@ func (vv VariableVector) AtVec(idx int) ScalarExpression {
 	return vv[idx]
 }
 
-/*
-Variables
-Description:
-
-	Returns the slice of all variables in the vector.
-*/
+// Variables Returns the slice of all variables in the vector.
 func (vv VariableVector) Variables() []Variable {
 	return UniqueVars(vv)
 }
 
-/*
-Constant
-Description:
-
-	Returns an all zeros vector as output from the method.
-*/
+// Constant Returns an all zeros vector as output from the method.
 func (vv VariableVector) Constant() mat.VecDense {
 	zerosOut := ZerosVector(vv.Len())
 	return zerosOut
 }
 
-/*
-LinearCoeff
-Description:
-
-	Returns the matrix which is multiplied by Variables to get the current "expression".
-	For a single vector, this is an identity matrix.
-*/
+// LinearCoeff Returns the matrix which is multiplied by Variables to get the current "expression".
+// For a single vector, this is an identity matrix.
 func (vv VariableVector) LinearCoeff(wrt ...[]Variable) mat.Dense {
 	return PolynomialLikeVector_SharedLinearCoeffCalc(vv, wrt...)
 }
 
-/*
-Plus
-Description:
-
-	This member function computes the addition of the receiver vector var with the
-	incoming vector expression ve.
-*/
+// Plus This member function computes the addition of the receiver vector var with the
+// incoming vector expression ve.
 func (vv VariableVector) Plus(rightIn interface{}) Expression {
 	// Constants
 	// vvLen := vv.Len()
@@ -181,13 +135,8 @@ func (vv VariableVector) Plus(rightIn interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Minus
-Description:
-
-	This function subtracts an expression from the current
-	variable vector and returns the resulting expression.
-*/
+// Minus This function subtracts an expression from the current
+// variable vector and returns the resulting expression.
 func (vv VariableVector) Minus(rightIn interface{}) Expression {
 	// Input Checking
 	// - Check that the receiver is well-defined
@@ -225,12 +174,7 @@ func (vv VariableVector) Minus(rightIn interface{}) Expression {
 	)
 }
 
-/*
-Multiply
-Description:
-
-	Multiplication of a VariableVector with another expression.
-*/
+// Multiply Multiplication of a VariableVector with another expression.
 func (vv VariableVector) Multiply(rightIn interface{}) Expression {
 	//Input Processing
 	err := vv.Check()
@@ -278,47 +222,27 @@ func (vv VariableVector) Multiply(rightIn interface{}) Expression {
 
 }
 
-/*
-LessEq
-Description:
-
-	This method creates a less than or equal to vector constraint using the receiver as the left hand side and the
-	input rhs as the right hand side if it is valid.
-*/
+// LessEq This method creates a less than or equal to vector constraint using the receiver as the left hand side and the
+// input rhs as the right hand side if it is valid.
 func (vv VariableVector) LessEq(rightIn interface{}) Constraint {
 	return vv.Comparison(rightIn, SenseLessThanEqual)
 }
 
-/*
-GreaterEq
-Description:
-
-	This method creates a greater than or equal to vector constraint using the receiver as the left hand side and the
-	input rhs as the right hand side if it is valid.
-*/
+// GreaterEq This method creates a greater than or equal to vector constraint using the receiver as the left hand side and the
+// input rhs as the right hand side if it is valid.
 func (vv VariableVector) GreaterEq(rightIn interface{}) Constraint {
 	return vv.Comparison(rightIn, SenseGreaterThanEqual)
 }
 
-/*
-Eq
-Description:
-
-	This method creates an equal to vector constraint using the receiver as the left hand side and the
-	input rhs as the right hand side if it is valid.
-*/
+// Eq This method creates an equal to vector constraint using the receiver as the left hand side and the
+// input rhs as the right hand side if it is valid.
 func (vv VariableVector) Eq(rightIn interface{}) Constraint {
 	return vv.Comparison(rightIn, SenseEqual)
 
 }
 
-/*
-Comparison
-Description:
-
-	This method creates a constraint of type sense between
-	the receiver (as left hand side) and rhs (as right hand side) if both are valid.
-*/
+// Comparison This method creates a constraint of type sense between
+// the receiver (as left hand side) and rhs (as right hand side) if both are valid.
 func (vv VariableVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
 	err := vv.Check()
@@ -367,6 +291,7 @@ func (vv VariableVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 	)
 }
 
+// Copy returns a new VariableVector with the same variables as the receiver.
 func (vv VariableVector) Copy() VariableVector {
 	// Constants
 
@@ -381,12 +306,7 @@ func (vv VariableVector) Copy() VariableVector {
 
 }
 
-/*
-Transpose
-Description:
-
-	This method creates the transpose of the current vector and returns it.
-*/
+// Transpose This method creates the transpose of the current vector and returns it.
 func (vv VariableVector) Transpose() Expression {
 	// Input Processing
 	err := vv.Check()
@@ -400,22 +320,12 @@ func (vv VariableVector) Transpose() Expression {
 	return vmOut
 }
 
-/*
-Dims
-Description:
-
-	Dimensions of the variable vector.
-*/
+// Dims Dimensions of the variable vector.
 func (vv VariableVector) Dims() []int {
 	return []int{vv.Len(), 1}
 }
 
-/*
-Check
-Description:
-
-	Checks whether or not the VariableVector has a sensible initialization.
-*/
+// Check Checks whether or not the VariableVector has a sensible initialization.
 func (vv VariableVector) Check() error {
 	// Check that each variable is properly defined
 	for ii, element := range vv {
@@ -432,15 +342,10 @@ func (vv VariableVector) Check() error {
 	return nil
 }
 
-/*
-DerivativeWrt
-Description:
-
-	This function returns the derivative of the VariableVector with respect to the input variable
-	vIn, which is a vector where each element:
-		- is 0 if the variable is not the same as vIn
-		- is 1 if the variable is the same as vIn
-*/
+// DerivativeWrt This function returns the derivative of the VariableVector with respect to the input variable
+// vIn, which is a vector where each element:
+// - is 0 if the variable is not the same as vIn
+// - is 1 if the variable is the same as vIn
 func (vv VariableVector) DerivativeWrt(vIn Variable) Expression {
 	// Input Processing
 	err := vv.Check()
@@ -466,12 +371,7 @@ func (vv VariableVector) DerivativeWrt(vIn Variable) Expression {
 	return VecDenseToKVector(vecOut)
 }
 
-/*
-NewVariableVector
-Description:
-
-	Returns a new VariableVector object.
-*/
+// NewVariableVector Returns a new VariableVector object.
 func NewVariableVector(N int, envs ...Environment) VariableVector {
 	// Constants
 
@@ -492,12 +392,7 @@ func NewVariableVector(N int, envs ...Environment) VariableVector {
 
 }
 
-/*
-String
-Description:
-
-	Returns a string representation of the VariableVector.
-*/
+// String Returns a string representation of the VariableVector.
 func (vv VariableVector) String() string {
 	// Input Processing
 	err := vv.Check()
@@ -518,12 +413,7 @@ func (vv VariableVector) String() string {
 	return output
 }
 
-/*
-ToMonomialVector
-Description:
-
-	This function converts the input expression to a monomial vector.
-*/
+// ToMonomialVector This function converts the input expression to a monomial vector.
 func (vv VariableVector) ToMonomialVector() MonomialVector {
 	// Input Processing
 	err := vv.Check()
@@ -542,12 +432,7 @@ func (vv VariableVector) ToMonomialVector() MonomialVector {
 	return out
 }
 
-/*
-ToPolynomialVector
-Description:
-
-	This function converts the input expression to a polynomial vector.
-*/
+// ToPolynomialVector This function converts the input expression to a polynomial vector.
 func (vv VariableVector) ToPolynomialVector() PolynomialVector {
 	// Input Processing
 	err := vv.Check()
@@ -566,33 +451,18 @@ func (vv VariableVector) ToPolynomialVector() PolynomialVector {
 	return out
 }
 
-/*
-Degree
-Description:
-
-	Returns the degree of the vector of variables
-	(which is always 1).
-*/
+// Degree Returns the degree of the vector of variables
+// (which is always 1).
 func (vv VariableVector) Degree() int {
 	return 1
 }
 
-/*
-Substitute
-Description:
-
-	Substitute returns the expression with the variable vIn replaced with the expression eIn
-*/
+// Substitute Substitute returns the expression with the variable vIn replaced with the expression eIn
 func (vv VariableVector) Substitute(vIn Variable, seIn ScalarExpression) Expression {
 	return VectorSubstituteTemplate(vv, vIn, seIn)
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	Substitute replaces all instances of the variables in the map with the corresponding expressions.
-*/
+// SubstituteAccordingTo Substitute replaces all instances of the variables in the map with the corresponding expressions.
 func (vv VariableVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := vv.Check()
@@ -616,32 +486,17 @@ func (vv VariableVector) SubstituteAccordingTo(subMap map[Variable]Expression) E
 
 }
 
-/*
-Power
-Description:
-
-	Raises the variable vector to the power of the input integer
-*/
+// Power Raises the variable vector to the power of the input integer
 func (vv VariableVector) Power(exponent int) Expression {
 	return VectorPowerTemplate(vv, exponent)
 }
 
-/*
-AsSimplifiedExpression
-Description:
-
-	Simplifies the expression and returns the simplified version.
-*/
+// AsSimplifiedExpression Simplifies the expression and returns the simplified version.
 func (vv VariableVector) AsSimplifiedExpression() Expression {
 	return vv
 }
 
-/*
-ToScalarExpressions
-Description:
-
-	Converts the VariableVector into a slice of ScalarExpression type objects.
-*/
+// ToScalarExpressions Converts the VariableVector into a slice of ScalarExpression type objects.
 func (vv VariableVector) ToScalarExpressions() []ScalarExpression {
 	var out []ScalarExpression
 	for _, v := range vv {

@@ -13,16 +13,11 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-/*
-PolynomialLikeVector
-Description:
-
-	This interface represents any expression written in terms of a
-	vector of represents a linear general expression of the form
-		c0 * x0 + c1 * x1 + ... + cn * xn + k where ci are coefficients and xi are
-	variables and k is a constant. This is a base interface that is implemented
-	by single variables, constants, and general linear expressions.
-*/
+// PolynomialLikeVector This interface represents any expression written in terms of a
+// vector of represents a linear general expression of the form
+// c0 * x0 + c1 * x1 + ... + cn * xn + k where ci are coefficients and xi are
+// variables and k is a constant. This is a base interface that is implemented
+// by single variables, constants, and general linear expressions.
 type PolynomialLikeVector interface {
 	// Check returns an error if the expression is not valid
 	Check() error
@@ -102,12 +97,7 @@ type PolynomialLikeVector interface {
 	AsSimplifiedExpression() Expression
 }
 
-/*
-IsPolynomialLikeVector
-Description:
-
-	Determines whether or not an input object is a valid "PolynomialLikeVector" according to MatProInterface.
-*/
+// IsPolynomialLikeVector Determines whether or not an input object is a valid "PolynomialLikeVector" according to MatProInterface.
 func IsPolynomialLikeVector(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
@@ -127,12 +117,7 @@ func IsPolynomialLikeVector(e interface{}) bool {
 	}
 }
 
-/*
-ToPolynomialLikeVector
-Description:
-
-	Converts the input expression to a valid type that implements "PolynomialLikeVector".
-*/
+// ToPolynomialLikeVector Converts the input expression to a valid type that implements "PolynomialLikeVector".
 func ToPolynomialLikeVector(e interface{}) (PolynomialLikeVector, error) {
 	// Input Processing
 	if !IsPolynomialLikeVector(e) {
@@ -162,17 +147,12 @@ func ToPolynomialLikeVector(e interface{}) (PolynomialLikeVector, error) {
 	}
 }
 
-/*
-PolynomialLikeVector_SharedLinearCoeffCalc
-Description:
-
-	This function retrieves the "linear coefficient" of the monomial vector.
-	In math, this is extracting the matrix A such that:
-
-		mv = L * v
-
-	where v is the vector of variables for the monomial vector.
-*/
+// PolynomialLikeVector_SharedLinearCoeffCalc This function retrieves the "linear coefficient" of the monomial vector.
+// In math, this is extracting the matrix A such that:
+//
+// mv = L * v
+//
+// where v is the vector of variables for the monomial vector.
 func PolynomialLikeVector_SharedLinearCoeffCalc(plv PolynomialLikeVector, wrt ...[]Variable) mat.Dense {
 	// Input Processing
 	err := plv.Check()

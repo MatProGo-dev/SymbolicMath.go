@@ -18,16 +18,12 @@ Description:
 // Type Definition
 // ===============
 
+// MonomialVector is a vector of monomials.
 type MonomialVector []Monomial
 
-/*
-Check
-Description:
-
-	This function checks that the monomial vector is valid.
-	It does this by checking that each of the monomials in the vector are valid.
-	And by checking that there is a non-zero number of them.
-*/
+// Check This function checks that the monomial vector is valid.
+// It does this by checking that each of the monomials in the vector are valid.
+// And by checking that there is a non-zero number of them.
 func (mv MonomialVector) Check() error {
 	// Check that the polynomial has at least one monomial
 	if len(mv) == 0 {
@@ -46,12 +42,7 @@ func (mv MonomialVector) Check() error {
 	return nil
 }
 
-/*
-Variables
-Description:
-
-	Returns the variables in the monomial vector.
-*/
+// Variables returns the unique variables that are present anywhere in the monomial vector.
 func (mv MonomialVector) Variables() []Variable {
 	// Check that the monomial vector is well formed
 	err := mv.Check()
@@ -69,32 +60,18 @@ func (mv MonomialVector) Variables() []Variable {
 	return UniqueVars(variables)
 }
 
-/*
-Len
-Description:
-
-	Returns the number of monomials in the vector.
-*/
+// Len Returns the number of monomials in the vector.
 func (mv MonomialVector) Len() int {
 	return len(mv)
 }
 
-/*
-Dims
-Description:
-
-	Returns the dimensions of the monomial vector.
-*/
+// Dims returns the dimensions of the monomial vector.
+// Because this is a vector, the dimensions will always be [N, 1].
 func (mv MonomialVector) Dims() []int {
 	return []int{mv.Len(), 1}
 }
 
-/*
-Constant
-Description:
-
-	Returns the constant component of the monomial vector (if one exists).
-*/
+// Constant Returns the constant component of the monomial vector (if one exists).
 func (mv MonomialVector) Constant() mat.VecDense {
 	// Check that the monomial vector is well formed
 	err := mv.Check()
@@ -117,12 +94,7 @@ func (mv MonomialVector) Constant() mat.VecDense {
 	return constant
 }
 
-/*
-Plus
-Description:
-
-	This function returns the sum of the monomial vector and the input expression.
-*/
+// Plus returns the sum of the monomial vector and the input expression.
 func (mv MonomialVector) Plus(term1 interface{}) Expression {
 	// Input Processing
 	err := mv.Check()
@@ -168,12 +140,7 @@ func (mv MonomialVector) Plus(term1 interface{}) Expression {
 	return out.AsSimplifiedExpression()
 }
 
-/*
-Minus
-Description:
-
-	This function returns the difference of the monomial vector and the input expression.
-*/
+// Minus returns the difference of the monomial vector and the input expression.
 func (mv MonomialVector) Minus(term1 interface{}) Expression {
 	// Input Processing
 	err := mv.Check()
@@ -218,12 +185,7 @@ func (mv MonomialVector) Minus(term1 interface{}) Expression {
 	)
 }
 
-/*
-Multiply
-Description:
-
-	This function returns the product of the monomial vector and the input expression.
-*/
+// Multiply returns the product of the monomial vector and the input expression.
 func (mv MonomialVector) Multiply(term1 interface{}) Expression {
 	// Input Processing
 	err := mv.Check()
@@ -267,12 +229,7 @@ func (mv MonomialVector) Multiply(term1 interface{}) Expression {
 
 }
 
-/*
-Transpose
-Description:
-
-	This function returns the transpose of the monomial vector.
-*/
+// Transpose returns the transpose of the monomial vector.
 func (mv MonomialVector) Transpose() Expression {
 	// Input Processing
 	err := mv.Check()
@@ -291,42 +248,22 @@ func (mv MonomialVector) Transpose() Expression {
 	return mm
 }
 
-/*
-LessEq
-Description:
-
-	This function creates a constraint that the monomial vector is less than or equal to the input expression.
-*/
+// LessEq returns a constraint that the monomial vector is less than or equal to the input expression.
 func (mv MonomialVector) LessEq(rightIn interface{}) Constraint {
 	return mv.Comparison(rightIn, SenseLessThanEqual)
 }
 
-/*
-GreaterEq
-Description:
-
-	This function creates a constraint that the monomial vector is greater than or equal to the input expression.
-*/
+// GreaterEq returns a constraint that the monomial vector is greater than or equal to the input expression.
 func (mv MonomialVector) GreaterEq(rightIn interface{}) Constraint {
 	return mv.Comparison(rightIn, SenseGreaterThanEqual)
 }
 
-/*
-Eq
-Description:
-
-	This function creates a constraint that the monomial vector is equal to the input expression.
-*/
+// Eq returns a constraint that the monomial vector is equal to the input expression.
 func (mv MonomialVector) Eq(rightIn interface{}) Constraint {
 	return mv.Comparison(rightIn, SenseEqual)
 }
 
-/*
-Comparison
-Description:
-
-	This function compares the monomial vector to the input expression in the sense provided by sense.
-*/
+// Comparison returns a constraint which compares the monomial vector to the input expression in the sense provided by sense.
 func (mv MonomialVector) Comparison(rightIn interface{}, sense ConstrSense) Constraint {
 	// Input Processing
 	err := mv.Check()
@@ -394,12 +331,7 @@ func (mv MonomialVector) Comparison(rightIn interface{}, sense ConstrSense) Cons
 
 }
 
-/*
-DerivativeWrt
-Description:
-
-	This function returns the derivative of the monomial vector with respect to the input variable.
-*/
+// DerivativeWrt returns the derivative of the monomial vector with respect to the input variable.
 func (mv MonomialVector) DerivativeWrt(v Variable) Expression {
 	// Input Processing
 	err := mv.Check()
@@ -446,17 +378,11 @@ func (mv MonomialVector) DerivativeWrt(v Variable) Expression {
 	}
 }
 
-/*
-At
-Description:
-
-	This function returns the value of the monomial vector at the
-	(ii, jj)-th index.
-
-Note:
-
-	Because this is a vector, the jj input should always be 0.
-*/
+// At This function returns the value of the monomial vector at the
+// (ii, jj)-th index.
+// Note:
+//
+// Because this is a vector, the jj input should always be 0.
 func (mv MonomialVector) At(ii, jj int) ScalarExpression {
 	// Input Processing
 
@@ -476,12 +402,7 @@ func (mv MonomialVector) At(ii, jj int) ScalarExpression {
 	return mv[ii]
 }
 
-/*
-AtVec
-Description:
-
-	This function returns the value of the monomial vector at the input vector.
-*/
+// AtVec returns the value of the monomial vector at the input vector.
 func (mv MonomialVector) AtVec(idx int) ScalarExpression {
 	// Input Processing
 	err := mv.Check()
@@ -493,12 +414,7 @@ func (mv MonomialVector) AtVec(idx int) ScalarExpression {
 	return mv[idx]
 }
 
-/*
-String
-Description:
-
-	This function returns a string representation of the monomial vector.
-*/
+// String returns a string representation of the monomial vector.
 func (mv MonomialVector) String() string {
 	// Input Processing
 	err := mv.Check()
@@ -519,12 +435,7 @@ func (mv MonomialVector) String() string {
 	return output
 }
 
-/*
-IsConstant
-Description:
-
-	Determines whether or not an input object is a valid "MonomialVector" according to MatProInterface.
-*/
+// IsConstant Determines whether or not an input object is a valid "MonomialVector" according to MatProInterface.
 func (mv MonomialVector) IsConstant() bool {
 	// Input Checking
 	err := mv.Check()
@@ -543,12 +454,7 @@ func (mv MonomialVector) IsConstant() bool {
 	return true
 }
 
-/*
-ToPolynomialVector
-Description:
-
-	This function converts the input monomial vector to a polynomial vector.
-*/
+// ToPolynomialVector converts the input monomial vector to a polynomial vector.
 func (mv MonomialVector) ToPolynomialVector() PolynomialVector {
 	// Input Checking
 	err := mv.Check()
@@ -566,12 +472,7 @@ func (mv MonomialVector) ToPolynomialVector() PolynomialVector {
 	return pv
 }
 
-/*
-Degree
-Description:
-
-	Returns the MAXIMUM degree in the monomial vector.
-*/
+// Degree Returns the MAXIMUM degree in the monomial vector.
 func (mv MonomialVector) Degree() int {
 	// Input Processing
 	err := mv.Check()
@@ -592,22 +493,12 @@ func (mv MonomialVector) Degree() int {
 	return maxDegree
 }
 
-/*
-Substitute
-Description:
-
-	This function substitutes the input variable with the input scalar expression.
-*/
+// Substitute substitutes the input variable with the input scalar expression.
 func (mv MonomialVector) Substitute(vIn Variable, seIn ScalarExpression) Expression {
 	return VectorSubstituteTemplate(mv, vIn, seIn)
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	This function substitutes all instances of variables in the substitutions map with their corresponding expressions.
-*/
+// SubstituteAccordingTo substitutes all instances of variables in the substitutions map with their corresponding expressions.
 func (mv MonomialVector) SubstituteAccordingTo(subMap map[Variable]Expression) Expression {
 	// Input Processing
 	err := mv.Check()
@@ -629,39 +520,24 @@ func (mv MonomialVector) SubstituteAccordingTo(subMap map[Variable]Expression) E
 	return out
 }
 
-/*
-Power
-Description:
-
-	This function raises the monomial vector to the input power.
-*/
+// Power raises the monomial vector to the input power.
 func (mv MonomialVector) Power(exponent int) Expression {
 	return VectorPowerTemplate(mv, exponent)
 }
 
-/*
-LinearCoeff
-Description:
-
-	This function retrieves the "linear coefficient" of the monomial vector.
-	In math, this is extracting the matrix A such that:
-
-		mv' = L * v
-
-	where:
-	- v is the vector of variables for the monomial vector.
-	- mv' is the monomial vector mv with ONLY the terms that have degree 1
-*/
+// LinearCoeff This function retrieves the "linear coefficient" of the monomial vector.
+// In math, this is extracting the matrix A such that:
+//
+// mv' = L * v
+//
+// where:
+// - v is the vector of variables for the monomial vector.
+// - mv' is the monomial vector mv with ONLY the terms that have degree 1
 func (mv MonomialVector) LinearCoeff(wrt ...[]Variable) mat.Dense {
 	return PolynomialLikeVector_SharedLinearCoeffCalc(mv, wrt...)
 }
 
-/*
-AsSimplifiedExpression
-Description:
-
-	Returns the simplest form of the expression.
-*/
+// AsSimplifiedExpression Returns the simplest form of the expression.
 func (mv MonomialVector) AsSimplifiedExpression() Expression {
 	// Input Processing
 	err := mv.Check()
@@ -684,12 +560,7 @@ func (mv MonomialVector) AsSimplifiedExpression() Expression {
 	return ConcretizeVectorExpression(out)
 }
 
-/*
-ToScalarExpressions
-Description:
-
-	Converts the MonomialVector into a slice of ScalarExpression type objects.
-*/
+// ToScalarExpressions Converts the MonomialVector into a slice of ScalarExpression type objects.
 func (mv MonomialVector) ToScalarExpressions() []ScalarExpression {
 	var out []ScalarExpression
 	for _, monomial := range mv {

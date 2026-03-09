@@ -2,13 +2,8 @@ package symbolic
 
 import "fmt"
 
-/*
-constraint.go
-Description:
-	Defines an interface that we are meant to use with the ScalarContraint and VectorConstraint
-	objects.
-*/
-
+// Constraint is a mathematical constraint (either <=, =, >=) between to expressions from SymbolicMath.go.
+// This interface is later implemented by specific types like: ScalarConstraint, VectorConstraint, MatrixConstraint.
 type Constraint interface {
 	Left() Expression
 	Right() Expression
@@ -35,6 +30,7 @@ type Constraint interface {
 	// IsNonnegativityConstraint() bool
 }
 
+// IsConstraint returns true if the given interface is a recognized Constraint type.
 func IsConstraint(c interface{}) bool {
 	switch c.(type) {
 	case ScalarConstraint:
@@ -55,12 +51,7 @@ func IsConstraint(c interface{}) bool {
 	return false
 }
 
-/*
-Variables
-Description:
-
-	Returns a slice of all the variables in the constraint.
-*/
+// VariablesInThisConstraint returns a slice of all the variables in the constraint.
 func VariablesInThisConstraint(c Constraint) []Variable {
 	// Setup
 	varsMap := make(map[Variable]bool)
@@ -90,13 +81,8 @@ func VariablesInThisConstraint(c Constraint) []Variable {
 	return vars
 }
 
-/*
-CompileConstraintsIntoScalarConstraints
-Description:
-
-	This method analyzes all constraints in an OptimizationProblem and converts them all
-	into scalar constraints.
-*/
+// CompileConstraintsIntoScalarConstraints This method analyzes all constraints in an OptimizationProblem and converts them all
+// into scalar constraints.
 func CompileConstraintsIntoScalarConstraints(constraints []Constraint) []ScalarConstraint {
 	// Setup
 	var out []ScalarConstraint

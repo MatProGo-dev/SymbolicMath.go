@@ -6,12 +6,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-/*
-   matrix_expression.go
-   Description:
-
-*/
-
+// PolynomialLikeMatrix defines an interface for polynomial-like matrix expressions.
 type PolynomialLikeMatrix interface {
 	// Check returns an error if the expression is not initialized properly
 	Check() error
@@ -85,12 +80,7 @@ type PolynomialLikeMatrix interface {
 	AsSimplifiedExpression() Expression
 }
 
-/*
-IsPolynomialLikeMatrix
-Description:
-
-	Determines whether or not an input object is a valid "VectorExpression" according to MatProInterface.
-*/
+// IsPolynomialLikeMatrix Determines whether or not an input object is a valid "VectorExpression" according to MatProInterface.
 func IsPolynomialLikeMatrix(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
@@ -110,12 +100,7 @@ func IsPolynomialLikeMatrix(e interface{}) bool {
 	}
 }
 
-/*
-ToPolynomialLikeMatrix
-Description:
-
-	Converts the input expression to a valid type that implements "VectorExpression".
-*/
+// ToPolynomialLikeMatrix Converts the input expression to a valid type that implements "VectorExpression".
 func ToPolynomialLikeMatrix(e interface{}) (PolynomialLikeMatrix, error) {
 	// Input Processing
 	if !IsPolynomialLikeMatrix(e) {

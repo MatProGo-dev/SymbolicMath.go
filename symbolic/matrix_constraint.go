@@ -6,44 +6,32 @@ import (
 	"github.com/MatProGo-dev/SymbolicMath.go/smErrors"
 )
 
-/*
-matrix_constraint.go
-Description:
-	Functions related to the matrix constraint object.
-*/
-
+// MatrixConstraint is an object that defines mathematical constraints between two matrices.
+// This should implement the Constraint interface.
 type MatrixConstraint struct {
 	LeftHandSide  MatrixExpression
 	RightHandSide MatrixExpression
 	Sense         ConstrSense
 }
 
+// Left returns the left-hand side expression of the matrix constraint.
 func (mc MatrixConstraint) Left() Expression {
 	return mc.LeftHandSide
 }
 
+// Right returns the right-hand side expression of the matrix constraint.
 func (mc MatrixConstraint) Right() Expression {
 	return mc.RightHandSide
 }
 
-/*
-ConstrSense
-Description:
-
-	Returns the sense of the constraint.
-*/
+// ConstrSense Returns the sense of the constraint.
 func (mc MatrixConstraint) ConstrSense() ConstrSense {
 	return mc.Sense
 }
 
-/*
-Check
-Description:
-
-	Verifies that:
-	- The left and right hand sides have matching dimensions,
-	- The sense is valid, (i.e., it is from the set of allowable senses defined in ConstrSense.
-*/
+// Check Verifies that:
+// - The left and right hand sides have matching dimensions,
+// - The sense is valid, (i.e., it is from the set of allowable senses defined in ConstrSense.
 func (mc MatrixConstraint) Check() error {
 	// Input Processing
 	// Check that the left and right hand sides are well formed.
@@ -92,13 +80,8 @@ func (mc MatrixConstraint) Check() error {
 	return nil
 }
 
-/*
-Dims
-Description:
-
-	The dimension of the matrix constraint (ideally this should be the same as the dimensions
-	of the left and right hand sides).
-*/
+// Dims The dimension of the matrix constraint (ideally this should be the same as the dimensions
+// of the left and right hand sides).
 func (mc MatrixConstraint) Dims() []int {
 	err := mc.Check()
 	if err != nil {
@@ -110,12 +93,7 @@ func (mc MatrixConstraint) Dims() []int {
 
 }
 
-/*
-AtVec
-Description:
-
-	Retrieves the constraint formed by one element of the "vector" constraint.
-*/
+// At retrieves the scalar constraint formed by the element at row ii and column jj of the matrix constraint.
 func (mc MatrixConstraint) At(ii, jj int) ScalarConstraint {
 	// Input Processing
 	err := mc.Check()
@@ -136,23 +114,13 @@ func (mc MatrixConstraint) At(ii, jj int) ScalarConstraint {
 	return ScalarConstraint{lhsAtIIJJ, rhsAtIIJJ, mc.Sense}
 }
 
-/*
-IsLinear
-Description:
-
-	Describes whether a given matrix constraint is
-	linear or not.
-*/
+// IsLinear Describes whether a given matrix constraint is
+// linear or not.
 func (mc MatrixConstraint) IsLinear() bool {
 	return IsLinear(mc.RightHandSide) && IsLinear(mc.LeftHandSide)
 }
 
-/*
-Substitute
-Description:
-
-	Substitutes the variable vIn with the scalar expression seIn
-*/
+// Substitute Substitutes the variable vIn with the scalar expression seIn
 func (mc MatrixConstraint) Substitute(vIn Variable, seIn ScalarExpression) Constraint {
 	// Check that the constraint is well formed.
 	err := mc.Check()
@@ -169,13 +137,8 @@ func (mc MatrixConstraint) Substitute(vIn Variable, seIn ScalarExpression) Const
 	return MatrixConstraint{newLHS, newRHS, mc.Sense}
 }
 
-/*
-SubstituteAccordingTo
-Description:
-
-	Substitutes the variables in the map with the corresponding expressions
-	in the given scalar constraint.
-*/
+// SubstituteAccordingTo Substitutes the variables in the map with the corresponding expressions
+// in the given scalar constraint.
 func (mc MatrixConstraint) SubstituteAccordingTo(subMap map[Variable]Expression) Constraint {
 	// Check that the constraint is well formed.
 	err := mc.Check()
@@ -192,12 +155,7 @@ func (mc MatrixConstraint) SubstituteAccordingTo(subMap map[Variable]Expression)
 	return MatrixConstraint{newLHS, newRHS, mc.Sense}
 }
 
-/*
-AsSimplifiedConstraint
-Description:
-
-	Simplifies the constraint by moving all variables to the left hand side and the constants to the right.
-*/
+// AsSimplifiedConstraint Simplifies the constraint by moving all variables to the left hand side and the constants to the right.
 func (mc MatrixConstraint) AsSimplifiedConstraint() Constraint {
 	// Create Left Hand side of all of the expressions
 	var newLHS Expression = mc.LeftHandSide.Minus(mc.LeftHandSide.Constant())
@@ -218,22 +176,12 @@ func (mc MatrixConstraint) AsSimplifiedConstraint() Constraint {
 	}
 }
 
-/*
-Variables
-Description:
-
-	Returns a slice of all the variables in the constraint.
-*/
+// Variables Returns a slice of all the variables in the constraint.
 func (mc MatrixConstraint) Variables() []Variable {
 	return VariablesInThisConstraint(mc)
 }
 
-/*
-ImpliesThisIsAlsoSatisfied
-Description:
-
-	Returns true if this constraint implies that the other constraint is also satisfied.
-*/
+// ImpliesThisIsAlsoSatisfied Returns true if this constraint implies that the other constraint is also satisfied.
 func (mc MatrixConstraint) ImpliesThisIsAlsoSatisfied(other Constraint) bool {
 	// Input Processing
 	err := mc.Check()
