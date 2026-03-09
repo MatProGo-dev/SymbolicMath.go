@@ -84,7 +84,7 @@ type PolynomialLikeScalar interface {
 }
 
 // IsPolynomialLikeScalar Determines whether or not an input object is a
-// valid "PolynomialLikeScalar" according to MatProInterface.
+// valid "PolynomialLikeScalar" according to SymbolicMath.go.
 func IsPolynomialLikeScalar(e interface{}) bool {
 	// Check each type
 	switch e.(type) {
@@ -104,7 +104,7 @@ func IsPolynomialLikeScalar(e interface{}) bool {
 	}
 }
 
-// ToPolynomialLikeScalar Converts the input expression to a valid type that
+// ToPolynomialLikeScalar converts the input expression to a valid type that
 // implements "PolynomialLikeScalar".
 func ToPolynomialLikeScalar(e interface{}) (PolynomialLikeScalar, error) {
 	// Input Processing
